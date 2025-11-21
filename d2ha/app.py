@@ -162,6 +162,27 @@ def images_view():
     )
 
 
+@app.route("/events", methods=["GET"])
+def events_view():
+    hours_param = request.args.get("hours", default="24")
+    try:
+        hours = int(hours_param)
+    except ValueError:
+        hours = 24
+
+    hours = max(1, min(hours, 24 * 30))
+    events = docker_service.list_events(since_seconds=hours * 3600, limit=400)
+    stacks, summary = _build_home_context()
+
+    return render_template(
+        "events.html",
+        events=events,
+        selected_hours=hours,
+        summary=summary,
+        active_page="events",
+    )
+
+
 @app.route("/updates", methods=["GET"])
 def updates():
     containers_info = docker_service.collect_containers_info_for_updates()

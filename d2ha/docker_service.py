@@ -2,6 +2,7 @@ import json
 import os
 import threading
 import time
+from collections import deque
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -157,6 +158,14 @@ class DockerService:
         self._overview_thread: Optional[threading.Thread] = None
         self.update_preferences: Dict[str, int] = {}
         self.compose_path = os.path.join(os.path.dirname(__file__), "docker-compose.yml")
+        self.host_name = self._load_host_name()
+
+    def _load_host_name(self) -> str:
+        try:
+            info = self.docker_client.info()
+            return info.get("Name") or os.uname().nodename
+        except Exception:
+            return os.uname().nodename
 
     def is_engine_running(self) -> bool:
         try:
@@ -588,6 +597,57 @@ class DockerService:
             return self.docker_api.df() or {}
         except Exception:
             return {}
+
+    def _severity_from_action(self, action: str) -> str:
+        action_l = (action or "").lower()
+        if action_l in {"die", "oom", "kill", "destroy", "stop"}:
+            return "error"
+        return "info"
+
+    def _format_event_entry(self, raw_event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        try:
+            event_type = raw_event.get("Type") or raw_event.get("type") or ""
+            action = raw_event.get("status") or raw_event.get("Action") or ""
+            actor = raw_event.get("Actor", {}) or {}
+            attrs = actor.get("Attributes", {}) or {}
+            name = attrs.get("name") or attrs.get("container") or raw_event.get("id") or ""
+            time_val = raw_event.get("time") or time.time()
+
+            ts = datetime.fromtimestamp(float(time_val), tz=timezone.utc)
+            message = f"{event_type.capitalize()} {action} {name}".strip()
+
+            return {
+                "timestamp": ts,
+                "timestamp_local": ts.astimezone(),
+                "type": event_type or "docker",
+                "action": action or "event",
+                "name": name,
+                "id": (raw_event.get("id") or "")[:12],
+                "severity": self._severity_from_action(action),
+                "detail": message,
+                "host": self.host_name,
+                "source": attrs.get("image") or attrs.get("image_name") or "-",
+            }
+        except Exception:
+            return None
+
+    def list_events(self, since_seconds: int = 86400, limit: int = 300) -> List[Dict[str, Any]]:
+        since_seconds = max(0, since_seconds)
+        since_ts = max(0, int(time.time()) - since_seconds)
+        now_ts = int(time.time())
+
+        events: "deque[Dict[str, Any]]" = deque(maxlen=limit)
+
+        try:
+            for ev in self.docker_api.events(since=since_ts, until=now_ts, decode=True):
+                parsed = self._format_event_entry(ev)
+                if parsed:
+                    events.append(parsed)
+        except Exception:
+            return []
+
+        default_dt = datetime.min.replace(tzinfo=timezone.utc)
+        return sorted(list(events), key=lambda e: e.get("timestamp", default_dt), reverse=True)
 
     def list_images_overview(self) -> List[Dict[str, Any]]:
         containers = self.docker_client.containers.list(all=True)
