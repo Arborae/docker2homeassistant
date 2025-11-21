@@ -85,7 +85,6 @@
     .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .select, .input { background: #0f141f; color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:0.9rem; }
     .inline-btn { padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:#1d2535; color: var(--text); cursor:pointer; }
-    .compose-area { width:100%; min-height:280px; background:#0f141f; color:#e7ecf4; border:1px solid var(--border); border-radius:12px; padding:12px; font-family:"JetBrains Mono", monospace; font-size:0.85rem; }
     .chip { background: rgba(255,255,255,0.05); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.8rem; }
     .small { font-size:0.8rem; color:var(--muted); }
     .table-kv { width:100%; border-collapse:collapse; }
@@ -94,6 +93,16 @@
     .tab-panel { display:none; }
     .tab-panel.active { display:block; }
     .tab-panel.logs-panel.active { display:flex; flex-direction:column; flex:1; min-height:0; }
+    .toast-container { position:fixed; top:14px; left:0; right:0; display:flex; justify-content:center; gap:10px; pointer-events:none; z-index:60; }
+    .toast { background: #1f2636; color: var(--text); border:1px solid var(--border); border-radius:12px; padding:10px 12px; min-width:240px; box-shadow: var(--shadow); opacity:0; transform: translateY(-12px); transition: all 0.2s ease; pointer-events:auto; display:flex; flex-direction:column; gap:8px; }
+    .toast.visible { opacity:1; transform: translateY(0); }
+    .toast-message { font-weight:700; font-size:0.9rem; }
+    .toast-actions { display:flex; gap:8px; }
+    .toast-actions button { border:none; border-radius:999px; padding:6px 10px; background: rgba(49,196,255,0.12); color: var(--text); cursor:pointer; font-weight:700; }
+    .toast-info { border-color: rgba(49,196,255,0.25); }
+    .toast-success { border-color: rgba(124,255,195,0.25); }
+    .toast-error { border-color: rgba(255,138,122,0.25); }
+    .toast-warning { border-color: rgba(255,213,79,0.35); }
     @media(max-width: 960px) {
       table, thead, tbody, th, td, tr { display:block; }
       thead { display:none; }
@@ -241,7 +250,6 @@
         <button class="modal-tab active" data-tab="info">Info</button>
         <button class="modal-tab" data-tab="logs">Logs</button>
         <button class="modal-tab" data-tab="updates">Aggiornamenti</button>
-        <button class="modal-tab" data-tab="compose">Docker-compose</button>
       </div>
       <div class="modal-body">
         <div class="tab-panel active" data-panel="info">
@@ -362,18 +370,10 @@
           </div>
           <div id="updates-feedback" class="small"></div>
         </div>
-
-        <div class="tab-panel" data-panel="compose">
-          <div class="controls" style="justify-content:space-between;">
-            <div class="muted">Visualizza e modifica docker-compose.yml</div>
-            <button class="inline-btn" id="compose-save">Salva modifiche</button>
-          </div>
-          <textarea id="compose-content" class="compose-area" spellcheck="false"></textarea>
-          <div id="compose-feedback" class="small"></div>
-        </div>
       </div>
     </div>
   </div>
+  <div class="toast-container" id="toast-container"></div>
   <script>
     const modalEl = document.getElementById('container-modal');
     const modalTitle = document.getElementById('modal-title');
@@ -388,15 +388,44 @@
     const updatesSave = document.getElementById('updates-save');
     const updatesCheck = document.getElementById('updates-check');
     const updatesFeedback = document.getElementById('updates-feedback');
-    const composeSave = document.getElementById('compose-save');
-    const composeContent = document.getElementById('compose-content');
-    const composeFeedback = document.getElementById('compose-feedback');
+    const toastContainer = document.getElementById('toast-container');
 
     let currentContainerId = null;
     let statsInterval = null;
     let logsInterval = null;
     let statsHistory = { cpu: [], ram: [], net: [] };
     let lastNet = null;
+
+    const showToast = (message, { type = 'info', actions = [] } = {}) => {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<div class="toast-message">${message}</div>`;
+
+      if (actions.length) {
+        const actionBar = document.createElement('div');
+        actionBar.className = 'toast-actions';
+        actions.forEach(({ label, onClick }) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = label;
+          btn.addEventListener('click', () => {
+            onClick?.();
+            toast.remove();
+          });
+          actionBar.appendChild(btn);
+        });
+        toast.appendChild(actionBar);
+      }
+
+      toastContainer.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('visible'));
+
+      const lifetime = actions.length ? 6500 : 4200;
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 350);
+      }, lifetime);
+    };
 
     const formatBytes = (bytes) => {
       if (bytes === 0) return '0B';
@@ -585,20 +614,23 @@
         document.getElementById('updates-state').textContent = data.update_state;
         updatesFrequency.value = data.frequency_minutes?.toString() || '60';
         updatesFeedback.textContent = '';
+        return data;
       } catch (err) {
         updatesFeedback.textContent = 'Impossibile recuperare le informazioni';
+        return null;
       }
     };
 
-    const loadCompose = async () => {
+    const installUpdates = async () => {
       if (!currentContainerId) return;
+      showToast('Installazione aggiornamento in corso...', { type: 'info' });
       try {
-        const data = await fetchJSON(`/api/containers/${currentContainerId}/compose`);
-        composeContent.value = data.content || '';
-        composeFeedback.textContent = data.path ? `File: ${data.path}` : '';
+        const res = await fetch(`/containers/${currentContainerId}/full_update`, { method: 'POST' });
+        if (!res.ok) throw new Error('fail');
+        showToast('Aggiornamento avviato', { type: 'success' });
+        await updateUpdates(true);
       } catch (err) {
-        composeContent.value = '';
-        composeFeedback.textContent = 'File docker-compose.yml non disponibile';
+        showToast('Impossibile avviare l\'aggiornamento', { type: 'error' });
       }
     };
 
@@ -628,7 +660,6 @@
       updateStats();
       updateLogs();
       updateUpdates();
-      loadCompose();
       startPolling();
     };
 
@@ -699,21 +730,20 @@
 
     updatesCheck.addEventListener('click', async () => {
       updatesFeedback.textContent = 'Verifica in corso...';
-      await updateUpdates(true);
+      const data = await updateUpdates(true);
       updatesFeedback.textContent = 'Verifica completata';
-    });
+      if (!data) return;
 
-    composeSave.addEventListener('click', async () => {
-      if (!currentContainerId) return;
-      try {
-        await fetchJSON(`/api/containers/${currentContainerId}/compose`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: composeContent.value })
+      if (data.update_state === 'up_to_date') {
+        showToast('Il container è già aggiornato', { type: 'success' });
+      } else if (data.update_state === 'update_available') {
+        showToast('Aggiornamento disponibile. Vuoi installarlo?', {
+          type: 'warning',
+          actions: [
+            { label: 'Installa', onClick: installUpdates },
+            { label: 'Annulla' },
+          ],
         });
-        composeFeedback.textContent = 'File salvato';
-      } catch (err) {
-        composeFeedback.textContent = 'Errore nel salvataggio';
       }
     });
   </script>
