@@ -30,9 +30,10 @@
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
     .meta { color: var(--muted); font-size:0.9rem; }
     .title { margin:0 0 6px 0; font-size:1rem; }
-    .stack { background: var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow: var(--shadow); }
+    .stacks { display:flex; flex-direction:column; gap:14px; }
+    .stack { background: var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow: var(--shadow); overflow:hidden; }
     .stack-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); gap:10px; flex-wrap:wrap; }
-    .stack-title { font-weight:800; }
+    .stack-title { font-weight:700; font-size:1rem; letter-spacing:0.01em; }
     .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.05); color: var(--muted); font-size:0.8rem; }
     table { width:100%; border-collapse: collapse; }
     th, td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:left; }
@@ -83,7 +84,7 @@
       <div class="note">Seleziona quali entità Home Assistant devono essere create per ogni container. Le modifiche aggiornano automaticamente l'autodiscovery e lo stato corrente.</div>
     </section>
 
-    <form id="autodiscovery-form" method="POST">
+    <form id="autodiscovery-form" class="stacks" method="POST">
       {% for stack, containers in stack_map.items() %}
         <section class="stack">
           <div class="stack-header">
