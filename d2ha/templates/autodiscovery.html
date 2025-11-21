@@ -40,7 +40,7 @@
     tr:last-child td { border-bottom:none; }
     tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
     .checkbox { display:flex; justify-content:center; align-items:center; }
-    .checkbox-row { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:nowrap; }
+    .checkbox-row { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; }
     .checkbox-item { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
     .checkbox input { width:18px; height:18px; accent-color: var(--accent); margin:0; }
     .align-center { text-align:center; }
@@ -96,10 +96,7 @@
                   <th>Container</th>
                   <th>Immagine</th>
                   <th>Stato</th>
-                  <th class="align-center">Autodiscovery stato</th>
-                  {% for action in actions %}
-                    <th class="align-center">{{ action.replace('_', ' ')|title }}</th>
-                  {% endfor %}
+                  <th class="align-center">Preferenze</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,24 +109,20 @@
                     </td>
                     <td data-label="Immagine">{{ c.image }}</td>
                     <td data-label="Stato">{{ c.status }}</td>
-                    <td data-label="Autodiscovery stato" class="checkbox align-center">
+                    <td data-label="Preferenze" class="checkbox align-center">
                       <div class="checkbox-row">
-                        <label class="checkbox-item">
+                        <label class="checkbox-item" title="Autodiscovery stato per {{ c.name }}">
                           <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
                           <span class="sr-only">Stato</span>
                         </label>
-                      </div>
-                    </td>
-                    {% for action in actions %}
-                      <td data-label="{{ action.replace('_', ' ')|title }}" class="checkbox align-center">
-                        <div class="checkbox-row">
-                          <label class="checkbox-item">
+                        {% for action in actions %}
+                          <label class="checkbox-item" title="{{ action.replace('_', ' ')|title }} per {{ c.name }}">
                             <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
                             <span class="sr-only">{{ action.replace('_', ' ')|title }}</span>
                           </label>
-                        </div>
-                      </td>
-                    {% endfor %}
+                        {% endfor %}
+                      </div>
+                    </td>
                   </tr>
                 {% endfor %}
               </tbody>
