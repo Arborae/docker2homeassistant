@@ -40,10 +40,11 @@
     tr:last-child td { border-bottom:none; }
     tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
     .checkbox { display:flex; justify-content:center; align-items:center; }
-    .checkbox-row { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:nowrap; }
-    .checkbox-item { display:inline-flex; flex-direction:row; align-items:center; gap:8px; padding:6px 10px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
-    .checkbox-item span { font-size:0.82rem; color: var(--muted); font-weight:700; letter-spacing:0.04em; text-transform: uppercase; }
-    .checkbox input { width:18px; height:18px; accent-color: var(--accent); }
+    .checkbox-row { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:nowrap; }
+    .checkbox-item { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
+    .checkbox input { width:18px; height:18px; accent-color: var(--accent); margin:0; }
+    .align-center { text-align:center; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     .name { font-weight:700; }
     .muted { color: var(--muted); font-size:0.85rem; }
     .actions-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
@@ -95,9 +96,9 @@
                   <th>Container</th>
                   <th>Immagine</th>
                   <th>Stato</th>
-                  <th>Autodiscovery stato</th>
+                  <th class="align-center">Autodiscovery stato</th>
                   {% for action in actions %}
-                    <th>{{ action.replace('_', ' ')|title }}</th>
+                    <th class="align-center">{{ action.replace('_', ' ')|title }}</th>
                   {% endfor %}
                 </tr>
               </thead>
@@ -111,20 +112,20 @@
                     </td>
                     <td data-label="Immagine">{{ c.image }}</td>
                     <td data-label="Stato">{{ c.status }}</td>
-                    <td data-label="Autodiscovery stato" class="checkbox">
+                    <td data-label="Autodiscovery stato" class="checkbox align-center">
                       <div class="checkbox-row">
                         <label class="checkbox-item">
-                          <input type="checkbox" name="{{ c.stable_id }}_state" {% if pref.state %}checked{% endif %} />
-                          <span>Stato</span>
+                          <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
+                          <span class="sr-only">Stato</span>
                         </label>
                       </div>
                     </td>
                     {% for action in actions %}
-                      <td data-label="{{ action.replace('_', ' ')|title }}" class="checkbox">
+                      <td data-label="{{ action.replace('_', ' ')|title }}" class="checkbox align-center">
                         <div class="checkbox-row">
                           <label class="checkbox-item">
-                            <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
-                            <span>{{ action.replace('_', ' ')|title }}</span>
+                            <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
+                            <span class="sr-only">{{ action.replace('_', ' ')|title }}</span>
                           </label>
                         </div>
                       </td>
