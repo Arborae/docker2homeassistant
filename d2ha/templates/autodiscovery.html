@@ -35,6 +35,7 @@
     .stack-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); gap:10px; flex-wrap:wrap; }
     .stack-title { font-weight:700; font-size:1rem; letter-spacing:0.01em; }
     .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.05); color: var(--muted); font-size:0.8rem; }
+    .stack-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     table { width:100%; border-collapse: collapse; }
     th, td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:left; }
     th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing:0.04em; font-size:0.78rem; }
@@ -51,6 +52,8 @@
     .muted { color: var(--muted); font-size:0.85rem; }
     .actions-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
     .btn-primary { background: linear-gradient(135deg, #1b87f1, #31c4ff); border:none; color:#0b111c; border-radius:12px; padding:10px 16px; font-weight:800; cursor:pointer; box-shadow:0 6px 18px rgba(49,196,255,0.35); }
+    .btn-secondary { background: rgba(255,255,255,0.06); border:1px solid var(--border); color: var(--text); border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; transition: all 0.15s ease; }
+    .btn-secondary:hover { border-color: rgba(49,196,255,0.5); color: var(--accent); }
     .note { background: rgba(49,196,255,0.08); border:1px solid rgba(49,196,255,0.25); padding:10px 12px; border-radius:12px; font-size:0.9rem; }
     @media(max-width: 960px) {
       table { min-width: 720px; }
@@ -89,7 +92,10 @@
         <section class="stack">
           <div class="stack-header">
             <div class="stack-title">{{ 'Senza stack' if stack == '_no_stack' else stack }}</div>
-            <div class="stack-chip">{{ containers|length }} container</div>
+            <div class="stack-actions">
+              <button type="button" class="btn-secondary deselect-stack">Deseleziona</button>
+              <div class="stack-chip">{{ containers|length }} container</div>
+            </div>
           </div>
           <div style="overflow-x:auto;">
             <table>
@@ -134,5 +140,17 @@
       {% endfor %}
     </form>
   </main>
+  <script>
+    document.querySelectorAll('.deselect-stack').forEach((button) => {
+      button.addEventListener('click', () => {
+        const stackSection = button.closest('.stack');
+        if (!stackSection) return;
+
+        stackSection.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+      });
+    });
+  </script>
 </body>
 </html>
