@@ -2,7 +2,12 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
-from docker_service import DockerService, MqttManager, human_bytes
+from docker_service import (
+    AutodiscoveryPreferences,
+    DockerService,
+    MqttManager,
+    human_bytes,
+)
 
 load_dotenv()
 
@@ -21,8 +26,11 @@ MQTT_STATE_INTERVAL = int(os.getenv("MQTT_STATE_INTERVAL", "5"))
 
 docker_service = DockerService()
 docker_service.start_overview_refresher()
+preferences_path = os.path.join(os.path.dirname(__file__), "autodiscovery_preferences.json")
+autodiscovery_preferences = AutodiscoveryPreferences(preferences_path)
 mqtt_manager = MqttManager(
     docker_service=docker_service,
+    preferences=autodiscovery_preferences,
     broker=MQTT_BROKER,
     port=MQTT_PORT,
     username=MQTT_USERNAME,
@@ -164,6 +172,46 @@ def updates():
         containers=containers_info,
         summary=summary,
         active_page="updates",
+    )
+
+
+@app.route("/autodiscovery", methods=["GET", "POST"])
+def autodiscovery_view():
+    containers_info = docker_service.collect_containers_info_for_updates()
+    stable_ids = [c.get("stable_id", "") for c in containers_info]
+
+    if request.method == "POST":
+        for c in containers_info:
+            stable_id = c.get("stable_id")
+            if not stable_id:
+                continue
+
+            state_enabled = request.form.get(f"{stable_id}_state") == "on"
+            actions = {
+                action: request.form.get(f"{stable_id}_{action}") == "on"
+                for action in AutodiscoveryPreferences.AVAILABLE_ACTIONS
+            }
+            autodiscovery_preferences.set_preferences(stable_id, state_enabled, actions)
+
+        autodiscovery_preferences.prune(stable_ids)
+        _publish_current_state()
+        return redirect(url_for("autodiscovery_view"))
+
+    stack_map = {}
+    for c in containers_info:
+        stack_map.setdefault(c.get("stack", "_no_stack"), []).append(c)
+    stack_map = {k: stack_map[k] for k in sorted(stack_map.keys())}
+
+    pref_map = autodiscovery_preferences.build_map_for(stable_ids)
+    stacks, summary = _build_home_context()
+
+    return render_template(
+        "autodiscovery.html",
+        stack_map=stack_map,
+        preferences=pref_map,
+        actions=AutodiscoveryPreferences.AVAILABLE_ACTIONS,
+        summary=summary,
+        active_page="autodiscovery",
     )
 
 

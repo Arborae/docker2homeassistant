@@ -3,7 +3,7 @@ import os
 import threading
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 import docker
 from docker.models.containers import Container
@@ -66,6 +66,79 @@ def build_stable_id(container_info: Dict[str, Any]) -> str:
         slug = "container"
 
     return slug
+
+
+class AutodiscoveryPreferences:
+    AVAILABLE_ACTIONS = (
+        "start",
+        "pause",
+        "stop",
+        "restart",
+        "delete",
+        "full_update",
+    )
+
+    def __init__(self, path: str):
+        self.path = path
+        self._lock = threading.Lock()
+        self._data: Dict[str, Dict[str, Any]] = self._load()
+
+    def _load(self) -> Dict[str, Dict[str, Any]]:
+        if not os.path.exists(self.path):
+            return {}
+
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                raw = json.load(f)
+                if isinstance(raw, dict):
+                    return {
+                        str(k): self._apply_defaults(v)
+                        for k, v in raw.items()
+                        if isinstance(v, dict)
+                    }
+        except Exception:
+            pass
+
+        return {}
+
+    def _apply_defaults(self, entry: Dict[str, Any]) -> Dict[str, Any]:
+        actions_raw = entry.get("actions") or {}
+        actions = {
+            action: bool(actions_raw.get(action, True))
+            for action in self.AVAILABLE_ACTIONS
+        }
+        return {"state": bool(entry.get("state", True)), "actions": actions}
+
+    def _save(self) -> None:
+        dir_path = os.path.dirname(self.path)
+        if dir_path:
+            os.makedirs(dir_path, exist_ok=True)
+        with open(self.path, "w", encoding="utf-8") as f:
+            json.dump(self._data, f, indent=2)
+
+    def get_with_defaults(self, stable_id: str) -> Dict[str, Any]:
+        return self._apply_defaults(self._data.get(stable_id) or {})
+
+    def build_map_for(self, stable_ids: Iterable[str]) -> Dict[str, Dict[str, Any]]:
+        return {sid: self.get_with_defaults(sid) for sid in stable_ids}
+
+    def set_preferences(
+        self, stable_id: str, state_enabled: bool, actions: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        pref = self._apply_defaults({"state": state_enabled, "actions": actions})
+        with self._lock:
+            self._data[stable_id] = pref
+            self._save()
+        return pref
+
+    def prune(self, valid_ids: Iterable[str]) -> None:
+        valid_set = set(valid_ids)
+        with self._lock:
+            removed = [sid for sid in list(self._data.keys()) if sid not in valid_set]
+            for sid in removed:
+                self._data.pop(sid, None)
+            if removed:
+                self._save()
 
 
 class DockerService:
@@ -593,12 +666,15 @@ class DockerService:
             changelog = remote_info["remote_changelog"] or installed_info["local_changelog"]
             breaking = remote_info["remote_breaking"] or installed_info["local_breaking"]
 
+            stable_id = build_stable_id({"stack": stack_name, "name": c.name})
+
             containers_info.append(
                 {
                     "id": c.id,
                     "short_id": c.short_id,
                     "name": c.name,
                     "stack": stack_name,
+                    "stable_id": stable_id,
                     "image": image_name,
                     "status": status,
                     "uptime": uptime_str,
@@ -843,6 +919,7 @@ class MqttManager:
     def __init__(
         self,
         docker_service: DockerService,
+        preferences: AutodiscoveryPreferences,
         broker: Optional[str],
         port: int,
         username: Optional[str],
@@ -854,6 +931,7 @@ class MqttManager:
         logger,
     ):
         self.docker_service = docker_service
+        self.preferences = preferences
         self.broker = broker
         self.port = port
         self.username = username
@@ -992,7 +1070,27 @@ class MqttManager:
             self.mqtt_client = None
             self.logger.exception("MQTT connection failed")
 
-    def _publish_discovery_for_container(self, c: Dict[str, Any], device_info: Dict[str, Any]):
+    def _clear_state_topics(self, slug: str):
+        state_topic = f"{self.base_topic}/{slug}/state"
+        attr_topic = f"{self.base_topic}/{slug}/attributes"
+
+        sensor_config_topic = (
+            f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_status/config"
+        )
+
+        self.mqtt_client.publish(sensor_config_topic, "", qos=0, retain=True)
+        self.mqtt_client.publish(state_topic, "", qos=0, retain=True)
+        self.mqtt_client.publish(attr_topic, "", qos=0, retain=True)
+
+    def _clear_action_button(self, slug: str, action: str):
+        btn_config_topic = (
+            f"{self.discovery_prefix}/button/{self.node_id}/{slug}_{action}/config"
+        )
+        self.mqtt_client.publish(btn_config_topic, "", qos=0, retain=True)
+
+    def _publish_discovery_for_container(
+        self, c: Dict[str, Any], device_info: Dict[str, Any], preferences: Dict[str, Any]
+    ):
         slug = slugify_container(c["name"], c["short_id"])
         stable_id = build_stable_id(c)
         self.container_slug_map[slug] = c["id"]
@@ -1003,35 +1101,39 @@ class MqttManager:
         sensor_config_topic = (
             f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_status/config"
         )
-        sensor_payload = {
-            "name": f"{c['name']} Stato",
-            "state_topic": state_topic,
-            "json_attributes_topic": attr_topic,
-            # ATTENZIONE: unique_id basata su stack+nome (stable_id), non sull'ID Docker,
-            # per evitare entità duplicate in Home Assistant (sensor.xxx, sensor.xxx_2, etc.)
-            "unique_id": f"d2ha_{stable_id}_status",
-            "device": device_info,
-            "icon": "mdi:docker",
-        }
 
-        self.mqtt_client.publish(
-            sensor_config_topic, json.dumps(sensor_payload), qos=0, retain=True
-        )
+        if preferences.get("state", True):
+            sensor_payload = {
+                "name": f"{c['name']} Stato",
+                "state_topic": state_topic,
+                "json_attributes_topic": attr_topic,
+                # ATTENZIONE: unique_id basata su stack+nome (stable_id), non sull'ID Docker,
+                # per evitare entità duplicate in Home Assistant (sensor.xxx, sensor.xxx_2, etc.)
+                "unique_id": f"d2ha_{stable_id}_status",
+                "device": device_info,
+                "icon": "mdi:docker",
+            }
 
-        attrs = {
-            "container": c["name"],
-            "stack": c["stack"],
-            "image": c["image_ref"],
-            "installed_version": c["installed_version"],
-            "remote_version": c["remote_version"],
-            "update_state": c["update_state"],
-            "changelog": c["changelog"] or "",
-            "breaking_changes": c["breaking_changes"] or "",
-            "ports": c.get("ports", {}),
-        }
+            self.mqtt_client.publish(
+                sensor_config_topic, json.dumps(sensor_payload), qos=0, retain=True
+            )
 
-        self.mqtt_client.publish(state_topic, c["status"], qos=0, retain=True)
-        self.mqtt_client.publish(attr_topic, json.dumps(attrs), qos=0, retain=True)
+            attrs = {
+                "container": c["name"],
+                "stack": c["stack"],
+                "image": c["image_ref"],
+                "installed_version": c["installed_version"],
+                "remote_version": c["remote_version"],
+                "update_state": c["update_state"],
+                "changelog": c["changelog"] or "",
+                "breaking_changes": c["breaking_changes"] or "",
+                "ports": c.get("ports", {}),
+            }
+
+            self.mqtt_client.publish(state_topic, c["status"], qos=0, retain=True)
+            self.mqtt_client.publish(attr_topic, json.dumps(attrs), qos=0, retain=True)
+        else:
+            self._clear_state_topics(slug)
 
         actions = [
             ("start", "Start"),
@@ -1042,22 +1144,26 @@ class MqttManager:
             ("full_update", "Aggiorna (pull + ricrea)"),
         ]
 
+        actions_pref = preferences.get("actions", {})
         for action, label in actions:
-            btn_config_topic = (
-                f"{self.discovery_prefix}/button/{self.node_id}/{slug}_{action}/config"
-            )
-            cmd_topic = f"{self.base_topic}/{slug}/set/{action}"
-            btn_payload = {
-                "name": f"{c['name']} {label}",
-                "command_topic": cmd_topic,
-                # ATTENZIONE: unique_id basata su stack+nome (stable_id), non sull'ID Docker,
-                # per evitare entità duplicate in Home Assistant (sensor.xxx, sensor.xxx_2, etc.)
-                "unique_id": f"d2ha_{stable_id}_{action}",
-                "device": device_info,
-            }
-            self.mqtt_client.publish(
-                btn_config_topic, json.dumps(btn_payload), qos=0, retain=True
-            )
+            if actions_pref.get(action, True):
+                btn_config_topic = (
+                    f"{self.discovery_prefix}/button/{self.node_id}/{slug}_{action}/config"
+                )
+                cmd_topic = f"{self.base_topic}/{slug}/set/{action}"
+                btn_payload = {
+                    "name": f"{c['name']} {label}",
+                    "command_topic": cmd_topic,
+                    # ATTENZIONE: unique_id basata su stack+nome (stable_id), non sull'ID Docker,
+                    # per evitare entità duplicate in Home Assistant (sensor.xxx, sensor.xxx_2, etc.)
+                    "unique_id": f"d2ha_{stable_id}_{action}",
+                    "device": device_info,
+                }
+                self.mqtt_client.publish(
+                    btn_config_topic, json.dumps(btn_payload), qos=0, retain=True
+                )
+            else:
+                self._clear_action_button(slug, action)
 
     def publish_autodiscovery_and_state(self, containers_info: List[Dict[str, Any]]):
         if self.mqtt_client is None:
@@ -1079,7 +1185,8 @@ class MqttManager:
             current_slugs.add(slug)
 
             try:
-                self._publish_discovery_for_container(c, device_info)
+                preferences = self.preferences.get_with_defaults(c["stable_id"])
+                self._publish_discovery_for_container(c, device_info, preferences)
             except Exception:
                 self.logger.exception("Failed MQTT publish for container %s", c["name"])
 
