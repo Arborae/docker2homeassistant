@@ -3,7 +3,7 @@ import os
 import threading
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import docker
 from docker.models.containers import Container
@@ -865,6 +865,12 @@ class MqttManager:
         self.logger = logger
         self.mqtt_client = None
         self.container_slug_map: Dict[str, str] = {}
+        self.container_filter: Optional[Callable[[List[Dict[str, Any]]], List[Dict[str, Any]]]] = None
+
+    def set_container_filter(
+        self, filter_fn: Callable[[List[Dict[str, Any]]], List[Dict[str, Any]]]
+    ) -> None:
+        self.container_filter = filter_fn
 
     def _device_info(self) -> Dict[str, Any]:
         return {
@@ -1062,6 +1068,9 @@ class MqttManager:
     def publish_autodiscovery_and_state(self, containers_info: List[Dict[str, Any]]):
         if self.mqtt_client is None:
             return
+
+        if self.container_filter is not None:
+            containers_info = self.container_filter(containers_info)
 
         device_info = self._device_info()
 

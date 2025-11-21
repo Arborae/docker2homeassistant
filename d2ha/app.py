@@ -1,8 +1,9 @@
+import json
 import os
 from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
-from docker_service import DockerService, MqttManager, human_bytes
+from docker_service import build_stable_id, DockerService, MqttManager, human_bytes
 
 load_dotenv()
 
@@ -17,6 +18,7 @@ MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", "d2ha_server")
 MQTT_DISCOVERY_PREFIX = os.getenv("MQTT_DISCOVERY_PREFIX", "homeassistant")
 MQTT_NODE_ID = os.getenv("MQTT_NODE_ID", "d2ha_server")
 MQTT_STATE_INTERVAL = int(os.getenv("MQTT_STATE_INTERVAL", "5"))
+ENTITIES_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "entities.json")
 
 
 docker_service = DockerService()
@@ -35,6 +37,40 @@ mqtt_manager = MqttManager(
 )
 
 mqtt_manager.setup()
+
+
+def _load_entity_preferences():
+    try:
+        with open(ENTITIES_CONFIG_PATH, "r", encoding="utf-8") as f:
+            raw = json.load(f)
+            if isinstance(raw, dict):
+                return {str(k): bool(v) for k, v in raw.items()}
+    except FileNotFoundError:
+        return {}
+    except Exception:
+        app.logger.exception("Unable to read entities config")
+    return {}
+
+
+def _save_entity_preferences(preferences: dict):
+    try:
+        with open(ENTITIES_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(preferences, f, indent=2, sort_keys=True)
+    except Exception:
+        app.logger.exception("Unable to write entities config")
+
+
+def _filter_containers_for_mqtt(containers_info):
+    preferences = _load_entity_preferences()
+    filtered = []
+    for c in containers_info:
+        stable_id = build_stable_id(c)
+        if preferences.get(stable_id, True):
+            filtered.append(c)
+    return filtered
+
+
+mqtt_manager.set_container_filter(_filter_containers_for_mqtt)
 mqtt_manager.start_periodic_publisher()
 
 
@@ -157,7 +193,7 @@ def images_view():
 @app.route("/updates", methods=["GET"])
 def updates():
     containers_info = docker_service.collect_containers_info_for_updates()
-    mqtt_manager.publish_autodiscovery_and_state(containers_info)
+    _publish_current_state(containers_info)
     stacks, summary = _build_home_context()
     return render_template(
         "updates.html",
@@ -290,9 +326,38 @@ def api_compose_file():
     return jsonify({"error": "Impossibile salvare il file"}), 500
 
 
-def _publish_current_state():
+@app.route("/entities", methods=["GET", "POST"])
+def entities_view():
     containers_info = docker_service.collect_containers_info_for_updates()
-    mqtt_manager.publish_autodiscovery_and_state(containers_info)
+    stacks, summary = _build_home_context()
+
+    preferences = _load_entity_preferences()
+    if request.method == "POST":
+        selected = set(request.form.getlist("entities"))
+        new_preferences = {sid: True for sid in selected}
+        _save_entity_preferences(new_preferences)
+        _publish_current_state(containers_info)
+        return redirect(url_for("entities_view"))
+
+    for c in containers_info:
+        stable_id = build_stable_id(c)
+        c["stable_id"] = stable_id
+        c["exposed"] = preferences.get(stable_id, True)
+
+    return render_template(
+        "entities.html",
+        containers=containers_info,
+        summary=summary,
+        active_page="entities",
+    )
+
+
+def _publish_current_state(containers_info=None):
+    if containers_info is None:
+        containers_info = docker_service.collect_containers_info_for_updates()
+
+    filtered = _filter_containers_for_mqtt(containers_info)
+    mqtt_manager.publish_autodiscovery_and_state(filtered)
 
 
 if __name__ == "__main__":

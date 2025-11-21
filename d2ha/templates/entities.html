@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Entità MQTT</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: radial-gradient(circle at 10% 20%, rgba(0,255,255,0.05), transparent 25%), radial-gradient(circle at 90% 10%, rgba(124,255,195,0.05), transparent 20%), var(--bg); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    header { background: linear-gradient(90deg, #0d111c, #12182a); border-bottom:1px solid var(--border); padding:16px 22px 12px; box-shadow: var(--shadow); position:sticky; top:0; z-index:10; }
+    .brand-line { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .brand-line h1 { margin:0; font-size:1.1rem; letter-spacing:0.1em; text-transform:uppercase; }
+    .brand-pill { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background: rgba(49,196,255,0.1); color: var(--accent); font-size:0.8rem; letter-spacing:0.04em; }
+    nav { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0c121e; box-shadow:0 6px 18px rgba(49,196,255,0.35); }
+    .layout { display:grid; grid-template-columns: 320px 1fr; gap:18px; padding:18px; }
+    aside { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow: var(--shadow); }
+    .aside-title { margin:0 0 10px; font-size:0.95rem; text-transform: uppercase; letter-spacing:0.08em; color: var(--muted); }
+    .metric { background: var(--panel-2); border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; }
+    .metric h4 { margin:0 0 6px; font-size:0.85rem; color: var(--muted); }
+    .metric strong { font-size:1.2rem; }
+    main { display:flex; flex-direction:column; gap:14px; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
+    .card h2 { margin:0 0 6px; }
+    .muted { color: var(--muted); }
+    form { display:flex; flex-direction:column; gap:10px; }
+    .stack { border:1px solid var(--border); border-radius:12px; overflow:hidden; background: var(--panel-2); }
+    .stack-header { background: rgba(255,255,255,0.03); padding:10px 12px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .stack-title { font-weight:800; letter-spacing:0.02em; }
+    .stack-body { padding:10px 12px; display:flex; flex-direction:column; gap:8px; }
+    .row { display:grid; grid-template-columns: auto 1fr auto; gap:10px; align-items:center; border:1px solid var(--border); border-radius:10px; padding:10px 12px; background: rgba(255,255,255,0.02); }
+    .row h3 { margin:0; font-size:1rem; }
+    .row small { display:block; color: var(--muted); margin-top:2px; }
+    .status-pill { padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; text-transform: uppercase; display:inline-block; }
+    .status-running { background: rgba(124,255,195,0.15); color: #7cffc3; }
+    .status-exited, .status-stopped { background: rgba(255,99,71,0.15); color: #ff8a7a; }
+    .status-paused { background: rgba(255,193,7,0.15); color: #ffd54f; }
+    .status-restarting { background: rgba(49,196,255,0.15); color: #31c4ff; }
+    .update-pill { padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; text-transform: uppercase; display:inline-block; background: rgba(49,196,255,0.12); color: var(--accent); }
+    .controls { display:flex; align-items:center; gap:10px; }
+    .checkbox { width:18px; height:18px; accent-color: #31c4ff; }
+    .actions { display:flex; justify-content:flex-end; }
+    button { border:none; border-radius:10px; padding:10px 14px; background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0c121e; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(49,196,255,0.35); }
+    button:hover { opacity:0.95; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-line">
+      <h1>D2HA SERVER</h1>
+      <span class="brand-pill">MQTT • Home Assistant</span>
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">Container</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">Immagini</a>
+      <a href="{{ url_for('entities_view') }}" class="tab {{ 'active' if active_page == 'entities' else '' }}">Entità MQTT</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <p class="aside-title">Stato server</p>
+      <div class="metric">
+        <h4>Container</h4>
+        <strong>{{ summary.total_containers }}</strong>
+        <p class="muted">{{ summary.running }} attivi • {{ summary.paused }} in pausa • {{ summary.stopped }} fermi</p>
+      </div>
+      <div class="metric">
+        <h4>Memoria</h4>
+        <strong>{{ summary.mem_used_h }} / {{ summary.mem_total_h }}</strong>
+        <p class="muted">{{ summary.mem_percent }}% utilizzata</p>
+      </div>
+      <div class="metric">
+        <h4>Immagini Docker</h4>
+        <strong>{{ summary.images }}</strong>
+        <p class="muted">{{ summary.images_used }} in uso • {{ summary.images_unused }} inutilizzate</p>
+      </div>
+    </aside>
+
+    <main>
+      <div class="card">
+        <h2>Entità esposte su Home Assistant</h2>
+        <p class="muted">Seleziona quali container devono essere esposti via MQTT. Le entità disattivate verranno rimosse automaticamente dalle autodiscovery di Home Assistant.</p>
+      </div>
+
+      <form method="POST" class="card">
+        <h3 style="margin-top:0;">Container</h3>
+        <p class="muted" style="margin-top:0;">Seleziona le caselle per mantenere l'esposizione verso Home Assistant.</p>
+          {% set current_stack = None %}
+          {% for c in containers %}
+            {% if current_stack != c.stack %}
+              {% if current_stack is not none %}
+                </div>
+              </div>
+              {% endif %}
+              {% set current_stack = c.stack %}
+              <div class="stack">
+                <div class="stack-header">
+                  <span class="stack-title">{{ c.stack }}</span>
+                  <span class="muted">{{ c.stack != '_no_stack' and 'Stack' or 'Singolo container' }}</span>
+                </div>
+                <div class="stack-body">
+            {% endif %}
+                  <label class="row">
+                    <input class="checkbox" type="checkbox" name="entities" value="{{ c.stable_id }}" {% if c.exposed %}checked{% endif %} />
+                    <div>
+                      <h3>{{ c.name }}</h3>
+                      <small>{{ c.image_ref }}</small>
+                    </div>
+                    <div class="controls">
+                      <span class="status-pill status-{{ c.status }}">{{ c.status }}</span>
+                      <span class="update-pill">{{ c.update_state }}</span>
+                    </div>
+                  </label>
+          {% endfor %}
+          {% if current_stack is not none %}
+                </div>
+              </div>
+          {% endif %}
+          <div class="actions">
+            <button type="submit">Salva configurazione</button>
+          </div>
+        </form>
+    </main>
+  </div>
+</body>
+</html>
