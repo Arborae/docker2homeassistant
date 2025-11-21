@@ -1012,6 +1012,16 @@ class MqttManager:
 
         return name in known_identifiers
 
+    def is_self_container(self, container_info: Dict[str, Any]) -> bool:
+        """Public wrapper around :meth:`_is_self_container`.
+
+        Exposing this check allows the web UI to hide the D2HA container from
+        manual autodiscovery configuration while keeping the MQTT filtering
+        logic centralized.
+        """
+
+        return self._is_self_container(container_info)
+
     def _on_connect(self, client, userdata, flags, rc, properties=None):
         topic = f"{self.base_topic}/+/set/+"
         self.logger.info("MQTT connected with result code %s, subscribing to %s", rc, topic)

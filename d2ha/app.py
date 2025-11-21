@@ -178,6 +178,9 @@ def updates():
 @app.route("/autodiscovery", methods=["GET", "POST"])
 def autodiscovery_view():
     containers_info = docker_service.collect_containers_info_for_updates()
+    containers_info = [
+        c for c in containers_info if not mqtt_manager.is_self_container(c)
+    ]
     stable_ids = [c.get("stable_id", "") for c in containers_info]
 
     if request.method == "POST":
