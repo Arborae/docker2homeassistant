@@ -213,7 +213,7 @@ Esempio `.env`:
 MQTT_BROKER=192.168.1.100
 MQTT_PORT=1883
 MQTT_USERNAME=homeassistant
-MQTT_PASSWORD=#31#Privacy
+MQTT_PASSWORD=password
 MQTT_BASE_TOPIC=d2ha_server
 MQTT_DISCOVERY_PREFIX=homeassistant
 MQTT_NODE_ID=d2ha_server
