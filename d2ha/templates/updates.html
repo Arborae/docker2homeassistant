@@ -70,6 +70,7 @@
       <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
       <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">Container</a>
       <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">Immagini</a>
+      <a href="{{ url_for('entities_view') }}" class="tab {{ 'active' if active_page == 'entities' else '' }}">Entità MQTT</a>
       <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
     </nav>
   </header>
