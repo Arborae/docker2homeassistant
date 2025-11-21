@@ -600,8 +600,13 @@ class DockerService:
 
     def _severity_from_action(self, action: str) -> str:
         action_l = (action or "").lower()
-        if action_l in {"die", "oom", "kill", "destroy", "stop"}:
+        error_actions = {"die", "oom", "kill", "destroy", "stop"}
+        warning_actions = {"restart", "pause", "unpause", "health_status", "update"}
+
+        if action_l in error_actions:
             return "error"
+        if action_l in warning_actions:
+            return "warning"
         return "info"
 
     def _format_event_entry(self, raw_event: Dict[str, Any]) -> Optional[Dict[str, Any]]:

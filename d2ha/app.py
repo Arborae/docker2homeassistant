@@ -243,7 +243,7 @@ def events_view():
 
     hours = max(1, min(hours, 24 * 30))
     events = docker_service.list_events(since_seconds=hours * 3600, limit=400)
-    allowed_severities = {"all", "info", "error"}
+    allowed_severities = {"all", "info", "warning", "error"}
     selected_severity = severity_param if severity_param in allowed_severities else "all"
     if selected_severity != "all":
         events = [ev for ev in events if ev.get("severity") == selected_severity]

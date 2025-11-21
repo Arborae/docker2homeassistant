@@ -58,6 +58,8 @@
     .sev-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
     .sev-info { background: rgba(49,196,255,0.12); color: #31c4ff; }
     .sev-info .sev-dot { background:#31c4ff; }
+    .sev-warning { background: rgba(255,213,79,0.16); color: #ffd54f; }
+    .sev-warning .sev-dot { background:#ffd54f; }
     .sev-error { background: rgba(255,138,122,0.15); color: #ff8a7a; }
     .sev-error .sev-dot { background:#ff8a7a; }
     .meta { color: var(--muted); font-size:0.9rem; }
@@ -106,6 +108,7 @@
           <select name="severity" class="select">
             <option value="all" {% if selected_severity == 'all' %}selected{% endif %}>Tutte</option>
             <option value="info" {% if selected_severity == 'info' %}selected{% endif %}>Info</option>
+            <option value="warning" {% if selected_severity == 'warning' %}selected{% endif %}>Warning</option>
             <option value="error" {% if selected_severity == 'error' %}selected{% endif %}>Errori</option>
           </select>
         </label>
@@ -139,7 +142,7 @@
                 <td data-label="Data">{{ ev.timestamp_local.strftime('%d/%m/%Y %H:%M:%S') }}</td>
                 <td data-label="Categoria">{{ ev.type|title }}</td>
                 <td data-label="Severità">
-                  <span class="sev-pill {% if ev.severity == 'error' %}sev-error{% else %}sev-info{% endif %}">
+                  <span class="sev-pill {% if ev.severity == 'error' %}sev-error{% elif ev.severity == 'warning' %}sev-warning{% else %}sev-info{% endif %}">
                     <span class="sev-dot"></span>{{ ev.severity|title }}
                   </span>
                 </td>
