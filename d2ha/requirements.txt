@@ -1,4 +1,0 @@
-flask
-docker
-paho-mqtt
-python-dotenv
