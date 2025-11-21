@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Aggiornamenti</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    header { background: linear-gradient(90deg, #0d111c, #12182a); border-bottom:1px solid var(--border); padding:16px 22px 12px; box-shadow: var(--shadow); position:sticky; top:0; z-index:10; }
+    .brand-line { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .brand-line h1 { margin:0; font-size:1.1rem; letter-spacing:0.1em; text-transform:uppercase; }
+    .brand-pill { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background: rgba(49,196,255,0.1); color: var(--accent); font-size:0.8rem; letter-spacing:0.04em; }
+    nav { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0c121e; box-shadow:0 6px 18px rgba(49,196,255,0.35); }
+    main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
+    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; }
+    th, td { padding:10px 12px; font-size:0.85rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: top; }
+    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.03); }
+    .stack-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background: rgba(156, 204, 101, 0.12); color: #c5e1a5; font-size: 0.7rem; }
+    .stack-tag.nostack { background: rgba(158, 158, 158, 0.12); color: #e0e0e0; }
+    .status-pill { display:inline-flex; align-items:center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .status-up-to-date { background: rgba(76, 175, 80, 0.15); color: #81c784; }
+    .status-update-available { background: rgba(255, 193, 7, 0.18); color: #ffeb3b; }
+    .status-unknown { background: rgba(158, 158, 158, 0.15); color: #eeeeee; }
+    .changelog, .breaking { max-height: 80px; overflow-y: auto; font-size: 0.75rem; line-height: 1.35; padding-right: 4px; }
+    .changelog::-webkit-scrollbar, .breaking::-webkit-scrollbar { width: 4px; }
+    .changelog::-webkit-scrollbar-thumb, .breaking::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
+    .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.7rem; color: #ccc; }
+    .badge-null { opacity: 0.6; }
+    .actions { display: flex; flex-direction: column; gap: 4px; }
+    .btn { border: none; border-radius: 999px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; background: #262c3c; color: #eee; transition: background 0.15s, transform 0.05s; text-align: center; }
+    .btn:hover { background: #31394e; transform: translateY(-1px); }
+    .btn-full-update { background: #039be5; }
+    .btn-full-update:hover { background: #0288d1; }
+    .small { font-size: 0.75rem; color: #aaa; }
+    code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: 0.75rem; }
+    @media(max-width: 1100px) {
+      table, thead, tbody, th, td, tr { display:block; }
+      thead { display:none; }
+      table { border-radius: 0; }
+      tr { margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+      td { border-bottom:1px solid var(--border); display:flex; justify-content: space-between; }
+      td::before { content: attr(data-label); font-weight: 700; color: var(--muted); margin-right: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-line">
+      <h1>D2HA <span class="brand-pill">Aggiornamenti</span></h1>
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">Container</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">Immagini</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="muted">{{ containers|length }} container analizzati · {{ summary.images }} immagini installate</div>
+    </div>
+    <section class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Container</th>
+            <th>Stack</th>
+            <th>Stato</th>
+            <th>Vers. installata</th>
+            <th>Vers. remota</th>
+            <th>Change log</th>
+            <th>Breaking</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in containers %}
+            <tr>
+              <td data-label="Container">
+                <div><strong>{{ c.name }}</strong></div>
+                <div class="small">{{ c.image_ref }}</div>
+              </td>
+              <td data-label="Stack">
+                {% if c.stack and c.stack != '_no_stack' %}
+                  <span class="stack-tag">{{ c.stack }}</span>
+                {% else %}
+                  <span class="stack-tag nostack">no stack</span>
+                {% endif %}
+              </td>
+              <td data-label="Stato">
+                {% if c.update_available %}
+                  <span class="status-pill status-update-available">Update disponibile</span>
+                {% elif c.remote_version %}
+                  <span class="status-pill status-up-to-date">Aggiornato</span>
+                {% else %}
+                  <span class="status-pill status-unknown">Sconosciuto</span>
+                {% endif %}
+              </td>
+              <td data-label="Vers. installata">
+                <span class="badge">{{ c.installed_version or 'n/d' }}</span>
+                <div class="small">{{ c.installed_id_short }}</div>
+              </td>
+              <td data-label="Vers. remota">
+                <span class="badge {% if not c.remote_version %}badge-null{% endif %}">{{ c.remote_version or 'n/d' }}</span>
+                {% if c.remote_id_short %}
+                  <div class="small">{{ c.remote_id_short }}</div>
+                {% endif %}
+              </td>
+              <td data-label="Change log">
+                {% if c.remote_changelog or c.local_changelog %}
+                  <div class="changelog">{{ c.remote_changelog or c.local_changelog }}</div>
+                {% else %}
+                  <span class="small">Nessuna nota</span>
+                {% endif %}
+              </td>
+              <td data-label="Breaking">
+                {% if c.remote_breaking or c.local_breaking %}
+                  <div class="breaking">{{ c.remote_breaking or c.local_breaking }}</div>
+                {% else %}
+                  <span class="small">Nessuna info</span>
+                {% endif %}
+              </td>
+              <td data-label="Azioni">
+                <div class="actions">
+                  <form method="post" action="{{ url_for('container_full_update', container_id=c.id) }}">
+                    <button class="btn btn-full-update" type="submit">Aggiorna immagine</button>
+                  </form>
+                  <div class="small">ID: <code>{{ c.id }}</code></div>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

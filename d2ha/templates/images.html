@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Immagini</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    header { background: linear-gradient(90deg, #0d111c, #12182a); border-bottom:1px solid var(--border); padding:16px 22px 12px; box-shadow: var(--shadow); position:sticky; top:0; z-index:10; }
+    .brand-line { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .brand-line h1 { margin:0; font-size:1.1rem; letter-spacing:0.1em; text-transform:uppercase; }
+    .brand-pill { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background: rgba(49,196,255,0.1); color: var(--accent); font-size:0.8rem; letter-spacing:0.04em; }
+    nav { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0c121e; box-shadow:0 6px 18px rgba(49,196,255,0.35); }
+    main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
+    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; }
+    th, td { padding:10px 12px; font-size:0.85rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; }
+    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.03); }
+    .pill { padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; text-transform: uppercase; display:inline-block; }
+    .pill-used { background: rgba(124,255,195,0.15); color: #7cffc3; }
+    .pill-unused { background: rgba(255,99,71,0.15); color: #ff8a7a; }
+    .meta { color: var(--muted); font-size:0.85rem; }
+    .btn { border:none; border-radius:999px; padding:6px 12px; font-size:0.8rem; cursor:pointer; background:#262c3c; color: var(--text); transition: background 0.15s ease, transform 0.05s ease; }
+    .btn:hover { background:#31394e; transform: translateY(-1px); }
+    .btn-danger { background:#b71c1c; }
+    .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+    @media(max-width: 960px) {
+      table, thead, tbody, th, td, tr { display:block; }
+      thead { display:none; }
+      tr { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+      td { display:flex; justify-content: space-between; border-bottom:1px solid var(--border); }
+      td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-line">
+      <h1>D2HA <span class="brand-pill">Immagini</span></h1>
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">Container</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">Immagini</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="meta">Totale immagini: {{ images|length }} · Container attivi: {{ summary.running }}</div>
+    </div>
+    <section class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Tag</th>
+            <th>ID</th>
+            <th>Dimensione</th>
+            <th>Utilizzo</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for img in images %}
+            {% set is_used = img.used_by|length > 0 %}
+            <tr>
+              <td data-label="Tag">
+                <div><strong>{{ img.tags|join(', ') }}</strong></div>
+                <div class="meta">Creata: {{ img.created }}</div>
+              </td>
+              <td data-label="ID">{{ img.short_id }}</td>
+              <td data-label="Dimensione">{{ human_bytes(img.size) }}</td>
+              <td data-label="Utilizzo">
+                {% if is_used %}
+                  <span class="pill pill-used">In uso</span>
+                  <div class="meta">{{ img.used_by|join(', ') }}</div>
+                {% else %}
+                  <span class="pill pill-unused">Non utilizzata</span>
+                {% endif %}
+              </td>
+              <td data-label="Azioni">
+                <form method="post" action="{{ url_for('delete_image', image_id=img.id) }}">
+                  <button class="btn btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

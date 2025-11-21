@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Home</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(0,255,255,0.05), transparent 25%),
+                  radial-gradient(circle at 90% 10%, rgba(124,255,195,0.05), transparent 20%),
+                  var(--bg);
+      color: var(--text);
+    }
+    a { color: inherit; text-decoration: none; }
+    header {
+      background: linear-gradient(90deg, #0d111c, #12182a);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 22px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow);
+    }
+    .brand-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand-line h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(49,196,255,0.1);
+      color: var(--accent);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+    }
+    nav {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active {
+      background: linear-gradient(135deg, #1b87f1, #31c4ff);
+      color: #0c121e;
+      box-shadow: 0 6px 18px rgba(49,196,255,0.35);
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      padding: 18px;
+      min-height: calc(100vh - 110px);
+    }
+    aside {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+    .aside-title {
+      margin: 0 0 10px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    details {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      transition: border-color 0.15s ease;
+    }
+    details[open] { border-color: rgba(49,196,255,0.4); }
+    summary {
+      cursor: pointer;
+      list-style: none;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    summary::-webkit-details-marker { display: none; }
+    .stack-chip {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+    .container-list { margin: 10px 0 0; padding: 0; list-style: none; }
+    .container-list li {
+      padding: 8px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .container-list small { color: var(--muted); display: block; margin-top: 2px; }
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .status-indicator {
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+    .status-indicator::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: block;
+    }
+    .status-running { background: rgba(124,255,195,0.15); color: #7cffc3; }
+    .status-stopped { background: rgba(255,99,71,0.15); color: #ff8a7a; }
+    .status-paused { background: rgba(255,193,7,0.15); color: #ffd54f; }
+    .status-indicator.status-running::before { background: #7cffc3; box-shadow: 0 0 0 4px rgba(124,255,195,0.12); }
+    .status-indicator.status-stopped::before { background: #ff8a7a; box-shadow: 0 0 0 4px rgba(255,138,122,0.12); }
+    .status-indicator.status-paused::before { background: #ffd54f; box-shadow: 0 0 0 4px rgba(255,213,79,0.12); }
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      box-shadow: var(--shadow);
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .metric {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .metric .label { color: var(--muted); font-size: 0.85rem; }
+    .metric .value { font-size: 1.4rem; font-weight: 700; margin-top: 6px; }
+    .muted { color: var(--muted); font-size: 0.85rem; }
+    .bar {
+      height: 8px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, #31c4ff, #7cffc3);
+      width: 0;
+      transition: width 0.4s ease;
+    }
+    .stack-tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .tile {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .tile h3 { margin: 0 0 8px; font-size: 1rem; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .chart-box {
+      aspect-ratio: 1 / 1;
+      padding: 6px;
+      border-radius: 10px;
+      background: radial-gradient(circle at 20% 20%, rgba(49,196,255,0.06), transparent 35%),
+                  radial-gradient(circle at 80% 10%, rgba(124,255,195,0.05), transparent 30%),
+                  rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .chart-box canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      aspect-ratio: 1 / 1;
+      image-rendering: optimizeQuality;
+      image-rendering: -webkit-optimize-contrast;
+    }
+    .chart-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+      align-items: stretch;
+    }
+    .chart-row canvas {
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      padding: 6px;
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: 16 / 9;
+      display: block;
+      border: 1px solid rgba(255,255,255,0.04);
+      image-rendering: optimizeQuality;
+      image-rendering: -webkit-optimize-contrast;
+    }
+    .chart-caption {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 2px;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <div class="brand-line">
+      <h1>D2HA <span class="brand-pill">Webserver</span></h1>
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">Container</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">Immagini</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
+    </nav>
+  </header>
+
+  <div class="layout">
+    <aside>
+      <p class="aside-title">Stack e container</p>
+      {% for stack in stacks %}
+        <details open>
+          <summary>
+            <span>{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</span>
+            <span class="stack-chip">{{ stack.containers|length }} container</span>
+          </summary>
+          <ul class="container-list">
+            {% for c in stack.containers %}
+              <li>
+                <div>
+                  <div>{{ c.name }}</div>
+                  <small>{{ c.image }}</small>
+                </div>
+                {% set status = c.status.lower() %}
+                <span class="status-indicator {% if status == 'running' %}status-running{% elif status == 'paused' %}status-paused{% else %}status-stopped{% endif %}" title="{{ c.status }}" aria-label="{{ c.status }}"></span>
+              </li>
+            {% endfor %}
+          </ul>
+        </details>
+      {% endfor %}
+    </aside>
+
+    <main>
+      <div class="card">
+        <div class="flex-between">
+          <div>
+            <h2 style="margin:6px 0 0;">Stato del server</h2>
+          </div>
+          <span class="brand-pill">{{ summary.stacks }} stack</span>
+        </div>
+        <div class="metrics-grid" style="margin-top:12px;">
+          <div class="metric">
+            <div class="label">CPU</div>
+            <div class="value" id="cpuValue">{{ summary.total_cpu }}% totale</div>
+            <div class="muted" id="cpuCores">{{ summary.cpu_count }} core</div>
+            <div class="chart-box">
+              <canvas id="cpuChart"></canvas>
+            </div>
+            <div class="chart-caption">
+              <span class="dot" style="background:#31c4ff;"></span>
+              <span>Carico medio degli ultimi campioni</span>
+            </div>
+          </div>
+          <div class="metric">
+            <div class="label">RAM</div>
+            <div class="value" id="ramValue">{{ summary.mem_percent }}%</div>
+            <div class="muted" id="ramUsage">{{ summary.mem_used_h }} / {{ summary.mem_total_h }}</div>
+            <div class="bar"><span id="ramBar" style="width: {{ summary.mem_percent }}%"></span></div>
+            <div class="chart-box">
+              <canvas id="ramChart"></canvas>
+            </div>
+            <div class="chart-caption">
+              <span class="dot" style="background:#7cffc3;"></span>
+              <span>Andamento utilizzo memoria</span>
+            </div>
+          </div>
+          <div class="metric">
+            <div class="label">Container</div>
+            <div class="value" id="containerValue">{{ summary.running }}/{{ summary.total_containers }}</div>
+            <div class="muted" id="containerStatus">{{ summary.paused }} in pausa · {{ summary.stopped }} fermi</div>
+            <div class="chart-box">
+              <canvas id="containersChart"></canvas>
+            </div>
+            <div class="chart-caption">
+              <span class="dot" style="background:#7cffc3;"></span>Running
+              <span class="dot" style="background:#ffd54f;"></span>In pausa
+              <span class="dot" style="background:#ff8a7a;"></span>Fermi
+            </div>
+          </div>
+          <div class="metric">
+            <div class="label">Immagini</div>
+            <div class="value" id="imagesValue">{{ summary.images }}</div>
+            <div class="muted" id="imagesDetail">Disk layers: {{ summary.disk_layers_h }}</div>
+            <div class="chart-box">
+              <canvas id="imagesChart"></canvas>
+            </div>
+            <div class="chart-caption">
+              <span class="dot" style="background:#31c4ff;"></span>In uso
+              <span class="dot" style="background:#1b2131;"></span>Non in uso
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="flex-between">
+          <h2 style="margin:0;">Stack</h2>
+        </div>
+        <div class="stack-tiles" style="margin-top:12px;">
+          {% for stack in stacks %}
+            {% set cpu = stack.containers|sum(attribute='cpu_percent') %}
+            {% set mem = stack.containers|sum(attribute='mem_usage_bytes') %}
+            <div class="tile">
+              <div class="flex-between">
+                <h3>{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</h3>
+                <span class="stack-chip">{{ stack.containers|length }} container</span>
+              </div>
+              <div class="muted">CPU: {{ '%.1f' % cpu }}% · RAM: {{ human_bytes(mem) }}</div>
+              {% set cpu_bar = [cpu, 100]|min %}
+              <div class="bar"><span style="width: {{ cpu_bar }}%"></span></div>
+              {% set stack_slug = (stack.name | lower | replace(' ', '-') | replace('.', '-') | replace('_', '-')) %}
+              <div class="muted" id="stack-{{ stack_slug }}-net-text">Rete: {{ stack.total_net_rx_h }} ↓ · {{ stack.total_net_tx_h }} ↑</div>
+              <div class="chart-row">
+                <canvas id="stack-{{ stack_slug }}-cpu"></canvas>
+                <canvas id="stack-{{ stack_slug }}-mem"></canvas>
+                <canvas id="stack-{{ stack_slug }}-net"></canvas>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const initialData = {{ {"summary": summary, "stacks": stacks}|tojson }};
+
+    Chart.defaults.devicePixelRatio = Math.max(window.devicePixelRatio || 1, 2);
+    Chart.defaults.font.family = 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif';
+    Chart.defaults.font.weight = '600';
+
+    const gridColor = 'rgba(255,255,255,0.06)';
+    const tickColor = '#a8b5cb';
+    const formatPercent = (value) => `${value}%`;
+    const chartDefaults = (formatter = formatPercent) => ({
+      responsive: true,
+      animation: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0f1116',
+          borderColor: 'rgba(255,255,255,0.1)',
+          borderWidth: 1,
+          titleColor: '#e7ecf4',
+          bodyColor: '#d9e1f0',
+          padding: 10,
+          callbacks: {
+            label: (context) => `${context.dataset.label || 'Valore'}: ${formatter(context.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: { display: false },
+        y: {
+          beginAtZero: true,
+          ticks: { color: tickColor, callback: (v) => formatter(v) },
+          grid: { color: gridColor }
+        }
+      }
+    });
+
+    function formatRate(bytesPerSec) {
+      const units = ['B/s', 'KB/s', 'MB/s', 'GB/s', 'TB/s'];
+      let value = bytesPerSec;
+      let unitIndex = 0;
+      while (value >= 1024 && unitIndex < units.length - 1) {
+        value /= 1024;
+        unitIndex += 1;
+      }
+      return `${value.toFixed(value >= 10 || value === 0 ? 0 : 1)} ${units[unitIndex]}`;
+    }
+
+    function slugify(name) {
+      const slug = (name || 'stack').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return slug || 'stack';
+    }
+
+    function buildLineChart(ctx, color, label) {
+      const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
+      gradient.addColorStop(0, color + '33');
+      gradient.addColorStop(1, 'rgba(255,255,255,0)');
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            data: [],
+            label: label,
+            borderColor: color,
+            backgroundColor: gradient,
+            tension: 0.35,
+            fill: true,
+            pointRadius: 0,
+            borderWidth: 2,
+            borderCapStyle: 'round',
+          }]
+        },
+        options: chartDefaults(),
+      });
+    }
+
+    function buildNetChart(ctx) {
+      const gradientRx = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
+      gradientRx.addColorStop(0, '#31c4ff33');
+      gradientRx.addColorStop(1, 'rgba(255,255,255,0)');
+      const gradientTx = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
+      gradientTx.addColorStop(0, '#ff8a7a33');
+      gradientTx.addColorStop(1, 'rgba(255,255,255,0)');
+
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              data: [],
+              label: 'Ingress',
+              borderColor: '#31c4ff',
+              backgroundColor: gradientRx,
+              tension: 0.35,
+              fill: true,
+              pointRadius: 0,
+              borderWidth: 2,
+              borderCapStyle: 'round',
+            },
+            {
+              data: [],
+              label: 'Uscita',
+              borderColor: '#ff8a7a',
+              backgroundColor: gradientTx,
+              tension: 0.35,
+              fill: true,
+              pointRadius: 0,
+              borderWidth: 2,
+              borderCapStyle: 'round',
+            }
+          ]
+        },
+        options: chartDefaults(formatRate),
+      });
+    }
+
+    const centerLabel = {
+      id: 'centerLabel',
+      afterDraw(chart, args, opts) {
+        if (!opts.text || !chart.chartArea) return;
+        const { ctx, chartArea: { width, height, left, top } } = chart;
+        ctx.save();
+        ctx.fillStyle = '#e7ecf4';
+        ctx.font = '600 14px "Inter"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(opts.text, left + width / 2, top + height / 2);
+        ctx.restore();
+      }
+    };
+
+    function buildPieChart(ctx, colors, centerText) {
+      return new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [],
+          datasets: [{ data: [], backgroundColor: colors, borderColor: 'transparent' }]
+        },
+        options: {
+          responsive: true,
+          animation: false,
+          plugins: { legend: { display: false }, centerLabel: { text: centerText || '' } },
+          cutout: '60%'
+        },
+        plugins: [centerLabel]
+      });
+    }
+
+    const charts = {
+      cpu: buildLineChart(document.getElementById('cpuChart'), '#31c4ff', 'CPU'),
+      ram: buildLineChart(document.getElementById('ramChart'), '#7cffc3', 'RAM'),
+      containers: buildPieChart(document.getElementById('containersChart'), ['#7cffc3', '#ffd54f', '#ff8a7a'], ''),
+      images: buildPieChart(document.getElementById('imagesChart'), ['#31c4ff', '#1b2131'], '')
+    };
+
+    const stackCharts = {};
+    const stackNetState = {};
+    initialData.stacks.forEach((stack) => {
+      const slug = slugify(stack.name);
+      const cpuCanvas = document.getElementById(`stack-${slug}-cpu`);
+      const memCanvas = document.getElementById(`stack-${slug}-mem`);
+      const netCanvas = document.getElementById(`stack-${slug}-net`);
+      if (!cpuCanvas || !memCanvas || !netCanvas) return;
+      stackCharts[slug] = {
+        cpu: buildLineChart(cpuCanvas, '#31c4ff', 'CPU'),
+        mem: buildLineChart(memCanvas, '#7cffc3', 'RAM'),
+        net: buildNetChart(netCanvas),
+      };
+    });
+
+    function trimData(chart) {
+      if (chart.data.labels.length > 20) {
+        chart.data.labels.shift();
+        chart.data.datasets.forEach((dataset) => dataset.data.shift());
+      }
+    }
+
+    function updateLine(chart, value) {
+      chart.data.labels.push(new Date().toLocaleTimeString());
+      chart.data.datasets[0].data.push(value);
+      trimData(chart);
+      chart.update('none');
+    }
+
+    function updateDualLine(chart, values) {
+      chart.data.labels.push(new Date().toLocaleTimeString());
+      chart.data.datasets.forEach((dataset, idx) => {
+        dataset.data.push(values[idx] || 0);
+      });
+      trimData(chart);
+      chart.update('none');
+    }
+
+    function updatePie(chart, labels, data, centerText) {
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = data;
+      chart.options.plugins.centerLabel.text = centerText || '';
+      chart.update('none');
+    }
+
+    function applySummary(summary) {
+      document.getElementById('cpuValue').textContent = `${summary.total_cpu}% totale`;
+      document.getElementById('cpuCores').textContent = `${summary.cpu_count} core`;
+
+      document.getElementById('ramValue').textContent = `${summary.mem_percent}%`;
+      document.getElementById('ramUsage').textContent = `${summary.mem_used_h} / ${summary.mem_total_h}`;
+      document.getElementById('ramBar').style.width = `${summary.mem_percent}%`;
+
+      document.getElementById('containerValue').textContent = `${summary.running}/${summary.total_containers}`;
+      document.getElementById('containerStatus').textContent = `${summary.paused} in pausa · ${summary.stopped} fermi`;
+
+      document.getElementById('imagesValue').textContent = `${summary.images}`;
+      document.getElementById('imagesDetail').textContent = `Disk layers: ${summary.disk_layers_h}`;
+
+      updateLine(charts.cpu, summary.total_cpu);
+      updateLine(charts.ram, summary.mem_percent);
+      const totalContainers = summary.running + summary.paused + summary.stopped || 1;
+      const runningPercent = Math.round((summary.running / totalContainers) * 100);
+      updatePie(
+        charts.containers,
+        ['Running', 'In pausa', 'Fermi'],
+        [summary.running, summary.paused, summary.stopped],
+        `${runningPercent}% attivi`
+      );
+      const totalImages = summary.images_used + summary.images_unused || 1;
+      const usedPercent = Math.round((summary.images_used / totalImages) * 100);
+      updatePie(
+        charts.images,
+        ['In uso', 'Non in uso'],
+        [summary.images_used, summary.images_unused],
+        `${usedPercent}% in uso`
+      );
+    }
+
+    function applyStacks(stacks) {
+      stacks.forEach((stack) => {
+        const slug = slugify(stack.name);
+        const chartsForStack = stackCharts[slug];
+        if (!chartsForStack) return;
+        updateLine(chartsForStack.cpu, stack.total_cpu || 0);
+        const memPercent = stack.total_mem_bytes && initialData.summary.mem_total
+          ? (stack.total_mem_bytes / initialData.summary.mem_total) * 100
+          : 0;
+        updateLine(chartsForStack.mem, Math.round(memPercent * 10) / 10);
+
+        const now = Date.now();
+        const prev = stackNetState[slug];
+        const rxBytes = stack.total_net_rx_bytes || 0;
+        const txBytes = stack.total_net_tx_bytes || 0;
+        let rxRate = 0;
+        let txRate = 0;
+
+        if (prev) {
+          const deltaSec = Math.max((now - prev.ts) / 1000, 0.001);
+          rxRate = Math.max(rxBytes - prev.rx, 0) / deltaSec;
+          txRate = Math.max(txBytes - prev.tx, 0) / deltaSec;
+        }
+
+        stackNetState[slug] = { rx: rxBytes, tx: txBytes, ts: now };
+
+        if (chartsForStack.net) {
+          updateDualLine(chartsForStack.net, [rxRate, txRate]);
+        }
+
+        const netText = document.getElementById(`stack-${slug}-net-text`);
+        if (netText) {
+          netText.textContent = `Rete: ${formatRate(rxRate)} ↓ · ${formatRate(txRate)} ↑`;
+        }
+      });
+    }
+
+    async function refreshOverview() {
+      try {
+        const res = await fetch('/api/overview');
+        if (!res.ok) return;
+        const data = await res.json();
+        applySummary(data.summary);
+        applyStacks(data.stacks);
+      } catch (err) {
+        console.error('Failed to refresh overview', err);
+      }
+    }
+
+    applySummary(initialData.summary);
+    applyStacks(initialData.stacks);
+    setInterval(refreshOverview, 5000);
+  </script>
+</body>
+</html>
