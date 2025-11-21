@@ -197,6 +197,7 @@
                   <td data-label="Azioni">
                     <div class="actions">
                       <button class="btn" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
+                      <button class="btn" type="button" data-open-logs data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
                       <form method="post" action="{{ url_for('container_action', container_id=c.id, action='play') }}">
                         <button class="btn btn-play" type="submit">Play</button>
                       </form>
@@ -614,14 +615,14 @@
       clearInterval(logsInterval);
     };
 
-    const openModal = (id, name) => {
+    const openModal = (id, name, initialTab = 'info') => {
       currentContainerId = id;
       modalTitle.textContent = name;
       statsHistory = { cpu: [], ram: [], net: [] };
       lastNet = null;
       modalEl.classList.add('visible');
       modalEl.setAttribute('aria-hidden', 'false');
-      setPanel('info');
+      setPanel(initialTab);
       updateDetails();
       updateStats();
       updateLogs();
@@ -650,6 +651,13 @@
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         openModal(btn.dataset.containerId, btn.dataset.containerName);
+      });
+    });
+
+    document.querySelectorAll('[data-open-logs]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openModal(btn.dataset.containerId, btn.dataset.containerName, 'logs');
       });
     });
 
