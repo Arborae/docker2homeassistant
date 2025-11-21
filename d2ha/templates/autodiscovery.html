@@ -40,9 +40,10 @@
     tr:last-child td { border-bottom:none; }
     tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
     .checkbox { display:flex; justify-content:center; align-items:center; }
-    .checkbox-row { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; }
-    .checkbox-item { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
+    .checkbox-row { display:flex; align-items:center; justify-content:flex-start; gap:10px; flex-wrap:wrap; }
+    .checkbox-item { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
     .checkbox input { width:18px; height:18px; accent-color: var(--accent); margin:0; }
+    .checkbox-label { font-weight:700; letter-spacing:0.01em; }
     .align-center { text-align:center; }
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     .name { font-weight:700; }
@@ -113,12 +114,12 @@
                       <div class="checkbox-row">
                         <label class="checkbox-item" title="Autodiscovery stato per {{ c.name }}">
                           <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
-                          <span class="sr-only">Stato</span>
+                          <span class="checkbox-label">Stato</span>
                         </label>
                         {% for action in actions %}
                           <label class="checkbox-item" title="{{ action.replace('_', ' ')|title }} per {{ c.name }}">
                             <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
-                            <span class="sr-only">{{ action.replace('_', ' ')|title }}</span>
+                            <span class="checkbox-label">{{ action.replace('_', ' ')|title }}</span>
                           </label>
                         {% endfor %}
                       </div>
