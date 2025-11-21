@@ -235,6 +235,7 @@ def images_view():
 @app.route("/events", methods=["GET"])
 def events_view():
     hours_param = request.args.get("hours", default="24")
+    severity_param = (request.args.get("severity") or "all").lower()
     try:
         hours = int(hours_param)
     except ValueError:
@@ -242,6 +243,10 @@ def events_view():
 
     hours = max(1, min(hours, 24 * 30))
     events = docker_service.list_events(since_seconds=hours * 3600, limit=400)
+    allowed_severities = {"all", "info", "error"}
+    selected_severity = severity_param if severity_param in allowed_severities else "all"
+    if selected_severity != "all":
+        events = [ev for ev in events if ev.get("severity") == selected_severity]
     stacks, summary = _build_home_context()
     notifications = _build_notifications_summary()
 
@@ -249,6 +254,7 @@ def events_view():
         "events.html",
         events=events,
         selected_hours=hours,
+        selected_severity=selected_severity,
         summary=summary,
         notifications=notifications,
         active_page="events",
