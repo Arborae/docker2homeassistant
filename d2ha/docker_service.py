@@ -1040,10 +1040,23 @@ class MqttManager:
         docker_running = self.docker_service.is_engine_running()
         state = "on" if docker_running else "off"
 
+        updates_pending = sum(
+            1 for c in containers_info if c.get("update_state") == "update_available"
+        )
+
+        unused_images = 0
+        try:
+            images_overview = self.docker_service.list_images_overview()
+            unused_images = sum(1 for img in images_overview if not img.get("used_by"))
+        except Exception:
+            unused_images = 0
+
         attributes = {
             "active_containers": running_count,
             "inactive_containers": inactive_count,
             "total_containers": total_count,
+            "updates_pending": updates_pending,
+            "unused_images": unused_images,
         }
 
         self.mqtt_client.publish(config_topic, json.dumps(sensor_payload), qos=0, retain=True)
