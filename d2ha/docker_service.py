@@ -78,6 +78,13 @@ class AutodiscoveryPreferences:
         "full_update",
     )
 
+    AVAILABLE_SENSORS = (
+        "cpu",
+        "ram",
+        "download",
+        "upload",
+    )
+
     def __init__(self, path: str):
         self.path = path
         self._lock = threading.Lock()
@@ -107,7 +114,16 @@ class AutodiscoveryPreferences:
             action: bool(actions_raw.get(action, True))
             for action in self.AVAILABLE_ACTIONS
         }
-        return {"state": bool(entry.get("state", True)), "actions": actions}
+        sensors_raw = entry.get("sensors") or {}
+        sensors = {
+            sensor: bool(sensors_raw.get(sensor, True))
+            for sensor in self.AVAILABLE_SENSORS
+        }
+        return {
+            "state": bool(entry.get("state", True)),
+            "actions": actions,
+            "sensors": sensors,
+        }
 
     def _save(self) -> None:
         dir_path = os.path.dirname(self.path)
@@ -123,9 +139,15 @@ class AutodiscoveryPreferences:
         return {sid: self.get_with_defaults(sid) for sid in stable_ids}
 
     def set_preferences(
-        self, stable_id: str, state_enabled: bool, actions: Dict[str, Any]
+        self,
+        stable_id: str,
+        state_enabled: bool,
+        actions: Dict[str, Any],
+        sensors: Dict[str, Any],
     ) -> Dict[str, Any]:
-        pref = self._apply_defaults({"state": state_enabled, "actions": actions})
+        pref = self._apply_defaults(
+            {"state": state_enabled, "actions": actions, "sensors": sensors}
+        )
         with self._lock:
             self._data[stable_id] = pref
             self._save()
@@ -338,7 +360,7 @@ class DockerService:
         try:
             stats = self.docker_api.stats(container.id, stream=False)
         except Exception:
-            return 0.0, 0, 0.0
+            return 0.0, 0, 0.0, 0, 0
 
         cpu_percent = self._calc_cpu_percent(stats)
 
@@ -434,6 +456,10 @@ class DockerService:
                 networks.append({"name": name, "ip": cfg.get("IPAddress", "")})
 
             ports = self._get_container_ports(c)
+
+            cpu_percent, mem_usage, mem_percent, net_rx, net_tx = self.get_container_stats(
+                c
+            )
 
             if c.image.tags:
                 image_name = c.image.tags[0]
@@ -678,6 +704,13 @@ class DockerService:
                     "image": image_name,
                     "status": status,
                     "uptime": uptime_str,
+                    "cpu_percent": round(cpu_percent, 1),
+                    "mem_usage": human_bytes(mem_usage),
+                    "mem_percent": round(mem_percent, 1),
+                    "net_rx": net_rx,
+                    "net_tx": net_tx,
+                    "net_rx_human": human_bytes(net_rx) if net_rx else "0B",
+                    "net_tx_human": human_bytes(net_tx) if net_tx else "0B",
                     "image_ref": image_ref,
                     "installed_id_short": installed_info["installed_id_short"],
                     "installed_version": installed_info["installed_version"],

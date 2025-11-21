@@ -43,6 +43,9 @@
     .checkbox-row { display:flex; align-items:center; justify-content:flex-start; gap:8px; flex-wrap:wrap; }
     .checkbox-item { display:flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
     .checkbox input { width:18px; height:18px; accent-color: var(--accent); margin:0; }
+    .metric-cell { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .metric-value { font-weight:700; }
+    .metric-extra { color: var(--muted); font-size:0.8rem; }
     .align-center { text-align:center; }
     .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
     .name { font-weight:700; }
@@ -96,25 +99,65 @@
                   <th>Container</th>
                   <th>Immagine</th>
                   <th>Stato</th>
-                  <th class="align-center">Preferenze</th>
+                  <th>CPU</th>
+                  <th>RAM</th>
+                  <th>Download</th>
+                  <th>Upload</th>
+                  <th class="align-center">Azioni</th>
                 </tr>
               </thead>
               <tbody>
                 {% for c in containers %}
-                  {% set pref = preferences.get(c.stable_id, {'state': True, 'actions': {}}) %}
+                  {% set pref = preferences.get(c.stable_id, {'state': True, 'actions': {}, 'sensors': {}}) %}
                   <tr>
                     <td data-label="Container">
                       <div class="name">{{ c.name }}</div>
                       <div class="muted">{{ c.short_id }}</div>
                     </td>
                     <td data-label="Immagine">{{ c.image }}</td>
-                    <td data-label="Stato">{{ c.status }}</td>
-                    <td data-label="Preferenze" class="checkbox align-center">
+                    <td data-label="Stato" class="metric-cell">
+                      <div>
+                        <div class="metric-value">{{ c.status }}</div>
+                        <div class="metric-extra">Uptime: {{ c.uptime }}</div>
+                      </div>
+                      <label class="checkbox-item" title="Esponi stato per {{ c.name }}">
+                        <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
+                        <span class="sr-only">Stato</span>
+                      </label>
+                    </td>
+                    <td data-label="CPU" class="metric-cell">
+                      <div class="metric-value">{{ c.cpu_percent }}%</div>
+                      <label class="checkbox-item" title="Esponi CPU per {{ c.name }}">
+                        <input type="checkbox" name="{{ c.stable_id }}_cpu" aria-label="CPU per {{ c.name }}" {% if pref.sensors.get('cpu', True) %}checked{% endif %} />
+                        <span class="sr-only">CPU</span>
+                      </label>
+                    </td>
+                    <td data-label="RAM" class="metric-cell">
+                      <div>
+                        <div class="metric-value">{{ c.mem_usage }}</div>
+                        <div class="metric-extra">{{ c.mem_percent }}%</div>
+                      </div>
+                      <label class="checkbox-item" title="Esponi RAM per {{ c.name }}">
+                        <input type="checkbox" name="{{ c.stable_id }}_ram" aria-label="RAM per {{ c.name }}" {% if pref.sensors.get('ram', True) %}checked{% endif %} />
+                        <span class="sr-only">RAM</span>
+                      </label>
+                    </td>
+                    <td data-label="Download" class="metric-cell">
+                      <div class="metric-value">{{ c.net_rx_human }}/s</div>
+                      <label class="checkbox-item" title="Esponi velocità download per {{ c.name }}">
+                        <input type="checkbox" name="{{ c.stable_id }}_download" aria-label="Download per {{ c.name }}" {% if pref.sensors.get('download', True) %}checked{% endif %} />
+                        <span class="sr-only">Download</span>
+                      </label>
+                    </td>
+                    <td data-label="Upload" class="metric-cell">
+                      <div class="metric-value">{{ c.net_tx_human }}/s</div>
+                      <label class="checkbox-item" title="Esponi velocità upload per {{ c.name }}">
+                        <input type="checkbox" name="{{ c.stable_id }}_upload" aria-label="Upload per {{ c.name }}" {% if pref.sensors.get('upload', True) %}checked{% endif %} />
+                        <span class="sr-only">Upload</span>
+                      </label>
+                    </td>
+                    <td data-label="Azioni" class="checkbox align-center">
                       <div class="checkbox-row">
-                        <label class="checkbox-item" title="Autodiscovery stato per {{ c.name }}">
-                          <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
-                          <span class="sr-only">Stato</span>
-                        </label>
                         {% for action in actions %}
                           <label class="checkbox-item" title="{{ action.replace('_', ' ')|title }} per {{ c.name }}">
                             <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />

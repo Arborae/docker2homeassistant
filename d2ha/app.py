@@ -194,7 +194,13 @@ def autodiscovery_view():
                 action: request.form.get(f"{stable_id}_{action}") == "on"
                 for action in AutodiscoveryPreferences.AVAILABLE_ACTIONS
             }
-            autodiscovery_preferences.set_preferences(stable_id, state_enabled, actions)
+            sensors = {
+                sensor: request.form.get(f"{stable_id}_{sensor}") == "on"
+                for sensor in AutodiscoveryPreferences.AVAILABLE_SENSORS
+            }
+            autodiscovery_preferences.set_preferences(
+                stable_id, state_enabled, actions, sensors
+            )
 
         autodiscovery_preferences.prune(stable_ids)
         _publish_current_state()
