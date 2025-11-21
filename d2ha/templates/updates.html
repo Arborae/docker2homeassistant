@@ -45,12 +45,29 @@
     .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.7rem; color: #ccc; }
     .badge-null { opacity: 0.6; }
     .actions { display: flex; flex-direction: column; gap: 4px; }
-    .btn { border: none; border-radius: 999px; padding: 6px 12px; font-size: 0.8rem; cursor: pointer; background: #262c3c; color: #eee; transition: background 0.15s, transform 0.05s; text-align: center; }
-    .btn:hover { background: #31394e; transform: translateY(-1px); }
-    .btn-full-update { background: #039be5; }
-    .btn-full-update:hover { background: #0288d1; }
+    .btn { border: none; border-radius: 12px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; background: linear-gradient(135deg, #1f2a3c, #26324a); color: #e7ecf4; transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease; text-align: center; border:1px solid var(--border); box-shadow: 0 8px 18px rgba(0,0,0,0.35); }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 22px rgba(0,0,0,0.45); }
+    .btn-full-update { background: linear-gradient(135deg, #1fb1ff, #4bd1ff); color:#04101c; font-weight: 800; letter-spacing: 0.01em; }
+    .btn-full-update:hover { filter: brightness(1.1); }
     .small { font-size: 0.75rem; color: #aaa; }
     code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: 0.75rem; }
+    .stack-card { margin-bottom: 12px; }
+    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(135deg, #141927, #0f131d); cursor:pointer; box-shadow: var(--shadow); }
+    .stack-left { display:flex; align-items:center; gap:10px; }
+    .stack-title { font-weight:800; font-size:1rem; }
+    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--muted); font-size:0.8rem; }
+    .chevron { transition: transform 0.2s ease; font-size: 0.95rem; color: var(--muted); }
+    .collapsed .chevron { transform: rotate(-90deg); }
+    .stack-body { margin-top: 10px; display:block; }
+    .collapsed .stack-body { display:none; }
+    .status-meta { display:flex; flex-direction:column; gap:4px; }
+    .pill-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .confirm-backdrop { position:fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:50; padding:18px; }
+    .confirm-backdrop.visible { display:flex; }
+    .confirm-modal { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; width:min(420px, 100%); box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
+    .confirm-title { margin:0; font-size:1rem; }
+    .confirm-actions { display:flex; justify-content:flex-end; gap:8px; }
+    .btn-ghost { background: rgba(255,255,255,0.04); color: var(--text); }
     @media(max-width: 1100px) {
       table, thead, tbody, th, td, tr { display:block; }
       thead { display:none; }
@@ -78,82 +95,240 @@
 
   <main>
     <div class="card">
-      <div class="muted">{{ containers|length }} container analizzati · {{ summary.images }} immagini installate</div>
+      {% set total = stacks | map(attribute='containers') | map('length') | sum %}
+      <div class="muted">{{ total }} container analizzati · {{ summary.images }} immagini installate</div>
     </div>
-    <section class="card">
-      <table>
-        <thead>
-          <tr>
-            <th>Container</th>
-            <th>Stack</th>
-            <th>Stato</th>
-            <th>Vers. installata</th>
-            <th>Vers. remota</th>
-            <th>Change log</th>
-            <th>Breaking</th>
-            <th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for c in containers %}
-            <tr>
-              <td data-label="Container">
-                <div><strong>{{ c.name }}</strong></div>
-                <div class="small">{{ c.image_ref }}</div>
-              </td>
-              <td data-label="Stack">
-                {% if c.stack and c.stack != '_no_stack' %}
-                  <span class="stack-tag">{{ c.stack }}</span>
-                {% else %}
-                  <span class="stack-tag nostack">no stack</span>
-                {% endif %}
-              </td>
-              <td data-label="Stato">
-                {% if c.update_available %}
-                  <span class="status-pill status-update-available">Update disponibile</span>
-                {% elif c.remote_version %}
-                  <span class="status-pill status-up-to-date">Aggiornato</span>
-                {% else %}
-                  <span class="status-pill status-unknown">Sconosciuto</span>
-                {% endif %}
-              </td>
-              <td data-label="Vers. installata">
-                <span class="badge">{{ c.installed_version or 'n/d' }}</span>
-                <div class="small">{{ c.installed_id_short }}</div>
-              </td>
-              <td data-label="Vers. remota">
-                <span class="badge {% if not c.remote_version %}badge-null{% endif %}">{{ c.remote_version or 'n/d' }}</span>
-                {% if c.remote_id_short %}
-                  <div class="small">{{ c.remote_id_short }}</div>
-                {% endif %}
-              </td>
-              <td data-label="Change log">
-                {% if c.remote_changelog or c.local_changelog %}
-                  <div class="changelog">{{ c.remote_changelog or c.local_changelog }}</div>
-                {% else %}
-                  <span class="small">Nessuna nota</span>
-                {% endif %}
-              </td>
-              <td data-label="Breaking">
-                {% if c.remote_breaking or c.local_breaking %}
-                  <div class="breaking">{{ c.remote_breaking or c.local_breaking }}</div>
-                {% else %}
-                  <span class="small">Nessuna info</span>
-                {% endif %}
-              </td>
-              <td data-label="Azioni">
-                <div class="actions">
-                  <form method="post" action="{{ url_for('container_full_update', container_id=c.id) }}">
-                    <button class="btn btn-full-update" type="submit">Aggiorna immagine</button>
-                  </form>
-                  <div class="small">ID: <code>{{ c.id }}</code></div>
-                </div>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
+    {% for stack in stacks %}
+      <section class="card stack-card" data-stack="{{ stack.name }}">
+        <div class="stack-header">
+          <div class="stack-left">
+            <div class="chevron">▾</div>
+            <div>
+              <div class="stack-title">{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</div>
+              <div class="small">{{ stack.containers|length }} container</div>
+            </div>
+          </div>
+          <div class="stack-chip">{{ 'no stack' if stack.name == '_no_stack' else stack.name }}</div>
+        </div>
+        <div class="stack-body">
+          <table>
+            <thead>
+              <tr>
+                <th>Container</th>
+                <th>Stato</th>
+                <th>Vers. installata</th>
+                <th>Vers. remota</th>
+                <th>Change log</th>
+                <th>Breaking</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in stack.containers %}
+                <tr class="container-row" data-container-id="{{ c.id }}">
+                  <td data-label="Container">
+                    <div><strong>{{ c.name }}</strong></div>
+                    <div class="small">{{ c.image_ref }}</div>
+                    <div class="small">Stack: {{ 'no stack' if c.stack == '_no_stack' else c.stack }}</div>
+                  </td>
+                  <td data-label="Stato">
+                    {% set state = c.update_state %}
+                    {% set status_class = "status-pill " %}
+                    {% if state == 'update_available' %}
+                      {% set status_class = status_class + 'status-update-available' %}
+                      {% set status_label = 'Update disponibile' %}
+                    {% elif state == 'up_to_date' %}
+                      {% set status_class = status_class + 'status-up-to-date' %}
+                      {% set status_label = 'Aggiornato' %}
+                    {% else %}
+                      {% set status_class = status_class + 'status-unknown' %}
+                      {% set status_label = 'Sconosciuto' %}
+                    {% endif %}
+                    <div class="status-meta">
+                      <span class="{{ status_class }}" data-status-pill>{{ status_label }}</span>
+                      <div class="small" data-status-hint>
+                        {% if c.installed_version and c.remote_version %}
+                          {{ c.installed_version }} → {{ c.remote_version }}
+                        {% elif c.remote_version %}
+                          Remota: {{ c.remote_version }}
+                        {% else %}
+                          In attesa di dati dal registry
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td data-label="Vers. installata">
+                    <div class="pill-row">
+                      <span class="badge" data-installed-version>{{ c.installed_version or 'n/d' }}</span>
+                      <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
+                    </div>
+                  </td>
+                  <td data-label="Vers. remota">
+                    <div class="pill-row">
+                      <span class="badge {% if not c.remote_version %}badge-null{% endif %}" data-remote-version>{{ c.remote_version or 'n/d' }}</span>
+                      <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{ c.remote_id_short or '' }}</span>
+                    </div>
+                  </td>
+                  <td data-label="Change log">
+                    {% if c.changelog %}
+                      <div class="changelog" data-changelog>{{ c.changelog }}</div>
+                    {% else %}
+                      <span class="small" data-changelog>Nessuna nota</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Breaking">
+                    {% if c.breaking_changes %}
+                      <div class="breaking" data-breaking>{{ c.breaking_changes }}</div>
+                    {% else %}
+                      <span class="small" data-breaking>Nessuna info</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Azioni">
+                    <div class="actions">
+                      <form class="full-update-form" data-container-name="{{ c.name }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}">
+                        <button class="btn btn-full-update" type="submit">Aggiorna immagine</button>
+                      </form>
+                      <div class="small">ID: <code>{{ c.id }}</code></div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endfor %}
   </main>
+
+  <div class="confirm-backdrop" id="confirm-modal">
+    <div class="confirm-modal">
+      <h3 class="confirm-title">Aggiornare l'immagine?</h3>
+      <p id="confirm-message" class="small"></p>
+      <div class="confirm-actions">
+        <button type="button" class="btn btn-ghost" id="cancel-confirm">Annulla</button>
+        <button type="button" class="btn btn-full-update" id="confirm-continue">Procedi</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const statusClasses = {
+      update_available: 'status-update-available',
+      up_to_date: 'status-up-to-date',
+      unknown: 'status-unknown'
+    };
+
+    function toggleStack(card) {
+      card.classList.toggle('collapsed');
+    }
+
+    document.querySelectorAll('.stack-card').forEach(card => {
+      const header = card.querySelector('.stack-header');
+      header.addEventListener('click', () => toggleStack(card));
+    });
+
+    function applyStatus(row, state) {
+      const pill = row.querySelector('[data-status-pill]');
+      if (!pill) return;
+      pill.classList.remove('status-update-available', 'status-up-to-date', 'status-unknown');
+      pill.classList.add(statusClasses[state] || 'status-unknown');
+
+      let label = 'Sconosciuto';
+      if (state === 'update_available') label = 'Update disponibile';
+      else if (state === 'up_to_date') label = 'Aggiornato';
+      pill.textContent = label;
+    }
+
+    async function refreshRow(row) {
+      const id = row.dataset.containerId;
+      try {
+        const res = await fetch(`/api/containers/${id}/updates`, { method: 'POST' });
+        if (!res.ok) return;
+        const data = await res.json();
+        applyStatus(row, data.update_state);
+
+        const installedEl = row.querySelector('[data-installed-version]');
+        const installedIdEl = row.querySelector('[data-installed-id]');
+        const remoteEl = row.querySelector('[data-remote-version]');
+        const remoteIdEl = row.querySelector('[data-remote-id]');
+        const statusHint = row.querySelector('[data-status-hint]');
+
+        if (installedEl) installedEl.textContent = data.installed_version || 'n/d';
+        if (installedIdEl) installedIdEl.textContent = data.installed_id_short || '';
+
+        if (remoteEl) {
+          remoteEl.textContent = data.remote_version || 'n/d';
+          remoteEl.classList.toggle('badge-null', !data.remote_version);
+        }
+
+        if (remoteIdEl) {
+          if (data.remote_id_short) {
+            remoteIdEl.textContent = data.remote_id_short;
+            remoteIdEl.style.display = 'inline';
+          } else {
+            remoteIdEl.textContent = '';
+            remoteIdEl.style.display = 'none';
+          }
+        }
+
+        if (statusHint) {
+          if (data.installed_version && data.remote_version) {
+            statusHint.textContent = `${data.installed_version} → ${data.remote_version}`;
+          } else if (data.remote_version) {
+            statusHint.textContent = `Remota: ${data.remote_version}`;
+          } else {
+            statusHint.textContent = 'In attesa di dati dal registry';
+          }
+        }
+      } catch (e) {
+        // silently ignore
+      }
+    }
+
+    function scheduleRefresh() {
+      const rows = Array.from(document.querySelectorAll('.container-row'));
+      rows.forEach(row => refreshRow(row));
+    }
+
+    setInterval(scheduleRefresh, 20000);
+    scheduleRefresh();
+
+    const modal = document.getElementById('confirm-modal');
+    const messageEl = document.getElementById('confirm-message');
+    const cancelBtn = document.getElementById('cancel-confirm');
+    const confirmBtn = document.getElementById('confirm-continue');
+    let pendingForm = null;
+
+    function openConfirm(form) {
+      pendingForm = form;
+      const name = form.dataset.containerName || 'questo container';
+      messageEl.textContent = `Vuoi aggiornare l'immagine di "${name}"?`;
+      modal.classList.add('visible');
+    }
+
+    function closeConfirm() {
+      pendingForm = null;
+      modal.classList.remove('visible');
+    }
+
+    document.querySelectorAll('.full-update-form').forEach(form => {
+      form.addEventListener('submit', (evt) => {
+        evt.preventDefault();
+        openConfirm(form);
+      });
+    });
+
+    cancelBtn.addEventListener('click', closeConfirm);
+    modal.addEventListener('click', (evt) => {
+      if (evt.target === modal) closeConfirm();
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      if (pendingForm) {
+        pendingForm.submit();
+      }
+      closeConfirm();
+    });
+  </script>
 </body>
 </html>
