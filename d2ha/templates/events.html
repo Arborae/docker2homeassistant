@@ -72,11 +72,13 @@
       td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
     }
   </style>
+  {% include 'partials/notifications_styles.html' %}
 </head>
 <body>
   <header>
     <div class="brand-line">
       <h1>D2HA <span class="brand-pill">Eventi</span></h1>
+      {% include 'partials/notifications_panel.html' %}
     </div>
     <nav>
       <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
@@ -151,5 +153,6 @@
       </table>
     </section>
   </main>
+  {% include 'partials/notifications_script.html' %}
 </body>
 </html>

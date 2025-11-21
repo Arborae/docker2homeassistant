@@ -208,8 +208,13 @@ def index():
 @app.route("/containers", methods=["GET"])
 def containers_view():
     stacks, summary = _build_home_context()
+    notifications = _build_notifications_summary()
     return render_template(
-        "containers.html", stacks=stacks, summary=summary, active_page="containers"
+        "containers.html",
+        stacks=stacks,
+        summary=summary,
+        notifications=notifications,
+        active_page="containers",
     )
 
 
@@ -217,8 +222,13 @@ def containers_view():
 def images_view():
     images = docker_service.list_images_overview()
     stacks, summary = _build_home_context()
+    notifications = _build_notifications_summary()
     return render_template(
-        "images.html", images=images, summary=summary, active_page="images"
+        "images.html",
+        images=images,
+        summary=summary,
+        notifications=notifications,
+        active_page="images",
     )
 
 
@@ -233,12 +243,14 @@ def events_view():
     hours = max(1, min(hours, 24 * 30))
     events = docker_service.list_events(since_seconds=hours * 3600, limit=400)
     stacks, summary = _build_home_context()
+    notifications = _build_notifications_summary()
 
     return render_template(
         "events.html",
         events=events,
         selected_hours=hours,
         summary=summary,
+        notifications=notifications,
         active_page="events",
     )
 
@@ -257,10 +269,12 @@ def updates():
         for name in sorted(stack_map.keys())
     ]
     stacks, summary = _build_home_context()
+    notifications = _build_notifications_summary()
     return render_template(
         "updates.html",
         stacks=grouped_containers,
         summary=summary,
+        notifications=notifications,
         active_page="updates",
     )
 
@@ -297,6 +311,7 @@ def autodiscovery_view():
 
     pref_map = autodiscovery_preferences.build_map_for(stable_ids)
     stacks, summary = _build_home_context()
+    notifications = _build_notifications_summary()
 
     return render_template(
         "autodiscovery.html",
@@ -304,6 +319,7 @@ def autodiscovery_view():
         preferences=pref_map,
         actions=AutodiscoveryPreferences.AVAILABLE_ACTIONS,
         summary=summary,
+        notifications=notifications,
         active_page="autodiscovery",
     )
 

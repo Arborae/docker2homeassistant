@@ -1,0 +1,191 @@
+<script>
+(() => {
+  const initialNotifications = {{ notifications|default({})|tojson }} || {};
+  const notifListEl = document.getElementById('notifList');
+  const notifBadgeEl = document.getElementById('notifBadge');
+  const notifPanelEl = document.getElementById('notifPanel');
+  const notifToggleEl = document.getElementById('notifToggle');
+  let currentNotifications = initialNotifications;
+  let dismissedNotifications = {};
+
+  function loadDismissedNotifications() {
+    try {
+      dismissedNotifications = JSON.parse(localStorage.getItem('d2haDismissedNotifications') || '{}') || {};
+    } catch (err) {
+      dismissedNotifications = {};
+    }
+  }
+
+  function saveDismissedNotifications() {
+    localStorage.setItem('d2haDismissedNotifications', JSON.stringify(dismissedNotifications));
+  }
+
+  function shouldIgnoreNotification(item) {
+    const entry = dismissedNotifications[item.id];
+    return entry && entry.count >= item.count;
+  }
+
+  function updateBadge(count) {
+    if (!notifBadgeEl) return;
+    if (count > 0) {
+      notifBadgeEl.textContent = count;
+      notifBadgeEl.style.visibility = 'visible';
+    } else {
+      notifBadgeEl.textContent = '0';
+      notifBadgeEl.style.visibility = 'hidden';
+    }
+  }
+
+  function dismissNotification(item) {
+    dismissedNotifications[item.id] = { count: item.count, ts: Date.now() };
+    saveDismissedNotifications();
+    renderNotificationList(currentNotifications);
+  }
+
+  function attachSwipeToDismiss(element, item) {
+    let touchStartX = null;
+    element.addEventListener('touchstart', (ev) => {
+      touchStartX = ev.changedTouches[0]?.clientX || 0;
+    });
+    element.addEventListener('touchend', (ev) => {
+      if (touchStartX === null) return;
+      const delta = (ev.changedTouches[0]?.clientX || 0) - touchStartX;
+      if (Math.abs(delta) > 45) {
+        dismissNotification(item);
+      }
+      touchStartX = null;
+    });
+  }
+
+  function buildNotificationItems(data) {
+    const items = [];
+    const unused = data?.unused_images || {};
+    if (unused.count > 0) {
+      items.push({
+        id: 'unused-images',
+        count: unused.count,
+        title: 'Immagini non utilizzate',
+        description: `${unused.count} immagini · Spazio liberabile: ${unused.reclaimable_h || '-'}`,
+      });
+    }
+
+    if ((data?.updates_pending || 0) > 0) {
+      const count = data.updates_pending;
+      items.push({
+        id: 'updates-pending',
+        count,
+        title: 'Container da aggiornare',
+        description: `${count} container non ancora aggiornati`,
+      });
+    }
+
+    if ((data?.critical_events || 0) > 0) {
+      const count = data.critical_events;
+      items.push({
+        id: 'critical-events',
+        count,
+        title: 'Eventi critici',
+        description: `${count} eventi critici o fatali registrati (ultime 24h)`,
+      });
+    }
+
+    return items;
+  }
+
+  function renderNotificationList(data) {
+    currentNotifications = data || {};
+    const items = buildNotificationItems(currentNotifications);
+    const visible = items.filter((item) => !shouldIgnoreNotification(item));
+
+    if (!notifListEl) return;
+    notifListEl.innerHTML = '';
+
+    if (visible.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'notif-empty';
+      empty.textContent = 'Nessuna notifica al momento';
+      notifListEl.appendChild(empty);
+      updateBadge(0);
+      return;
+    }
+
+    visible.forEach((item) => {
+      const row = document.createElement('div');
+      row.className = 'notif-item';
+      row.dataset.id = item.id;
+
+      const content = document.createElement('div');
+      content.className = 'notif-content';
+
+      const title = document.createElement('div');
+      title.className = 'notif-title';
+      title.textContent = item.title;
+
+      const desc = document.createElement('div');
+      desc.className = 'notif-desc';
+      desc.textContent = item.description;
+
+      content.appendChild(title);
+      content.appendChild(desc);
+
+      const dismissBtn = document.createElement('button');
+      dismissBtn.className = 'notif-dismiss';
+      dismissBtn.type = 'button';
+      dismissBtn.setAttribute('aria-label', 'Ignora notifica');
+      dismissBtn.textContent = '×';
+      dismissBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        dismissNotification(item);
+      });
+
+      row.appendChild(content);
+      row.appendChild(dismissBtn);
+      attachSwipeToDismiss(row, item);
+      notifListEl.appendChild(row);
+    });
+
+    updateBadge(visible.length);
+  }
+
+  function toggleNotifications(open = null) {
+    if (!notifPanelEl || !notifToggleEl) return;
+    const shouldOpen = open === null ? !notifPanelEl.classList.contains('open') : open;
+    notifPanelEl.classList.toggle('open', shouldOpen);
+    notifToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+  }
+
+  function setupNotificationToggle() {
+    if (!notifToggleEl) return;
+    notifToggleEl.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      toggleNotifications();
+    });
+
+    document.addEventListener('click', (ev) => {
+      if (!notifPanelEl || !notifToggleEl) return;
+      const target = ev.target;
+      if (notifPanelEl.contains(target) || notifToggleEl.contains(target)) {
+        return;
+      }
+      toggleNotifications(false);
+    });
+  }
+
+  async function refreshNotifications() {
+    try {
+      const res = await fetch('/api/notifications');
+      if (!res.ok) return;
+      const data = await res.json();
+      renderNotificationList(data);
+    } catch (err) {
+      console.error('Failed to refresh notifications', err);
+    }
+  }
+
+  loadDismissedNotifications();
+  renderNotificationList(currentNotifications);
+  setupNotificationToggle();
+  refreshNotifications();
+  setInterval(refreshNotifications, 60000);
+})();
+</script>
