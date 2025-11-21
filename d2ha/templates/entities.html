@@ -102,41 +102,38 @@
       <form method="POST" class="card">
         <h3 style="margin-top:0;">Container</h3>
         <p class="muted" style="margin-top:0;">Seleziona le caselle per mantenere l'esposizione verso Home Assistant.</p>
-          {% set current_stack = None %}
-          {% for c in containers %}
-            {% if current_stack != c.stack %}
-              {% if current_stack is not none %}
-                </div>
+        {% set current_stack = None %}
+        {% for c in containers %}
+          {% if current_stack != c.stack %}
+            {% if not loop.first %}</div>{% endif %}
+            {% set current_stack = c.stack %}
+            <div class="stack">
+              <div class="stack-header">
+                <span class="stack-title">{{ c.stack }}</span>
+                <span class="muted">{{ c.stack != '_no_stack' and 'Stack' or 'Singolo container' }}</span>
               </div>
-              {% endif %}
-              {% set current_stack = c.stack %}
-              <div class="stack">
-                <div class="stack-header">
-                  <span class="stack-title">{{ c.stack }}</span>
-                  <span class="muted">{{ c.stack != '_no_stack' and 'Stack' or 'Singolo container' }}</span>
-                </div>
-                <div class="stack-body">
-            {% endif %}
-                  <label class="row">
-                    <input class="checkbox" type="checkbox" name="entities" value="{{ c.stable_id }}" {% if c.exposed %}checked{% endif %} />
-                    <div>
-                      <h3>{{ c.name }}</h3>
-                      <small>{{ c.image_ref }}</small>
-                    </div>
-                    <div class="controls">
-                      <span class="status-pill status-{{ c.status }}">{{ c.status }}</span>
-                      <span class="update-pill">{{ c.update_state }}</span>
-                    </div>
-                  </label>
-          {% endfor %}
-          {% if current_stack is not none %}
-                </div>
-              </div>
+              <div class="stack-body">
           {% endif %}
-          <div class="actions">
-            <button type="submit">Salva configurazione</button>
-          </div>
-        </form>
+                <label class="row">
+                  <input class="checkbox" type="checkbox" name="entities" value="{{ c.stable_id }}" {% if c.exposed %}checked{% endif %} />
+                  <div>
+                    <h3>{{ c.name }}</h3>
+                    <small>{{ c.image_ref }}</small>
+                  </div>
+                  <div class="controls">
+                    <span class="status-pill status-{{ c.status }}">{{ c.status }}</span>
+                    <span class="update-pill">{{ c.update_state }}</span>
+                  </div>
+                </label>
+          {% if loop.nextitem is none or loop.nextitem.stack != current_stack %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+        <div class="actions">
+          <button type="submit">Salva configurazione</button>
+        </div>
+      </form>
     </main>
   </div>
 </body>
