@@ -40,8 +40,8 @@
     tr:last-child td { border-bottom:none; }
     tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
     .checkbox { display:flex; justify-content:center; align-items:center; }
-    .checkbox-row { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; }
-    .checkbox-item { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
+    .checkbox-row { display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:nowrap; }
+    .checkbox-item { display:inline-flex; flex-direction:row; align-items:center; gap:8px; padding:6px 10px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
     .checkbox-item span { font-size:0.82rem; color: var(--muted); font-weight:700; letter-spacing:0.04em; text-transform: uppercase; }
     .checkbox input { width:18px; height:18px; accent-color: var(--accent); }
     .name { font-weight:700; }
