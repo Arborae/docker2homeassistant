@@ -247,10 +247,19 @@ def events_view():
 def updates():
     containers_info = docker_service.collect_containers_info_for_updates()
     mqtt_manager.publish_autodiscovery_and_state(containers_info)
+    stack_map = {}
+    for c in containers_info:
+        stack_name = c.get("stack", "_no_stack")
+        stack_map.setdefault(stack_name, []).append(c)
+
+    grouped_containers = [
+        {"name": name, "containers": stack_map[name]}
+        for name in sorted(stack_map.keys())
+    ]
     stacks, summary = _build_home_context()
     return render_template(
         "updates.html",
-        containers=containers_info,
+        stacks=grouped_containers,
         summary=summary,
         active_page="updates",
     )
