@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import time
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 from docker_service import (
@@ -44,6 +45,58 @@ mqtt_manager = MqttManager(
 
 mqtt_manager.setup()
 mqtt_manager.start_periodic_publisher()
+
+
+_notifications_cache = {"ts": 0.0, "data": {}}
+
+
+def _build_notifications_summary(force: bool = False) -> dict:
+    now = time.time()
+    if not force and now - _notifications_cache.get("ts", 0.0) < 15:
+        return _notifications_cache.get("data", {})
+
+    unused_count = 0
+    reclaimable_bytes = 0
+    try:
+        images_overview = docker_service.list_images_overview()
+        unused_images = [img for img in images_overview if not img.get("used_by")]
+        unused_count = len(unused_images)
+        reclaimable_bytes = sum(img.get("size", 0) or 0 for img in unused_images)
+    except Exception:
+        pass
+
+    updates_pending = 0
+    try:
+        containers_info = docker_service.collect_containers_info_for_updates()
+        updates_pending = sum(
+            1 for c in containers_info if c.get("update_state") == "update_available"
+        )
+    except Exception:
+        pass
+
+    critical_events = 0
+    try:
+        events = docker_service.list_events(since_seconds=24 * 3600, limit=300)
+        critical_events = sum(
+            1
+            for ev in events
+            if (ev.get("severity", "") or "").lower() in {"critical", "fatal", "error"}
+        )
+    except Exception:
+        pass
+
+    summary = {
+        "unused_images": {
+            "count": unused_count,
+            "reclaimable_bytes": reclaimable_bytes,
+            "reclaimable_h": human_bytes(reclaimable_bytes),
+        },
+        "updates_pending": updates_pending,
+        "critical_events": critical_events,
+    }
+
+    _notifications_cache.update({"ts": now, "data": summary})
+    return summary
 
 
 def _build_home_context():
@@ -142,7 +195,14 @@ def _build_home_context():
 @app.route("/home", methods=["GET"])
 def index():
     stacks, summary = _build_home_context()
-    return render_template("home.html", stacks=stacks, summary=summary, active_page="home")
+    notifications = _build_notifications_summary()
+    return render_template(
+        "home.html",
+        stacks=stacks,
+        summary=summary,
+        notifications=notifications,
+        active_page="home",
+    )
 
 
 @app.route("/containers", methods=["GET"])
@@ -243,6 +303,13 @@ def autodiscovery_view():
 def api_overview():
     stacks, summary = _build_home_context()
     return jsonify({"summary": summary, "stacks": stacks})
+
+
+@app.route("/api/notifications", methods=["GET"])
+def api_notifications():
+    force_refresh = request.args.get("refresh") == "1"
+    data = _build_notifications_summary(force=force_refresh)
+    return jsonify(data)
 
 
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
