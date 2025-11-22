@@ -47,8 +47,11 @@
     .status-paused { background: rgba(255,193,7,0.15); color: #ffd54f; }
     .status-restarting { background: rgba(49,196,255,0.15); color: #31c4ff; }
     .actions { display:flex; flex-wrap: wrap; gap:6px; }
-    .btn { border:none; border-radius:999px; padding:6px 12px; font-size:0.8rem; cursor:pointer; background:#262c3c; color: var(--text); transition: background 0.15s ease, transform 0.05s ease; }
-    .btn:hover { background:#31394e; transform: translateY(-1px); }
+    .btn { border:1px solid transparent; border-radius:999px; padding:8px 14px; font-size:0.82rem; cursor:pointer; background:#262c3c; color: var(--text); transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease, border-color 0.15s ease; letter-spacing:0.01em; }
+    .btn:hover { background:#31394e; transform: translateY(-1px); border-color: rgba(49,196,255,0.45); box-shadow:0 6px 18px rgba(49,196,255,0.25); }
+    .btn-strong { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0b111c; box-shadow:0 8px 18px rgba(49,196,255,0.35); font-weight:800; }
+    .btn-ghost { background: rgba(49,196,255,0.12); color: var(--accent); border-color: rgba(49,196,255,0.45); font-weight:800; }
+    .btn-ghost:hover { background: rgba(49,196,255,0.18); }
     .btn-play { background:#2ecc71; color:#07130c; }
     .btn-stop { background:#e74c3c; }
     .btn-delete { background:#b71c1c; }
@@ -57,10 +60,11 @@
     .meta { color: var(--muted); font-size:0.85rem; }
     .row-clickable { cursor:pointer; }
     .select-col { width: 48px; text-align:center; }
-    .checkbox { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1px solid var(--border); border-radius:6px; background: rgba(255,255,255,0.04); }
-    .checkbox input { width:100%; height:100%; margin:0; opacity:0; cursor:pointer; }
-    .checkbox input:checked + .checkmark { background: var(--accent); border-color: var(--accent); }
-    .checkmark { width:100%; height:100%; border-radius:5px; border:1px solid transparent; display:inline-block; }
+    .checkbox { position:relative; display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; }
+    .checkbox input { position:absolute; inset:0; margin:0; opacity:0; cursor:pointer; z-index:2; }
+    .checkmark { width:100%; height:100%; border-radius:6px; border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.04); transition: all 0.15s ease; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+    .checkbox input:checked + .checkmark { background: linear-gradient(135deg, #1b87f1, #31c4ff); border-color: rgba(49,196,255,0.8); box-shadow: 0 0 0 4px rgba(49,196,255,0.18); }
+    .checkbox input:checked + .checkmark::after { content:'✓'; color:#0b111c; font-weight:900; font-size:0.85rem; }
     .bulk-bar { position:fixed; left:0; right:0; bottom:0; background: rgba(21,25,36,0.95); border-top:1px solid var(--border); padding:12px 18px; display:none; align-items:center; justify-content:space-between; gap:12px; box-shadow: 0 -8px 20px rgba(0,0,0,0.35); z-index:30; }
     .bulk-bar.visible { display:flex; }
     .bulk-summary { color: var(--muted); font-weight:700; letter-spacing:0.02em; }
@@ -68,6 +72,7 @@
     .modal-backdrop { position: fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index: 50; padding:20px; }
     .modal-backdrop.visible { display:flex; }
     .modal { background: var(--panel-2); border:1px solid var(--border); border-radius:16px; width:min(1100px, 100%); height:82vh; max-height:82vh; overflow:hidden; box-shadow: var(--shadow); display:flex; flex-direction:column; }
+    .log-only-modal { width:min(960px, 100%); height:70vh; max-height:70vh; }
     .modal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); background: linear-gradient(90deg, #171d2b, #111524); }
     .modal-title { font-weight:800; font-size:1rem; letter-spacing:0.02em; }
     .modal-close { background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; }
@@ -96,6 +101,9 @@
     .logs-area .log-error { border-color:#ff8a7a; background:rgba(255,138,122,0.08); }
     .logs-area .log-debug { border-color:#9aa7bd; background:rgba(154,167,189,0.06); color:#c5cee0; }
     .logs-area .log-other { border-color:rgba(255,255,255,0.08); }
+    .inline-controls { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:8px; }
+    .inline-controls .inline-btn { padding:8px 12px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.05); color: var(--text); cursor:pointer; transition: all 0.15s ease; }
+    .inline-controls .inline-btn:hover { border-color: rgba(49,196,255,0.45); color: var(--accent); }
     .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .select, .input { background: #0f141f; color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:0.9rem; }
     .inline-btn { padding:8px 12px; border-radius:10px; border:1px solid var(--border); background:#1d2535; color: var(--text); cursor:pointer; }
@@ -235,8 +243,8 @@
                   </td>
                   <td data-label="Azioni">
                     <div class="actions">
-                      <button class="btn" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
-                      <button class="btn" type="button" data-open-logs data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
+                      <button class="btn btn-strong" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
+                      <button class="btn btn-ghost" type="button" data-open-inline-logs data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
                     </div>
                   </td>
                 </tr>
@@ -394,6 +402,31 @@
       </div>
     </div>
   </div>
+  <div class="modal-backdrop" id="logs-inline-modal" aria-hidden="true">
+    <div class="modal log-only-modal">
+      <div class="modal-header">
+        <div class="modal-title" id="logs-inline-title">Log container</div>
+        <button class="modal-close" id="logs-inline-close" aria-label="Chiudi log">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="inline-controls">
+          <label class="muted"><input type="checkbox" id="logs-inline-auto" checked> Auto-refresh</label>
+          <label class="muted">Linee
+            <select id="logs-inline-tail" class="select">
+              <option value="10">10</option>
+              <option value="50">50</option>
+              <option value="100" selected>100</option>
+              <option value="150">150</option>
+              <option value="500">500</option>
+              <option value="all">Senza limiti</option>
+            </select>
+          </label>
+          <button class="inline-btn" id="logs-inline-refresh">Aggiorna ora</button>
+        </div>
+        <pre class="logs-area" id="logs-inline-output">Seleziona un container...</pre>
+      </div>
+    </div>
+  </div>
   <div class="toast-container" id="toast-container"></div>
   {% include 'partials/notifications_script.html' %}
   <script>
@@ -446,13 +479,22 @@
     const bulkCount = document.getElementById('bulk-count');
     const bulkButtons = Array.from(document.querySelectorAll('[data-bulk-action]'));
     const selectionInputs = Array.from(document.querySelectorAll('.container-select'));
+    const inlineLogModal = document.getElementById('logs-inline-modal');
+    const inlineLogTitle = document.getElementById('logs-inline-title');
+    const inlineLogOutput = document.getElementById('logs-inline-output');
+    const inlineLogAuto = document.getElementById('logs-inline-auto');
+    const inlineLogTail = document.getElementById('logs-inline-tail');
+    const inlineLogRefresh = document.getElementById('logs-inline-refresh');
+    const inlineLogClose = document.getElementById('logs-inline-close');
 
     let currentContainerId = null;
     let statsInterval = null;
     let logsInterval = null;
+    let inlineLogsInterval = null;
     let statsHistory = { cpu: [], ram: [], net: [] };
     let lastNet = null;
     const selectedContainers = new Map();
+    let inlineLogContainerId = null;
 
     const showToast = (message, { type = 'info', actions = [] } = {}) => {
       const toast = document.createElement('div');
@@ -679,9 +721,9 @@
       return 'log-other';
     };
 
-    const renderLogs = (logs) => {
+    const renderLogs = (logs, target = logOutput) => {
       if (!logs) {
-        logOutput.textContent = 'Nessun log disponibile';
+        target.textContent = 'Nessun log disponibile';
         return;
       }
 
@@ -694,7 +736,7 @@
         })
         .join('');
 
-      logOutput.innerHTML = html || '<div class="muted">Nessun log disponibile</div>';
+      target.innerHTML = html || '<div class="muted">Nessun log disponibile</div>';
     };
 
     const updateLogs = async () => {
@@ -705,6 +747,18 @@
         renderLogs(data.logs);
       } catch (err) {
         logOutput.textContent = 'Impossibile recuperare i log';
+      }
+    };
+
+    const updateInlineLogs = async () => {
+      if (!inlineLogContainerId) return;
+      inlineLogOutput.textContent = 'Caricamento log...';
+      try {
+        const tail = inlineLogTail.value;
+        const data = await fetchJSON(`/api/containers/${inlineLogContainerId}/logs?tail=${tail}`);
+        renderLogs(data.logs, inlineLogOutput);
+      } catch (err) {
+        inlineLogOutput.textContent = 'Impossibile recuperare i log';
       }
     };
 
@@ -754,6 +808,30 @@
       clearInterval(logsInterval);
     };
 
+    const stopInlineLogs = () => {
+      clearInterval(inlineLogsInterval);
+      inlineLogsInterval = null;
+    };
+
+    const openInlineLogModal = (id, name) => {
+      stopInlineLogs();
+      inlineLogContainerId = id;
+      inlineLogTitle.textContent = `Log · ${name}`;
+      inlineLogModal.classList.add('visible');
+      inlineLogModal.setAttribute('aria-hidden', 'false');
+      updateInlineLogs();
+      if (inlineLogAuto.checked) {
+        inlineLogsInterval = setInterval(updateInlineLogs, 4000);
+      }
+    };
+
+    const closeInlineLogModal = () => {
+      stopInlineLogs();
+      inlineLogContainerId = null;
+      inlineLogModal.classList.remove('visible');
+      inlineLogModal.setAttribute('aria-hidden', 'true');
+    };
+
     const openModal = (id, name, initialTab = 'info') => {
       currentContainerId = id;
       modalTitle.textContent = name;
@@ -781,6 +859,11 @@
       if (e.target === modalEl) closeModal();
     });
 
+    inlineLogClose.addEventListener('click', closeInlineLogModal);
+    inlineLogModal.addEventListener('click', (e) => {
+      if (e.target === inlineLogModal) closeInlineLogModal();
+    });
+
     tabButtons.forEach(btn => {
       btn.addEventListener('click', () => setPanel(btn.dataset.tab));
     });
@@ -792,10 +875,10 @@
       });
     });
 
-    document.querySelectorAll('[data-open-logs]').forEach(btn => {
+    document.querySelectorAll('[data-open-inline-logs]').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        openModal(btn.dataset.containerId, btn.dataset.containerName, 'logs');
+        openInlineLogModal(btn.dataset.containerId, btn.dataset.containerName);
       });
     });
 
@@ -803,15 +886,6 @@
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         performBulkAction(btn.dataset.bulkAction);
-      });
-    });
-
-    document.querySelectorAll('.row-clickable').forEach(row => {
-      row.addEventListener('click', (e) => {
-        if (e.target.closest('form')) return;
-        if (e.target.closest('button') && !e.target.dataset.openModal) return;
-        if (e.target.closest('.container-select')) return;
-        openModal(row.dataset.containerId, row.dataset.containerName);
       });
     });
 
@@ -825,6 +899,21 @@
       } else {
         clearInterval(logsInterval);
       }
+    });
+
+    inlineLogRefresh.addEventListener('click', () => {
+      updateInlineLogs();
+    });
+
+    inlineLogAuto.addEventListener('change', () => {
+      stopInlineLogs();
+      if (inlineLogAuto.checked && inlineLogContainerId) {
+        inlineLogsInterval = setInterval(updateInlineLogs, 4000);
+      }
+    });
+
+    inlineLogTail.addEventListener('change', () => {
+      updateInlineLogs();
     });
 
     updatesSave.addEventListener('click', async () => {
@@ -861,14 +950,6 @@
       }
     });
 
-    const params = new URLSearchParams(window.location.search);
-    const initialContainerId = params.get('container');
-    const initialTab = params.get('tab') || 'info';
-    if (initialContainerId) {
-      const targetRow = document.querySelector(`[data-container-id="${initialContainerId}"]`);
-      const targetName = targetRow?.dataset?.containerName || 'Container';
-      openModal(initialContainerId, targetName, initialTab);
-    }
   </script>
 </body>
 </html>
