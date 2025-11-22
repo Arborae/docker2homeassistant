@@ -61,6 +61,9 @@
     .btn-secondary { background: rgba(255,255,255,0.06); border:1px solid var(--border); color: var(--text); border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; transition: all 0.15s ease; }
     .btn-secondary:hover { border-color: rgba(49,196,255,0.5); color: var(--accent); }
     .note { background: rgba(49,196,255,0.08); border:1px solid rgba(49,196,255,0.25); padding:10px 12px; border-radius:12px; font-size:0.9rem; }
+    .safe-locked .checkbox-item { opacity: 0.45; pointer-events: none; }
+    .safe-locked .checkbox input { pointer-events: none; }
+    .safe-locked .btn-secondary { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
     @media(max-width: 960px) {
       table { min-width: 720px; }
       th, td { font-size:0.82rem; }
@@ -68,7 +71,7 @@
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body>
+<body data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}">
   <header>
     <div class="brand-line">
       <h1>D2HA <span class="brand-pill">Autodiscovery</span></h1>
@@ -156,6 +159,8 @@
   {% include 'partials/notifications_script.html' %}
   <script>
     const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
+    const deselectButtons = Array.from(document.querySelectorAll('.deselect-stack'));
+    const autodiscoveryForm = document.getElementById('autodiscovery-form');
     stackToggles.forEach((header) => {
       const btn = header.querySelector('.stack-toggle-btn');
       const content = header.nextElementSibling;
@@ -186,7 +191,7 @@
       });
     });
 
-    document.querySelectorAll('.deselect-stack').forEach((button) => {
+    deselectButtons.forEach((button) => {
       button.addEventListener('click', () => {
         const stackSection = button.closest('.stack');
         if (!stackSection) return;
@@ -195,6 +200,23 @@
           checkbox.checked = false;
         });
       });
+    });
+
+    function applySafeModeLock(enabled) {
+      if (!autodiscoveryForm) return;
+      autodiscoveryForm.classList.toggle('safe-locked', enabled);
+      autodiscoveryForm.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+        checkbox.disabled = enabled;
+      });
+      deselectButtons.forEach((button) => {
+        button.disabled = enabled;
+      });
+    }
+
+    const initialSafeMode = window.d2haSafeMode?.enabled ?? ((document.body.dataset.safeMode || '0') === '1');
+    applySafeModeLock(initialSafeMode);
+    document.addEventListener('safe-mode-changed', (event) => {
+      applySafeModeLock(!!event.detail?.enabled);
     });
   </script>
 </body>

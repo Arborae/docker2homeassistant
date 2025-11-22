@@ -51,7 +51,7 @@
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body>
+<body data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}">
   <header>
     <div class="brand-line">
       <h1>D2HA <span class="brand-pill">Immagini</span></h1>
@@ -101,7 +101,7 @@
                 {% endif %}
               </td>
               <td data-label="Azioni">
-                <form method="post" action="{{ url_for('delete_image', image_id=img.id) }}">
+                <form method="post" action="{{ url_for('delete_image', image_id=img.id) }}" data-safe-confirm="Eliminare l'immagine {{ img.short_id }}?">
                   <button class="btn btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
                 </form>
               </td>

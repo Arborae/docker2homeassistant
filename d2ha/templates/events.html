@@ -76,7 +76,7 @@
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body>
+<body data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}">
   <header>
     <div class="brand-line">
       <h1>D2HA <span class="brand-pill">Eventi</span></h1>
