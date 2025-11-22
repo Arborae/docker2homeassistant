@@ -8,6 +8,11 @@
     const settingsPanelEl = document.getElementById('settingsPanel');
     const settingsToggleEl = document.getElementById('settingsToggle');
     const headerClockEl = document.getElementById('header-clock');
+    const backendStatusEl = document.getElementById('backend-status-indicator');
+    const backendStatusModalEl = document.getElementById('backend-status-modal');
+    const backendStatusLastUpdateEl = document.getElementById('backend-status-last-update');
+    const backendRefreshBtn = document.getElementById('backend-status-refresh-btn');
+    const backendCloseBtn = document.getElementById('backend-status-close-btn');
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const safeConfirmState = {
       modal: null,
@@ -20,6 +25,14 @@
     let currentNotifications = initialNotifications;
     let dismissedNotifications = {};
     let clockInterval = null;
+    let lastSuccessfulPing = null;
+    let consecutiveErrors = 0;
+    let backendPingTimer = null;
+
+    function formatClock(dateObj) {
+      const pad = (v) => String(v).padStart(2, '0');
+      return `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:${pad(dateObj.getSeconds())}`;
+    }
 
     function startClock() {
       if (!headerClockEl) return;
@@ -27,8 +40,7 @@
 
       const updateClock = () => {
         const now = new Date();
-        const pad = (v) => String(v).padStart(2, '0');
-        headerClockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+        headerClockEl.textContent = formatClock(now);
       };
 
       updateClock();
@@ -43,6 +55,89 @@
       }
       window.d2haSafeMode = { enabled: safeModeEnabled };
       document.dispatchEvent(new CustomEvent('safe-mode-changed', { detail: { enabled: safeModeEnabled } }));
+    }
+
+    function updateBackendStatus(durationMs) {
+      const now = Date.now();
+      const age = lastSuccessfulPing ? now - lastSuccessfulPing : Infinity;
+      const el = backendStatusEl;
+      if (!el) return;
+
+      el.classList.remove('backend-status-ok', 'backend-status-degraded', 'backend-status-down');
+
+      if (consecutiveErrors >= 2 || age > 30000) {
+        el.classList.add('backend-status-down');
+      } else if (age > 20000 || (durationMs || 0) > 800) {
+        el.classList.add('backend-status-degraded');
+      } else {
+        el.classList.add('backend-status-ok');
+      }
+    }
+
+    function updateBackendModalText() {
+      if (!backendStatusLastUpdateEl) return;
+      if (lastSuccessfulPing) {
+        backendStatusLastUpdateEl.textContent = `Ultimo aggiornamento dati: ${formatClock(new Date(lastSuccessfulPing))}`;
+      } else {
+        backendStatusLastUpdateEl.textContent = 'Nessun aggiornamento riuscito di recente';
+      }
+    }
+
+    function closeBackendModal() {
+      backendStatusModalEl?.classList.remove('visible');
+    }
+
+    async function pingBackend() {
+      const start = performance.now();
+      let durationMs = 0;
+      try {
+        const res = await fetch('/api/overview', { cache: 'no-store' });
+        durationMs = performance.now() - start;
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        await res.json();
+        lastSuccessfulPing = Date.now();
+        consecutiveErrors = 0;
+        updateBackendStatus(durationMs);
+        updateBackendModalText();
+      } catch (err) {
+        console.error('Backend healthcheck failed', err);
+        consecutiveErrors += 1;
+        updateBackendStatus(durationMs);
+      }
+    }
+
+    function setupBackendStatusModal() {
+      if (backendStatusEl) {
+        backendStatusEl.addEventListener('click', () => {
+          updateBackendModalText();
+          backendStatusModalEl?.classList.add('visible');
+        });
+      }
+
+      backendCloseBtn?.addEventListener('click', closeBackendModal);
+
+      backendStatusModalEl?.addEventListener('click', (evt) => {
+        if (evt.target === backendStatusModalEl) {
+          closeBackendModal();
+        }
+      });
+
+      backendRefreshBtn?.addEventListener('click', async () => {
+        await pingBackend();
+        try {
+          if (typeof window.refreshOverview === 'function') {
+            window.refreshOverview();
+          }
+        } catch (err) {
+          console.error('Impossibile aggiornare immediatamente i dati', err);
+        }
+      });
+    }
+
+    function startBackendMonitor() {
+      pingBackend();
+      clearInterval(backendPingTimer);
+      backendPingTimer = setInterval(pingBackend, 5000);
     }
 
     function loadDismissedNotifications() {
@@ -356,6 +451,8 @@
   setupSettingsToggle();
   setupSafeModeToggle();
   setupSafeConfirmations();
+  setupBackendStatusModal();
+  startBackendMonitor();
   refreshNotifications();
   setInterval(refreshNotifications, 60000);
 })();
