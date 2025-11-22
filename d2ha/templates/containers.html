@@ -791,6 +791,15 @@
         });
       }
     });
+
+    const params = new URLSearchParams(window.location.search);
+    const initialContainerId = params.get('container');
+    const initialTab = params.get('tab') || 'info';
+    if (initialContainerId) {
+      const targetRow = document.querySelector(`[data-container-id="${initialContainerId}"]`);
+      const targetName = targetRow?.dataset?.containerName || 'Container';
+      openModal(initialContainerId, targetName, initialTab);
+    }
   </script>
 </body>
 </html>

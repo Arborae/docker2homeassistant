@@ -50,7 +50,7 @@ mqtt_manager.start_periodic_publisher()
 
 
 _notifications_cache = {"ts": 0.0, "data": {}}
-_safe_mode_state = {"enabled": False}
+_safe_mode_state = {"enabled": True}
 _safe_mode_file = os.path.join(os.path.dirname(__file__), "safe_mode_state.json")
 
 
@@ -59,11 +59,11 @@ def _load_safe_mode_state():
     try:
         with open(_safe_mode_file, "r", encoding="utf-8") as fp:
             data = json.load(fp)
-            _safe_mode_state["enabled"] = bool(data.get("enabled", False))
+            _safe_mode_state["enabled"] = bool(data.get("enabled", True))
     except FileNotFoundError:
-        _safe_mode_state["enabled"] = False
+        _safe_mode_state["enabled"] = True
     except Exception:
-        _safe_mode_state["enabled"] = False
+        _safe_mode_state["enabled"] = True
 
 
 def _save_safe_mode_state():
