@@ -34,7 +34,7 @@
     .stack { background: var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow: var(--shadow); overflow:hidden; }
     .stack-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); gap:10px; flex-wrap:wrap; }
     .stack-header.stack-toggle { cursor:pointer; border-bottom-width:0; }
-    .stack-title { font-weight:700; font-size:1rem; letter-spacing:0.01em; display:flex; align-items:center; gap:8px; }
+    .stack-title { font-weight:700; font-size:1rem; letter-spacing:0.08em; display:flex; align-items:center; gap:8px; text-transform: uppercase; }
     .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.05); color: var(--muted); font-size:0.8rem; }
     .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:8px; padding:4px 8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
     .stack-toggle-btn:hover { border-color: rgba(49,196,255,0.45); color: var(--accent); }
@@ -42,7 +42,7 @@
     .stack-content { border-top:1px solid var(--border); }
     .stack-content.collapsed { display:none; }
     .stack-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    table { width:100%; border-collapse: collapse; }
+    table { width:100%; border-collapse: collapse; table-layout: fixed; }
     th, td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:left; }
     th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing:0.04em; font-size:0.78rem; }
     tr:last-child td { border-bottom:none; }
@@ -64,6 +64,10 @@
     .safe-locked .checkbox-item { opacity: 0.45; pointer-events: none; }
     .safe-locked .checkbox input { pointer-events: none; }
     .safe-locked .btn-secondary { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+    .col-name { width: 240px; }
+    .col-image { width: 220px; }
+    .col-status { width: 140px; }
+    .col-pref { width: 260px; }
     @media(max-width: 960px) {
       table { min-width: 720px; }
       th, td { font-size:0.82rem; }
@@ -106,7 +110,7 @@
               <button type="button" class="stack-toggle-btn" aria-expanded="true" aria-label="Mostra o nascondi sezione">
                 <span class="chevron">▾</span>
               </button>
-              <span>{{ 'Senza stack' if stack == '_no_stack' else stack }}</span>
+              <span>{{ ('Senza stack' if stack == '_no_stack' else stack) | upper }}</span>
             </div>
             <div class="stack-actions">
               <button type="button" class="btn-secondary deselect-stack">Seleziona/Deseleziona tutti</button>
@@ -115,6 +119,12 @@
           </div>
           <div class="stack-content" style="overflow-x:auto;">
             <table>
+              <colgroup>
+                <col class="col-name">
+                <col class="col-image">
+                <col class="col-status">
+                <col class="col-pref">
+              </colgroup>
               <thead>
                 <tr>
                   <th>Container</th>
