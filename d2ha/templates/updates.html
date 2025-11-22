@@ -29,37 +29,40 @@
     main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
     table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; }
-    th, td { padding:10px 12px; font-size:0.85rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: top; }
+    th, td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
     th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
     tr:last-child td { border-bottom: none; }
     tr:hover { background: rgba(255,255,255,0.03); }
-    .stack-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background: rgba(156, 204, 101, 0.12); color: #c5e1a5; font-size: 0.7rem; }
+    .stack-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background: rgba(156, 204, 101, 0.12); color: #c5e1a5; font-size: 0.78rem; }
     .stack-tag.nostack { background: rgba(158, 158, 158, 0.12); color: #e0e0e0; }
     .status-pill { display:inline-flex; align-items:center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
     .status-up-to-date { background: rgba(76, 175, 80, 0.15); color: #81c784; }
     .status-update-available { background: rgba(255, 193, 7, 0.18); color: #ffeb3b; }
     .status-unknown { background: rgba(158, 158, 158, 0.15); color: #eeeeee; }
-    .changelog, .breaking { max-height: 80px; overflow-y: auto; font-size: 0.75rem; line-height: 1.35; padding-right: 4px; }
+    .changelog, .breaking { max-height: 80px; overflow-y: auto; font-size: 0.82rem; line-height: 1.35; padding-right: 4px; }
     .changelog::-webkit-scrollbar, .breaking::-webkit-scrollbar { width: 4px; }
     .changelog::-webkit-scrollbar-thumb, .breaking::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
-    .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.7rem; color: #ccc; }
+    .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.78rem; color: #ccc; }
     .badge-null { opacity: 0.6; }
-    .actions { display: flex; flex-direction: column; gap: 4px; }
+    .actions { display: flex; flex-direction: column; gap: 6px; }
     .btn { border: none; border-radius: 12px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; background: linear-gradient(135deg, #1f2a3c, #26324a); color: #e7ecf4; transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease; text-align: center; border:1px solid var(--border); box-shadow: 0 8px 18px rgba(0,0,0,0.35); }
     .btn:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 22px rgba(0,0,0,0.45); }
     .btn-full-update { background: linear-gradient(135deg, #1fb1ff, #4bd1ff); color:#04101c; font-weight: 800; letter-spacing: 0.01em; }
     .btn-full-update:hover { filter: brightness(1.1); }
-    .small { font-size: 0.75rem; color: #aaa; }
+    .small { font-size: 0.82rem; color: #adb7c7; }
     .performance-hint { display:none; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border:1px dashed var(--border); align-items: center; gap: 12px; }
     .performance-hint.visible { display: flex; justify-content: space-between; flex-wrap: wrap; }
     .performance-hint .hint-title { font-weight: 800; margin-bottom: 4px; display: block; }
     code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: 0.75rem; }
-    .stack-card { margin-bottom: 12px; }
-    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(135deg, #141927, #0f131d); cursor:pointer; box-shadow: var(--shadow); }
-    .stack-left { display:flex; align-items:center; gap:10px; }
-    .stack-title { font-weight:800; font-size:1rem; }
-    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--muted); font-size:0.8rem; }
-    .chevron { transition: transform 0.2s ease; font-size: 0.95rem; color: var(--muted); }
+    .stack-card { margin-bottom: 12px; display:flex; flex-direction:column; gap:10px; }
+    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(135deg, #141927, #0f131d); cursor:pointer; box-shadow: var(--shadow); }
+    .stack-left { display:flex; align-items:center; gap:10px; min-width:0; }
+    .stack-heading { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .stack-title { font-weight:800; font-size:1rem; letter-spacing:0.01em; }
+    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--muted); font-size:0.85rem; font-weight:700; }
+    .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:10px; padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; min-height:32px; }
+    .stack-toggle-btn:hover { border-color: rgba(49,196,255,0.45); color: var(--accent); }
+    .chevron { transition: transform 0.2s ease; font-size: 0.95rem; color: var(--muted); display:inline-block; width:12px; text-align:center; }
     .collapsed .chevron { transform: rotate(-90deg); }
     .stack-body { margin-top: 10px; display:block; }
     .collapsed .stack-body { display:none; }
@@ -112,10 +115,12 @@
     </div>
     {% for stack in stacks %}
       <section class="card stack-card" data-stack="{{ stack.name }}">
-        <div class="stack-header">
+        <div class="stack-header stack-toggle" data-stack-toggle>
           <div class="stack-left">
-            <div class="chevron">▾</div>
-            <div>
+            <button class="stack-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
+              <span class="chevron">▾</span>
+            </button>
+            <div class="stack-heading">
               <div class="stack-title">{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</div>
               <div class="small">{{ stack.containers|length }} container</div>
             </div>

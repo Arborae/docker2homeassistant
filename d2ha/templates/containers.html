@@ -28,13 +28,13 @@
     .tab.active { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0c121e; box-shadow:0 6px 18px rgba(49,196,255,0.35); }
     main { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
-    .stack-card { display:flex; flex-direction:column; gap:14px; }
-    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:4px; }
+    .stack-card { display:flex; flex-direction:column; gap:12px; }
+    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:2px; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(135deg, #141927, #0f131d); box-shadow: var(--shadow); }
     .stack-toggle { margin-bottom:0; cursor:pointer; }
     .stack-title { font-size:1rem; font-weight:800; display:flex; align-items:center; gap:10px; letter-spacing:0.02em; }
     .stack-name { text-transform: uppercase; letter-spacing:0.08em; }
-    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.05); color: var(--muted); font-size:0.8rem; }
-    .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:8px; padding:4px 8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.05); color: var(--muted); font-size:0.85rem; font-weight:700; }
+    .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:10px; padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; min-height:32px; }
     .stack-toggle-btn:hover { border-color: rgba(49,196,255,0.45); color: var(--accent); }
     .stack-toggle-btn .chevron { display:inline-block; width:10px; text-align:center; }
     .stack-content.collapsed { display:none; }
