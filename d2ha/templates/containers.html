@@ -349,18 +349,28 @@
         <div class="tab-panel logs-panel" data-panel="logs">
           <div class="controls">
             <label class="muted"><input type="checkbox" id="logs-auto" checked> Auto-refresh</label>
-            <label class="muted">Linee
-              <select id="logs-tail" class="select">
-                <option value="10">10</option>
-                <option value="50">50</option>
-                <option value="100" selected>100</option>
-                <option value="150">150</option>
-                <option value="500">500</option>
-                <option value="all">Senza limiti</option>
-              </select>
-            </label>
-            <button class="inline-btn" id="logs-refresh">Aggiorna ora</button>
-          </div>
+          <label class="muted">Linee
+            <select id="logs-tail" class="select">
+              <option value="10">10</option>
+              <option value="50">50</option>
+              <option value="100" selected>100</option>
+              <option value="150">150</option>
+              <option value="500">500</option>
+              <option value="all">Senza limiti</option>
+            </select>
+          </label>
+          <label class="muted">Severità
+            <select id="logs-severity" class="select">
+              <option value="all" selected>Tutte</option>
+              <option value="error">Errori</option>
+              <option value="warn">Warning</option>
+              <option value="info">Info</option>
+              <option value="debug">Debug</option>
+              <option value="other">Altro</option>
+            </select>
+          </label>
+          <button class="inline-btn" id="logs-refresh">Aggiorna ora</button>
+        </div>
           <pre class="logs-area" id="logs-output">Seleziona un container...</pre>
         </div>
 
@@ -442,6 +452,7 @@
     const logOutput = document.getElementById('logs-output');
     const logAuto = document.getElementById('logs-auto');
     const logTail = document.getElementById('logs-tail');
+    const logSeverity = document.getElementById('logs-severity');
     const logRefreshBtn = document.getElementById('logs-refresh');
     const updatesFrequency = document.getElementById('updates-frequency');
     const updatesSave = document.getElementById('updates-save');
@@ -456,6 +467,7 @@
     let currentContainerId = null;
     let statsInterval = null;
     let logsInterval = null;
+    let lastLogs = '';
     let statsHistory = { cpu: [], ram: [], net: [] };
     let lastNet = null;
     const selectedContainers = new Map();
@@ -685,6 +697,19 @@
       return 'log-other';
     };
 
+    const matchesSeverity = (line, filter) => {
+      if (filter === 'all') return true;
+      const levelMap = {
+        'log-error': 'error',
+        'log-warn': 'warn',
+        'log-info': 'info',
+        'log-debug': 'debug',
+        'log-other': 'other',
+      };
+      const levelClass = getLogLevel(line);
+      return levelMap[levelClass] === filter;
+    };
+
     const renderLogs = (logs, target = logOutput) => {
       if (!logs) {
         target.textContent = 'Nessun log disponibile';
@@ -692,15 +717,17 @@
       }
 
       const lines = logs.split(/\r?\n/);
-      const html = lines
+      const filteredLines = lines
         .filter((line) => line !== '')
+        .filter((line) => matchesSeverity(line, logSeverity.value));
+      const html = filteredLines
         .map((line) => {
           const levelClass = getLogLevel(line);
           return `<div class="log-line ${levelClass}"><span class="log-bullet">•</span><span>${escapeHtml(line)}</span></div>`;
         })
         .join('');
 
-      target.innerHTML = html || '<div class="muted">Nessun log disponibile</div>';
+      target.innerHTML = html || '<div class="muted">Nessun log per la severità selezionata</div>';
     };
 
     const updateLogs = async () => {
@@ -708,7 +735,8 @@
       try {
         const tail = logTail.value;
         const data = await fetchJSON(`/api/containers/${currentContainerId}/logs?tail=${tail}`);
-        renderLogs(data.logs);
+        lastLogs = data.logs;
+        renderLogs(lastLogs);
       } catch (err) {
         logOutput.textContent = 'Impossibile recuperare i log';
       }
@@ -780,6 +808,7 @@
       modalEl.classList.remove('visible');
       modalEl.setAttribute('aria-hidden', 'true');
       currentContainerId = null;
+      lastLogs = '';
     };
 
     document.getElementById('modal-close').addEventListener('click', closeModal);
@@ -809,6 +838,8 @@
     logRefreshBtn.addEventListener('click', () => {
       updateLogs();
     });
+
+    logSeverity.addEventListener('change', () => renderLogs(lastLogs));
 
     logAuto.addEventListener('change', () => {
       if (logAuto.checked) {
