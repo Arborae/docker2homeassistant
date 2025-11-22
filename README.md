@@ -120,41 +120,55 @@ Popup di dettaglio con:
 ## 🧱 Architettura
 
 - **Backend**
-  - Python 3.11+
-  - Flask
-  - Accesso diretto a `/var/run/docker.sock` (Docker SDK / CLI)
+  - **Flask** per esporre le API JSON e servire l'interfaccia web statica.
+  - **Paho MQTT** (opzionale) per pubblicare sensori e switch in Home Assistant.
+  - Accesso diretto a **Docker Engine** tramite socket per evitare dipendenze dalla CLI.
 
 - **Frontend**
-  - Template HTML + CSS custom
-  - Tema dark ottimizzato per monitor/TV e dashboard
+  - Single Page Application minimalista, senza build step, ottimizzata per ambienti headless.
+  - Grafici live con **Chart.js** e aggiornamenti via polling leggero.
 
-- **Integrazioni**
-  - MQTT tramite `paho-mqtt` (opzionale)
-  - Home Assistant tramite MQTT Discovery
+- **Service layer**
+  - Lettura dei container, immagini e stack tramite la libreria Python **docker SDK**.
+  - Gestione aggiornamenti confrontando tag locali e remoti e leggendo label OCI.
+  - Cache in memoria per ridurre le chiamate ripetute al daemon Docker.
+
+- **Integrazione Home Assistant**
+  - Discovery MQTT automatico (sensori e switch) con payload compatibili con la UI Lovelace.
+  - Pubblicazione stati su topic dedicati con intervallo configurabile.
+
+> Obiettivo: restare "batteries included" senza database, message queue o componenti aggiuntivi.
 
 ---
 
-## ⚙️ Prerequisiti
+## 📋 Requisiti
 
-Obbligatori:
+- Docker Engine 20.10+ con accesso al socket `/var/run/docker.sock`.
+- Python 3.11+ se esegui in modalità bare-metal.
+- Accesso di rete al broker MQTT (solo se abiliti l'integrazione).
+- Architetture testate: `amd64`, `arm64` (Raspberry Pi 4/5).
 
-- Docker in esecuzione sulla macchina host
-- Accesso al socket Docker:
-  - host: `/var/run/docker.sock`
-  - container: bind mount del socket
+---
 
-Opzionali (MQTT / Home Assistant):
+## 🗂️ Struttura del progetto
 
-- Broker MQTT raggiungibile (es. Mosquitto di Home Assistant)
-- Credenziali e topic configurati
+```
+d2ha/
+├── app.py              # Entrypoint Flask
+├── mqtt/               # Gestione discovery e stato MQTT
+├── routes/             # Blueprint Flask (UI + API)
+├── services/           # Logica per Docker, aggiornamenti, cache in memoria
+├── static/             # HTML/CSS/JS della dashboard
+└── templates/          # Layout Jinja2
+```
 
 ---
 
 ## 🧪 Avvio in locale (sviluppo)
 
 ```bash
-git clone https://github.com/chopin94/d2ha.git
-cd d2ha
+git clone https://github.com/Arborae/docker2homeassistant.git
+cd docker2homeassistant
 
 python -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
@@ -176,7 +190,7 @@ Assicurati che l’utente con cui la esegui abbia accesso a Docker
 
 ## 🐳 Esecuzione con Docker Compose
 
-All’interno della cartella `d2ha/`:
+All’interno della cartella `d2ha/` (sotto `docker2homeassistant/`):
 
 ```bash
 docker compose up --build -d
