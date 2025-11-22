@@ -118,7 +118,7 @@
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body>
+<body data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}">
   <header>
     <div class="brand-line">
       <h1>D2HA <span class="brand-pill">Container</span></h1>
@@ -224,19 +224,19 @@
                       <form method="post" action="{{ url_for('container_action', container_id=c.id, action='play') }}">
                         <button class="btn btn-play" type="submit">Play</button>
                       </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='pause') }}">
+                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='pause') }}" data-safe-confirm="Mettere in pausa {{ c.name }}?">
                         <button class="btn btn-pause" type="submit">Pausa</button>
                       </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='stop') }}">
+                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='stop') }}" data-safe-confirm="Arrestare {{ c.name }}?">
                         <button class="btn btn-stop" type="submit">Stop</button>
                       </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='restart') }}">
+                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='restart') }}" data-safe-confirm="Riavviare {{ c.name }}?">
                         <button class="btn btn-restart" type="submit">Riavvia</button>
                       </form>
                       <form method="post" action="{{ url_for('container_action', container_id=c.id, action='unpause') }}">
                         <button class="btn" type="submit">Riprendi</button>
                       </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='delete') }}">
+                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='delete') }}" data-safe-confirm="Eliminare definitivamente {{ c.name }}?">
                         <button class="btn btn-delete" type="submit">Elimina</button>
                       </form>
                     </div>

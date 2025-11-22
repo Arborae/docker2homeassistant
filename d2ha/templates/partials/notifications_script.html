@@ -5,8 +5,22 @@
   const notifBadgeEl = document.getElementById('notifBadge');
   const notifPanelEl = document.getElementById('notifPanel');
   const notifToggleEl = document.getElementById('notifToggle');
+  const settingsPanelEl = document.getElementById('settingsPanel');
+  const settingsToggleEl = document.getElementById('settingsToggle');
+  const safeModeToggleEl = document.getElementById('safeModeToggle');
+  let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
   let currentNotifications = initialNotifications;
   let dismissedNotifications = {};
+
+  function updateSafeModeState(enabled) {
+    safeModeEnabled = !!enabled;
+    document.body.dataset.safeMode = safeModeEnabled ? '1' : '0';
+    if (safeModeToggleEl) {
+      safeModeToggleEl.checked = safeModeEnabled;
+    }
+    window.d2haSafeMode = { enabled: safeModeEnabled };
+    document.dispatchEvent(new CustomEvent('safe-mode-changed', { detail: { enabled: safeModeEnabled } }));
+  }
 
   function loadDismissedNotifications() {
     try {
@@ -152,6 +166,21 @@
     const shouldOpen = open === null ? !notifPanelEl.classList.contains('open') : open;
     notifPanelEl.classList.toggle('open', shouldOpen);
     notifToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    if (shouldOpen && settingsPanelEl) {
+      settingsPanelEl.classList.remove('open');
+      settingsToggleEl?.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function toggleSettings(open = null) {
+    if (!settingsPanelEl || !settingsToggleEl) return;
+    const shouldOpen = open === null ? !settingsPanelEl.classList.contains('open') : open;
+    settingsPanelEl.classList.toggle('open', shouldOpen);
+    settingsToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    if (shouldOpen && notifPanelEl) {
+      notifPanelEl.classList.remove('open');
+      notifToggleEl?.setAttribute('aria-expanded', 'false');
+    }
   }
 
   function setupNotificationToggle() {
@@ -164,10 +193,24 @@
     document.addEventListener('click', (ev) => {
       if (!notifPanelEl || !notifToggleEl) return;
       const target = ev.target;
-      if (notifPanelEl.contains(target) || notifToggleEl.contains(target)) {
+      if (
+        notifPanelEl.contains(target) ||
+        notifToggleEl.contains(target) ||
+        settingsPanelEl?.contains(target) ||
+        settingsToggleEl?.contains(target)
+      ) {
         return;
       }
       toggleNotifications(false);
+      toggleSettings(false);
+    });
+  }
+
+  function setupSettingsToggle() {
+    if (!settingsToggleEl) return;
+    settingsToggleEl.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      toggleSettings();
     });
   }
 
@@ -182,9 +225,55 @@
     }
   }
 
+  async function persistSafeMode(enabled) {
+    try {
+      const res = await fetch('/api/safe_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+      updateSafeModeState(!!data.enabled);
+    } catch (err) {
+      console.error('Impossibile aggiornare la modalità sicura', err);
+      if (safeModeToggleEl) {
+        safeModeToggleEl.checked = safeModeEnabled;
+      }
+      alert('Impossibile aggiornare la modalità sicura');
+    }
+  }
+
+  function setupSafeModeToggle() {
+    if (!safeModeToggleEl) return;
+    safeModeToggleEl.addEventListener('change', () => {
+      persistSafeMode(safeModeToggleEl.checked);
+    });
+  }
+
+  function setupSafeConfirmations() {
+    document.addEventListener(
+      'submit',
+      (ev) => {
+        const form = ev.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        const message = form.dataset.safeConfirm;
+        if (!message || !safeModeEnabled) return;
+        if (!window.confirm(message)) {
+          ev.preventDefault();
+        }
+      },
+      true,
+    );
+  }
+
   loadDismissedNotifications();
+  updateSafeModeState(safeModeEnabled);
   renderNotificationList(currentNotifications);
   setupNotificationToggle();
+  setupSettingsToggle();
+  setupSafeModeToggle();
+  setupSafeConfirmations();
   refreshNotifications();
   setInterval(refreshNotifications, 60000);
 })();
