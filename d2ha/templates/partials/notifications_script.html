@@ -1,34 +1,97 @@
 <script>
 (() => {
-  const initialNotifications = {{ notifications|default({})|tojson }} || {};
-  const notifListEl = document.getElementById('notifList');
-  const notifBadgeEl = document.getElementById('notifBadge');
-  const notifPanelEl = document.getElementById('notifPanel');
-  const notifToggleEl = document.getElementById('notifToggle');
-  const settingsPanelEl = document.getElementById('settingsPanel');
-  const settingsToggleEl = document.getElementById('settingsToggle');
-  const safeModeToggleEl = document.getElementById('safeModeToggle');
-  let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
-  let currentNotifications = initialNotifications;
-  let dismissedNotifications = {};
+    const initialNotifications = {{ notifications|default({})|tojson }} || {};
+    const notifListEl = document.getElementById('notifList');
+    const notifBadgeEl = document.getElementById('notifBadge');
+    const notifPanelEl = document.getElementById('notifPanel');
+    const notifToggleEl = document.getElementById('notifToggle');
+    const settingsPanelEl = document.getElementById('settingsPanel');
+    const settingsToggleEl = document.getElementById('settingsToggle');
+    const safeModeToggleEl = document.getElementById('safeModeToggle');
+    const safeConfirmState = {
+      modal: null,
+      message: null,
+      confirmBtn: null,
+      cancelBtn: null,
+      pendingForm: null,
+    };
+    let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
+    let currentNotifications = initialNotifications;
+    let dismissedNotifications = {};
 
-  function updateSafeModeState(enabled) {
-    safeModeEnabled = !!enabled;
-    document.body.dataset.safeMode = safeModeEnabled ? '1' : '0';
-    if (safeModeToggleEl) {
-      safeModeToggleEl.checked = safeModeEnabled;
+    function updateSafeModeState(enabled) {
+      safeModeEnabled = !!enabled;
+      document.body.dataset.safeMode = safeModeEnabled ? '1' : '0';
+      if (safeModeToggleEl) {
+        safeModeToggleEl.checked = safeModeEnabled;
+      }
+      window.d2haSafeMode = { enabled: safeModeEnabled };
+      document.dispatchEvent(new CustomEvent('safe-mode-changed', { detail: { enabled: safeModeEnabled } }));
     }
-    window.d2haSafeMode = { enabled: safeModeEnabled };
-    document.dispatchEvent(new CustomEvent('safe-mode-changed', { detail: { enabled: safeModeEnabled } }));
-  }
 
-  function loadDismissedNotifications() {
-    try {
-      dismissedNotifications = JSON.parse(localStorage.getItem('d2haDismissedNotifications') || '{}') || {};
-    } catch (err) {
-      dismissedNotifications = {};
+    function loadDismissedNotifications() {
+      try {
+        dismissedNotifications = JSON.parse(localStorage.getItem('d2haDismissedNotifications') || '{}') || {};
+      } catch (err) {
+        dismissedNotifications = {};
+      }
     }
-  }
+
+    function ensureSafeConfirmModal() {
+      if (safeConfirmState.modal) return;
+
+      const backdrop = document.createElement('div');
+      backdrop.className = 'safe-confirm-backdrop';
+      backdrop.innerHTML = `
+        <div class="safe-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="safe-confirm-title">
+          <h3 class="safe-confirm-title" id="safe-confirm-title">Conferma richiesta</h3>
+          <p class="safe-confirm-message" data-safe-confirm-message></p>
+          <div class="safe-confirm-actions">
+            <button type="button" class="btn btn-secondary" data-safe-cancel>Annulla</button>
+            <button type="button" class="btn" data-safe-confirm>Procedi</button>
+          </div>
+        </div>
+      `;
+
+      backdrop.addEventListener('click', (evt) => {
+        if (evt.target === backdrop) closeSafeConfirmModal();
+      });
+
+      const message = backdrop.querySelector('[data-safe-confirm-message]');
+      const confirmBtn = backdrop.querySelector('[data-safe-confirm]');
+      const cancelBtn = backdrop.querySelector('[data-safe-cancel]');
+
+      confirmBtn?.addEventListener('click', () => {
+        if (safeConfirmState.pendingForm) {
+          safeConfirmState.pendingForm.submit();
+        }
+        closeSafeConfirmModal();
+      });
+
+      cancelBtn?.addEventListener('click', () => closeSafeConfirmModal());
+
+      safeConfirmState.modal = backdrop;
+      safeConfirmState.message = message;
+      safeConfirmState.confirmBtn = confirmBtn;
+      safeConfirmState.cancelBtn = cancelBtn;
+
+      document.body.appendChild(backdrop);
+    }
+
+    function openSafeConfirmModal(message, form) {
+      ensureSafeConfirmModal();
+      safeConfirmState.pendingForm = form;
+      if (safeConfirmState.message) {
+        safeConfirmState.message.textContent = message;
+      }
+      safeConfirmState.modal?.classList.add('visible');
+      safeConfirmState.confirmBtn?.focus({ preventScroll: true });
+    }
+
+    function closeSafeConfirmModal() {
+      safeConfirmState.pendingForm = null;
+      safeConfirmState.modal?.classList.remove('visible');
+    }
 
   function saveDismissedNotifications() {
     localStorage.setItem('d2haDismissedNotifications', JSON.stringify(dismissedNotifications));
@@ -244,28 +307,29 @@
     }
   }
 
-  function setupSafeModeToggle() {
-    if (!safeModeToggleEl) return;
-    safeModeToggleEl.addEventListener('change', () => {
-      persistSafeMode(safeModeToggleEl.checked);
-    });
-  }
+    function setupSafeModeToggle() {
+      if (!safeModeToggleEl) return;
+      safeModeToggleEl.addEventListener('change', () => {
+        persistSafeMode(safeModeToggleEl.checked);
+      });
+    }
 
-  function setupSafeConfirmations() {
-    document.addEventListener(
-      'submit',
-      (ev) => {
-        const form = ev.target;
-        if (!(form instanceof HTMLFormElement)) return;
-        const message = form.dataset.safeConfirm;
-        if (!message || !safeModeEnabled) return;
-        if (!window.confirm(message)) {
+    function setupSafeConfirmations() {
+      document.addEventListener(
+        'submit',
+        (ev) => {
+          const form = ev.target;
+          if (!(form instanceof HTMLFormElement)) return;
+          const message = form.dataset.safeConfirm;
+          const handledElsewhere = form.dataset.safeModal === 'external';
+          if (!message || !safeModeEnabled || handledElsewhere) return;
+
           ev.preventDefault();
-        }
-      },
-      true,
-    );
-  }
+          openSafeConfirmModal(message, form);
+        },
+        true,
+      );
+    }
 
   loadDismissedNotifications();
   updateSafeModeState(safeModeEnabled);
