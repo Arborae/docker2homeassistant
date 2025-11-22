@@ -7,6 +7,7 @@
     const notifToggleEl = document.getElementById('notifToggle');
     const settingsPanelEl = document.getElementById('settingsPanel');
     const settingsToggleEl = document.getElementById('settingsToggle');
+    const headerClockEl = document.getElementById('header-clock');
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const safeConfirmState = {
       modal: null,
@@ -18,6 +19,21 @@
     let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
     let currentNotifications = initialNotifications;
     let dismissedNotifications = {};
+    let clockInterval = null;
+
+    function startClock() {
+      if (!headerClockEl) return;
+      clearInterval(clockInterval);
+
+      const updateClock = () => {
+        const now = new Date();
+        const pad = (v) => String(v).padStart(2, '0');
+        headerClockEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      };
+
+      updateClock();
+      clockInterval = setInterval(updateClock, 1000);
+    }
 
     function updateSafeModeState(enabled) {
       safeModeEnabled = !!enabled;
@@ -92,6 +108,8 @@
       safeConfirmState.pendingForm = null;
       safeConfirmState.modal?.classList.remove('visible');
     }
+
+    startClock();
 
   function saveDismissedNotifications() {
     localStorage.setItem('d2haDismissedNotifications', JSON.stringify(dismissedNotifications));
