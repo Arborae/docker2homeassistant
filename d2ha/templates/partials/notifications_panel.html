@@ -1,4 +1,7 @@
 <div class="header-actions">
+  <div id="backend-status-indicator" class="backend-status backend-status-ok" title="Stato backend" aria-label="Stato backend">
+    <span class="backend-status-icon" aria-hidden="true">📡</span>
+  </div>
   <div class="header-clock" id="header-clock" aria-label="Orologio"></div>
   <div class="notif-area">
     <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
@@ -47,6 +50,17 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="backend-status-modal" class="backend-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="backend-status-title">
+  <div class="backend-modal" role="document">
+    <h2 id="backend-status-title">Stato aggiornamento dati</h2>
+    <p id="backend-status-last-update" class="backend-modal-text">Nessun aggiornamento riuscito di recente</p>
+    <div class="backend-modal-actions">
+      <button type="button" id="backend-status-refresh-btn" class="backend-modal-btn primary">Aggiorna ora</button>
+      <button type="button" id="backend-status-close-btn" class="backend-modal-btn">Chiudi</button>
     </div>
   </div>
 </div>
