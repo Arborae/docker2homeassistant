@@ -1,12 +1,51 @@
-<div class="notif-area">
-  <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
-    <span class="notif-icon" aria-hidden="true"></span>
-    <span class="notif-badge" id="notifBadge">0</span>
-  </button>
-  <div class="notif-panel" id="notifPanel" role="region" aria-label="Notifiche">
-    <div class="notif-header">
-      <span>Notifiche</span>
+<div class="header-actions">
+  <div class="notif-area">
+    <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
+      <span class="notif-icon" aria-hidden="true">🔔</span>
+      <span class="notif-badge" id="notifBadge">0</span>
+    </button>
+    <div class="notif-panel" id="notifPanel" role="region" aria-label="Notifiche">
+      <div class="notif-header">
+        <span>Notifiche</span>
+      </div>
+      <div class="notif-list" id="notifList"></div>
     </div>
-    <div class="notif-list" id="notifList"></div>
+  </div>
+
+  <div class="settings-area">
+    <button class="settings-toggle" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">
+      <span class="settings-icon" aria-hidden="true">⚙️</span>
+    </button>
+    <div class="settings-panel" id="settingsPanel" role="region" aria-label="Impostazioni">
+      <div class="settings-header">
+        <span>Impostazioni</span>
+      </div>
+      <div class="settings-body">
+        <div class="settings-row">
+          <span>OS installato</span>
+          <strong>{{ system_info.os }}</strong>
+        </div>
+        <div class="settings-row">
+          <span>Versione Docker</span>
+          <strong>{{ system_info.docker_version }}</strong>
+        </div>
+        <div class="settings-row">
+          <span>Uptime</span>
+          <strong>{{ system_info.uptime }}</strong>
+        </div>
+        <div class="settings-safe">
+          <div>
+            <div class="settings-row">
+              <span>Modalità sicura</span>
+              <div class="switch" title="Richiedi conferma per le operazioni sensibili">
+                <input type="checkbox" id="safeModeToggle" {% if safe_mode_enabled %}checked{% endif %} />
+                <span class="slider"></span>
+              </div>
+            </div>
+            <p class="settings-hint">Richiedi conferma o blocca le modifiche critiche.</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

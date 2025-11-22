@@ -1,12 +1,14 @@
+import json
 import os
-from dotenv import load_dotenv
 import time
+from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 from docker_service import (
     AutodiscoveryPreferences,
     DockerService,
     MqttManager,
+    format_timedelta,
     human_bytes,
 )
 
@@ -48,6 +50,64 @@ mqtt_manager.start_periodic_publisher()
 
 
 _notifications_cache = {"ts": 0.0, "data": {}}
+_safe_mode_state = {"enabled": False}
+_safe_mode_file = os.path.join(os.path.dirname(__file__), "safe_mode_state.json")
+
+
+def _load_safe_mode_state():
+    global _safe_mode_state
+    try:
+        with open(_safe_mode_file, "r", encoding="utf-8") as fp:
+            data = json.load(fp)
+            _safe_mode_state["enabled"] = bool(data.get("enabled", False))
+    except FileNotFoundError:
+        _safe_mode_state["enabled"] = False
+    except Exception:
+        _safe_mode_state["enabled"] = False
+
+
+def _save_safe_mode_state():
+    try:
+        with open(_safe_mode_file, "w", encoding="utf-8") as fp:
+            json.dump({"enabled": _safe_mode_state.get("enabled", False)}, fp)
+    except Exception:
+        pass
+
+
+def is_safe_mode_enabled() -> bool:
+    return bool(_safe_mode_state.get("enabled", False))
+
+
+def set_safe_mode(enabled: bool) -> bool:
+    _safe_mode_state["enabled"] = bool(enabled)
+    _save_safe_mode_state()
+    return is_safe_mode_enabled()
+
+
+def _read_system_uptime_seconds() -> float:
+    try:
+        with open("/proc/uptime", "r", encoding="utf-8") as fp:
+            content = fp.read().strip().split()
+            if content:
+                return float(content[0])
+    except Exception:
+        pass
+    return -1.0
+
+
+def _get_system_info():
+    host_info = docker_service.get_host_info()
+    uptime_seconds = _read_system_uptime_seconds()
+
+    return {
+        "os": host_info.get("OperatingSystem") or "-",
+        "docker_version": host_info.get("ServerVersion")
+        or host_info.get("Version")
+        or "-",
+        "uptime": format_timedelta(uptime_seconds) if uptime_seconds >= 0 else "-",
+    }
+
+
 
 
 def _build_notifications_summary(force: bool = False) -> dict:
@@ -97,6 +157,17 @@ def _build_notifications_summary(force: bool = False) -> dict:
 
     _notifications_cache.update({"ts": now, "data": summary})
     return summary
+
+
+_load_safe_mode_state()
+
+
+@app.context_processor
+def inject_common_context():
+    return {
+        "safe_mode_enabled": is_safe_mode_enabled(),
+        "system_info": _get_system_info(),
+    }
 
 
 def _build_home_context():
@@ -341,6 +412,16 @@ def api_notifications():
     force_refresh = request.args.get("refresh") == "1"
     data = _build_notifications_summary(force=force_refresh)
     return jsonify(data)
+
+
+@app.route("/api/safe_mode", methods=["GET", "POST"])
+def api_safe_mode():
+    if request.method == "GET":
+        return jsonify({"enabled": is_safe_mode_enabled()})
+
+    payload = request.get_json(force=True, silent=True) or {}
+    enabled = bool(payload.get("enabled", False))
+    return jsonify({"enabled": set_safe_mode(enabled)})
 
 
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
