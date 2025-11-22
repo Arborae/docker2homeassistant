@@ -28,7 +28,7 @@
     .tab.active { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0c121e; box-shadow:0 6px 18px rgba(49,196,255,0.35); }
     main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
-    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; }
+    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; table-layout: fixed; }
     th, td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
     th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
     tr:last-child td { border-bottom: none; }
@@ -44,7 +44,13 @@
     .changelog::-webkit-scrollbar-thumb, .breaking::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
     .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.78rem; color: #ccc; }
     .badge-null { opacity: 0.6; }
-    .actions { display: flex; flex-direction: column; gap: 6px; }
+    .actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .actions-cell { text-align: right; }
+    .col-name { width: 240px; }
+    .col-status { width: 170px; }
+    .col-version { width: 160px; }
+    .col-log, .col-breaking { width: 200px; }
+    .col-actions { width: 180px; }
     .btn { border: none; border-radius: 12px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; background: linear-gradient(135deg, #1f2a3c, #26324a); color: #e7ecf4; transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease; text-align: center; border:1px solid var(--border); box-shadow: 0 8px 18px rgba(0,0,0,0.35); }
     .btn:hover { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 10px 22px rgba(0,0,0,0.45); }
     .btn-full-update { background: linear-gradient(135deg, #1fb1ff, #4bd1ff); color:#04101c; font-weight: 800; letter-spacing: 0.01em; }
@@ -58,8 +64,8 @@
     .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(135deg, #141927, #0f131d); cursor:pointer; box-shadow: var(--shadow); }
     .stack-left { display:flex; align-items:center; gap:10px; min-width:0; }
     .stack-heading { display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .stack-title { font-weight:800; font-size:1rem; letter-spacing:0.01em; }
-    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--muted); font-size:0.85rem; font-weight:700; }
+    .stack-title { font-weight:800; font-size:1rem; letter-spacing:0.08em; text-transform: uppercase; }
+    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--muted); font-size:0.85rem; font-weight:700; text-transform: uppercase; letter-spacing:0.05em; }
     .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:10px; padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; min-height:32px; }
     .stack-toggle-btn:hover { border-color: rgba(49,196,255,0.45); color: var(--accent); }
     .chevron { transition: transform 0.2s ease; font-size: 0.95rem; color: var(--muted); display:inline-block; width:12px; text-align:center; }
@@ -121,14 +127,23 @@
               <span class="chevron">▾</span>
             </button>
             <div class="stack-heading">
-              <div class="stack-title">{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</div>
+              <div class="stack-title">{{ ('Senza stack' if stack.name == '_no_stack' else stack.name) | upper }}</div>
               <div class="small">{{ stack.containers|length }} container</div>
             </div>
           </div>
-          <div class="stack-chip">{{ 'no stack' if stack.name == '_no_stack' else stack.name }}</div>
+          <div class="stack-chip">{{ stack.containers|length }} container</div>
         </div>
         <div class="stack-body">
           <table>
+            <colgroup>
+              <col class="col-name">
+              <col class="col-status">
+              <col class="col-version">
+              <col class="col-version">
+              <col class="col-log">
+              <col class="col-breaking">
+              <col class="col-actions">
+            </colgroup>
             <thead>
               <tr>
                 <th>Container</th>
@@ -200,7 +215,7 @@
                       <span class="small" data-breaking>Nessuna info</span>
                     {% endif %}
                   </td>
-                  <td data-label="Azioni">
+                  <td class="actions-cell" data-label="Azioni">
                     <div class="actions">
                       <form class="full-update-form" data-container-name="{{ c.name }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
                         <button class="btn btn-full-update" type="submit">Aggiorna immagine</button>

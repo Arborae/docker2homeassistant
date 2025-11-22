@@ -38,7 +38,7 @@
     .stack-toggle-btn:hover { border-color: rgba(49,196,255,0.45); color: var(--accent); }
     .stack-toggle-btn .chevron { display:inline-block; width:10px; text-align:center; }
     .stack-content.collapsed { display:none; }
-    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; }
+    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; table-layout: fixed; }
     th, td { padding:10px 12px; font-size:0.85rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; }
     th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
     tr:last-child td { border-bottom: none; }
@@ -48,7 +48,15 @@
     .status-exited, .status-stopped { background: rgba(255,99,71,0.15); color: #ff8a7a; }
     .status-paused { background: rgba(255,193,7,0.15); color: #ffd54f; }
     .status-restarting { background: rgba(49,196,255,0.15); color: #31c4ff; }
-    .actions { display:flex; flex-wrap: wrap; gap:6px; }
+    .actions { display:flex; flex-wrap: wrap; gap:6px; justify-content:flex-end; }
+    .actions .btn { white-space:nowrap; }
+    .actions-cell { text-align:right; }
+    .col-select { width: 48px; }
+    .col-name { width: 220px; }
+    .col-status { width: 120px; }
+    .col-uptime, .col-cpu, .col-ram, .col-restart { width: 110px; }
+    .col-networks, .col-ports { width: 170px; }
+    .col-actions { width: 200px; }
     .btn { border:1px solid transparent; border-radius:999px; padding:8px 14px; font-size:0.82rem; cursor:pointer; background:#262c3c; color: var(--text); transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease, border-color 0.15s ease; letter-spacing:0.01em; }
     .btn:hover { background:#31394e; transform: translateY(-1px); border-color: rgba(49,196,255,0.45); box-shadow:0 6px 18px rgba(49,196,255,0.25); }
     .btn-strong { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0b111c; box-shadow:0 8px 18px rgba(49,196,255,0.35); font-weight:800; }
@@ -167,6 +175,18 @@
         </div>
         <div class="stack-content">
           <table>
+            <colgroup>
+              <col class="col-select">
+              <col class="col-name">
+              <col class="col-status">
+              <col class="col-uptime">
+              <col class="col-cpu">
+              <col class="col-ram">
+              <col class="col-restart">
+              <col class="col-networks">
+              <col class="col-ports">
+              <col class="col-actions">
+            </colgroup>
             <thead>
               <tr>
                 <th class="select-col" aria-label="Seleziona"></th>
@@ -239,7 +259,7 @@
                       <span class="meta">Nessuna porta esposta</span>
                     {% endif %}
                   </td>
-                  <td data-label="Azioni">
+                  <td class="actions-cell" data-label="Azioni">
                     <div class="actions">
                       <button class="btn btn-strong" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
                       <button class="btn btn-ghost" type="button" data-open-modal data-tab="logs" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
