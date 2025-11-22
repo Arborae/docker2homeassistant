@@ -56,6 +56,15 @@
     .btn-restart { background:#3498db; }
     .meta { color: var(--muted); font-size:0.85rem; }
     .row-clickable { cursor:pointer; }
+    .select-col { width: 48px; text-align:center; }
+    .checkbox { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border:1px solid var(--border); border-radius:6px; background: rgba(255,255,255,0.04); }
+    .checkbox input { width:100%; height:100%; margin:0; opacity:0; cursor:pointer; }
+    .checkbox input:checked + .checkmark { background: var(--accent); border-color: var(--accent); }
+    .checkmark { width:100%; height:100%; border-radius:5px; border:1px solid transparent; display:inline-block; }
+    .bulk-bar { position:fixed; left:0; right:0; bottom:0; background: rgba(21,25,36,0.95); border-top:1px solid var(--border); padding:12px 18px; display:none; align-items:center; justify-content:space-between; gap:12px; box-shadow: 0 -8px 20px rgba(0,0,0,0.35); z-index:30; }
+    .bulk-bar.visible { display:flex; }
+    .bulk-summary { color: var(--muted); font-weight:700; letter-spacing:0.02em; }
+    .bulk-actions { display:flex; gap:8px; flex-wrap:wrap; }
     .modal-backdrop { position: fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index: 50; padding:20px; }
     .modal-backdrop.visible { display:flex; }
     .modal { background: var(--panel-2); border:1px solid var(--border); border-radius:16px; width:min(1100px, 100%); height:82vh; max-height:82vh; overflow:hidden; box-shadow: var(--shadow); display:flex; flex-direction:column; }
@@ -154,6 +163,7 @@
           <table>
             <thead>
               <tr>
+                <th class="select-col" aria-label="Seleziona"></th>
                 <th>Nome</th>
                 <th>Stato</th>
                 <th>Uptime</th>
@@ -168,6 +178,12 @@
             <tbody>
               {% for c in stack.containers %}
                 <tr class="row-clickable" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">
+                  <td class="select-col" data-label="Seleziona">
+                    <label class="checkbox">
+                      <input type="checkbox" class="container-select" value="{{ c.id }}" data-container-name="{{ c.name }}" aria-label="Seleziona {{ c.name }}">
+                      <span class="checkmark"></span>
+                    </label>
+                  </td>
                   <td data-label="Nome">
                     <div><strong>{{ c.name }}</strong></div>
                     <div class="meta">{{ c.image }}</div>
@@ -221,24 +237,6 @@
                     <div class="actions">
                       <button class="btn" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
                       <button class="btn" type="button" data-open-logs data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='play') }}">
-                        <button class="btn btn-play" type="submit">Play</button>
-                      </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='pause') }}" data-safe-confirm="Mettere in pausa {{ c.name }}?">
-                        <button class="btn btn-pause" type="submit">Pausa</button>
-                      </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='stop') }}" data-safe-confirm="Arrestare {{ c.name }}?">
-                        <button class="btn btn-stop" type="submit">Stop</button>
-                      </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='restart') }}" data-safe-confirm="Riavviare {{ c.name }}?">
-                        <button class="btn btn-restart" type="submit">Riavvia</button>
-                      </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='unpause') }}">
-                        <button class="btn" type="submit">Riprendi</button>
-                      </form>
-                      <form method="post" action="{{ url_for('container_action', container_id=c.id, action='delete') }}" data-safe-confirm="Eliminare definitivamente {{ c.name }}?">
-                        <button class="btn btn-delete" type="submit">Elimina</button>
-                      </form>
                     </div>
                   </td>
                 </tr>
@@ -249,6 +247,16 @@
       </section>
     {% endfor %}
   </main>
+
+  <div class="bulk-bar" id="bulk-bar" aria-hidden="true">
+    <div class="bulk-summary"><span id="bulk-count">0</span> container selezionati</div>
+    <div class="bulk-actions">
+      <button class="btn btn-play" type="button" data-bulk-action="start">Avvia</button>
+      <button class="btn btn-stop" type="button" data-bulk-action="stop">Ferma</button>
+      <button class="btn btn-restart" type="button" data-bulk-action="restart">Riavvia</button>
+      <button class="btn btn-delete" type="button" data-bulk-action="delete">Elimina</button>
+    </div>
+  </div>
 
   <div class="modal-backdrop" id="container-modal" aria-hidden="true">
     <div class="modal">
@@ -434,12 +442,17 @@
     const updatesCheck = document.getElementById('updates-check');
     const updatesFeedback = document.getElementById('updates-feedback');
     const toastContainer = document.getElementById('toast-container');
+    const bulkBar = document.getElementById('bulk-bar');
+    const bulkCount = document.getElementById('bulk-count');
+    const bulkButtons = Array.from(document.querySelectorAll('[data-bulk-action]'));
+    const selectionInputs = Array.from(document.querySelectorAll('.container-select'));
 
     let currentContainerId = null;
     let statsInterval = null;
     let logsInterval = null;
     let statsHistory = { cpu: [], ram: [], net: [] };
     let lastNet = null;
+    const selectedContainers = new Map();
 
     const showToast = (message, { type = 'info', actions = [] } = {}) => {
       const toast = document.createElement('div');
@@ -470,6 +483,54 @@
         toast.classList.remove('visible');
         setTimeout(() => toast.remove(), 350);
       }, lifetime);
+    };
+
+    const updateBulkBar = () => {
+      const count = selectedContainers.size;
+      bulkCount.textContent = count;
+      const visible = count > 0;
+      bulkBar.classList.toggle('visible', visible);
+      bulkBar.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    };
+
+    const toggleSelection = (input) => {
+      const id = input.value;
+      if (!id) return;
+      if (input.checked) {
+        selectedContainers.set(id, input.dataset.containerName || 'Container');
+      } else {
+        selectedContainers.delete(id);
+      }
+      updateBulkBar();
+    };
+
+    selectionInputs.forEach((input) => {
+      input.addEventListener('change', (e) => {
+        toggleSelection(e.target);
+        e.stopPropagation();
+      });
+      input.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    const performBulkAction = async (action) => {
+      const ids = Array.from(selectedContainers.keys());
+      if (!ids.length) return;
+
+      const labelMap = {
+        start: 'avvio',
+        stop: 'stop',
+        restart: 'riavvio',
+        delete: 'eliminazione',
+      };
+
+      try {
+        await Promise.all(ids.map((id) => fetch(`/containers/${id}/${action}`, { method: 'POST' })));
+        showToast(`Azione di ${labelMap[action] || action} inviata a ${ids.length} container`, { type: 'success' });
+        setTimeout(() => window.location.reload(), 500);
+      } catch (err) {
+        console.error(err);
+        showToast("Errore nell'eseguire l'azione selezionata", { type: 'error' });
+      }
     };
 
     const formatBytes = (bytes) => {
@@ -738,10 +799,18 @@
       });
     });
 
+    bulkButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        performBulkAction(btn.dataset.bulkAction);
+      });
+    });
+
     document.querySelectorAll('.row-clickable').forEach(row => {
       row.addEventListener('click', (e) => {
         if (e.target.closest('form')) return;
         if (e.target.closest('button') && !e.target.dataset.openModal) return;
+        if (e.target.closest('.container-select')) return;
         openModal(row.dataset.containerId, row.dataset.containerName);
       });
     });
