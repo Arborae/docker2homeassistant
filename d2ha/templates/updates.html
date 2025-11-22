@@ -50,6 +50,9 @@
     .btn-full-update { background: linear-gradient(135deg, #1fb1ff, #4bd1ff); color:#04101c; font-weight: 800; letter-spacing: 0.01em; }
     .btn-full-update:hover { filter: brightness(1.1); }
     .small { font-size: 0.75rem; color: #aaa; }
+    .performance-hint { display:none; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border:1px dashed var(--border); align-items: center; gap: 12px; }
+    .performance-hint.visible { display: flex; justify-content: space-between; flex-wrap: wrap; }
+    .performance-hint .hint-title { font-weight: 800; margin-bottom: 4px; display: block; }
     code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: 0.75rem; }
     .stack-card { margin-bottom: 12px; }
     .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background: linear-gradient(135deg, #141927, #0f131d); cursor:pointer; box-shadow: var(--shadow); }
@@ -99,6 +102,13 @@
     <div class="card">
       {% set total = stacks | map(attribute='containers') | map('length') | sum %}
       <div class="muted">{{ total }} container analizzati · {{ summary.images }} immagini installate</div>
+      <div class="performance-hint" id="updates-performance-hint">
+        <div>
+          <span class="hint-title">Modalità prestazioni attiva</span>
+          <p class="small">Per ridurre il carico, la scansione automatica è disattivata. Avvia manualmente quando serve.</p>
+        </div>
+        <button class="btn btn-ghost" type="button" id="updates-scan-btn">Scansiona aggiornamenti</button>
+      </div>
     </div>
     {% for stack in stacks %}
       <section class="card stack-card" data-stack="{{ stack.name }}">
@@ -220,6 +230,13 @@
       up_to_date: 'status-up-to-date',
       unknown: 'status-unknown'
     };
+    const updatesHint = document.getElementById('updates-performance-hint');
+    const manualScanBtn = document.getElementById('updates-scan-btn');
+    const pollingDefaults = { intervalMs: 20000 };
+    const pollingPerformance = { intervalMs: 45000 };
+    let refreshIntervalMs = pollingDefaults.intervalMs;
+    let refreshTimer = null;
+    let autoScanEnabled = !(window.d2haSettings?.performanceMode);
 
     function toggleStack(card) {
       card.classList.toggle('collapsed');
@@ -292,9 +309,25 @@
       const rows = Array.from(document.querySelectorAll('.container-row'));
       rows.forEach(row => refreshRow(row));
     }
+    function startUpdatesPolling() {
+      clearInterval(refreshTimer);
+      if (!autoScanEnabled) return;
+      scheduleRefresh();
+      refreshTimer = setInterval(scheduleRefresh, refreshIntervalMs);
+    }
 
-    setInterval(scheduleRefresh, 20000);
-    scheduleRefresh();
+    manualScanBtn?.addEventListener('click', () => {
+      scheduleRefresh();
+    });
+
+    window.registerPerformanceHandler?.((enabled) => {
+      refreshIntervalMs = enabled ? pollingPerformance.intervalMs : pollingDefaults.intervalMs;
+      autoScanEnabled = !enabled;
+      updatesHint?.classList.toggle('visible', enabled);
+      startUpdatesPolling();
+    });
+
+    startUpdatesPolling();
 
     const modal = document.getElementById('confirm-modal');
     const messageEl = document.getElementById('confirm-message');

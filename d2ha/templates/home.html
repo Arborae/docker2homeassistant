@@ -526,6 +526,20 @@
     let homeLogContainerId = null;
     let homeLogInterval = null;
     let homeLogBuffer = '';
+    const overviewDefaults = {
+      overviewIntervalMs: 5000,
+      maxSamples: 20,
+      homeLogIntervalMs: 4000,
+    };
+    const overviewPerformance = {
+      overviewIntervalMs: 10000,
+      maxSamples: 12,
+      homeLogIntervalMs: 7000,
+    };
+    let overviewIntervalMs = overviewDefaults.overviewIntervalMs;
+    let overviewMaxSamples = overviewDefaults.maxSamples;
+    let overviewInterval = null;
+    let homeLogIntervalMs = overviewDefaults.homeLogIntervalMs;
 
     const escapeLogHtml = (str) =>
       (str || '')
@@ -595,7 +609,7 @@
     const startHomeLogLoop = () => {
       clearInterval(homeLogInterval);
       if (homeLogAuto.checked && homeLogContainerId) {
-        homeLogInterval = setInterval(updateHomeLogs, 4000);
+        homeLogInterval = setInterval(updateHomeLogs, homeLogIntervalMs);
       }
     };
 
@@ -802,7 +816,8 @@
     });
 
     function trimData(chart) {
-      if (chart.data.labels.length > 20) {
+      const maxSamples = Math.max(overviewMaxSamples, 5);
+      while (chart.data.labels.length > maxSamples) {
         chart.data.labels.shift();
         chart.data.datasets.forEach((dataset) => dataset.data.shift());
       }
@@ -902,6 +917,11 @@
       });
     }
 
+    const startOverviewPolling = () => {
+      clearInterval(overviewInterval);
+      overviewInterval = setInterval(refreshOverview, overviewIntervalMs);
+    };
+
     async function refreshOverview() {
       try {
         const res = await fetch('/api/overview');
@@ -916,7 +936,16 @@
 
     applySummary(initialData.summary);
     applyStacks(initialData.stacks);
-    setInterval(refreshOverview, 5000);
+    startOverviewPolling();
+    window.registerPerformanceHandler?.((enabled) => {
+      overviewIntervalMs = enabled ? overviewPerformance.overviewIntervalMs : overviewDefaults.overviewIntervalMs;
+      overviewMaxSamples = enabled ? overviewPerformance.maxSamples : overviewDefaults.maxSamples;
+      homeLogIntervalMs = enabled ? overviewPerformance.homeLogIntervalMs : overviewDefaults.homeLogIntervalMs;
+      if (homeLogInterval) {
+        startHomeLogLoop();
+      }
+      startOverviewPolling();
+    });
   </script>
 </body>
 </html>

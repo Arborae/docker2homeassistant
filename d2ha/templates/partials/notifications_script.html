@@ -14,6 +14,7 @@
     const backendRefreshBtn = document.getElementById('backend-status-refresh-btn');
     const backendCloseBtn = document.getElementById('backend-status-close-btn');
     const safeModeToggleEl = document.getElementById('safeModeToggle');
+    const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
     const safeConfirmState = {
       modal: null,
       message: null,
@@ -22,6 +23,9 @@
       pendingForm: null,
     };
     let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
+    window.d2haSettings = window.d2haSettings || { performanceMode: false };
+    window.d2haRuntime = window.d2haRuntime || { performanceHandlers: [] };
+    const performanceState = window.d2haSettings;
     let currentNotifications = initialNotifications;
     let dismissedNotifications = {};
     let clockInterval = null;
@@ -47,6 +51,40 @@
       clockInterval = setInterval(updateClock, 1000);
     }
 
+    function syncPerformanceToggle(enabled) {
+      if (performanceModeToggleEl) {
+        performanceModeToggleEl.checked = enabled;
+      }
+    }
+
+    function initPerformanceMode() {
+      let storedPreference = null;
+      try {
+        storedPreference = localStorage.getItem('d2ha.performanceMode');
+      } catch (err) {
+        storedPreference = null;
+      }
+
+      const enabled = storedPreference === 'true';
+      performanceState.performanceMode = enabled;
+      syncPerformanceToggle(enabled);
+
+      if (performanceModeToggleEl) {
+        performanceModeToggleEl.addEventListener('change', () => {
+          const nextValue = performanceModeToggleEl.checked;
+          performanceState.performanceMode = nextValue;
+          try {
+            localStorage.setItem('d2ha.performanceMode', nextValue ? 'true' : 'false');
+          } catch (err) {
+            console.error('Unable to persist performance mode', err);
+          }
+          applyPerformanceMode(nextValue);
+        });
+      }
+
+      applyPerformanceMode(enabled);
+    }
+
     function updateSafeModeState(enabled) {
       safeModeEnabled = !!enabled;
       document.body.dataset.safeMode = safeModeEnabled ? '1' : '0';
@@ -55,6 +93,30 @@
       }
       window.d2haSafeMode = { enabled: safeModeEnabled };
       document.dispatchEvent(new CustomEvent('safe-mode-changed', { detail: { enabled: safeModeEnabled } }));
+    }
+
+    function registerPerformanceHandler(handler) {
+      if (typeof handler !== 'function') return;
+      window.d2haRuntime.performanceHandlers.push(handler);
+      try {
+        handler(!!performanceState.performanceMode);
+      } catch (err) {
+        console.error('Performance handler failed during registration', err);
+      }
+    }
+
+    function applyPerformanceMode(enabled) {
+      performanceState.performanceMode = !!enabled;
+      window.d2haRuntime.performanceHandlers.forEach((handler) => {
+        try {
+          handler(performanceState.performanceMode);
+        } catch (err) {
+          console.error('Performance handler failed', err);
+        }
+      });
+      document.dispatchEvent(
+        new CustomEvent('performance-mode-changed', { detail: { enabled: performanceState.performanceMode } })
+      );
     }
 
     function updateBackendStatus(durationMs) {
@@ -444,6 +506,9 @@
       );
     }
 
+  window.registerPerformanceHandler = registerPerformanceHandler;
+  window.applyPerformanceMode = applyPerformanceMode;
+  initPerformanceMode();
   loadDismissedNotifications();
   updateSafeModeState(safeModeEnabled);
   renderNotificationList(currentNotifications);

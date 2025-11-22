@@ -37,6 +37,16 @@
           <span>Uptime</span>
           <strong>{{ system_info.uptime }}</strong>
         </div>
+        <div class="settings-row settings-row-toggle">
+          <div>
+            <span>Modalità prestazioni</span>
+            <p class="settings-hint">Riduci carico e polling automatico.</p>
+          </div>
+          <div class="switch" title="Riduce il carico iniziale e le frequenze di refresh">
+            <input type="checkbox" id="performance-mode-toggle" />
+            <span class="slider"></span>
+          </div>
+        </div>
         <div class="settings-safe">
           <div>
             <div class="settings-row">
