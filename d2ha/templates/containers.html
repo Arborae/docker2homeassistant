@@ -471,6 +471,12 @@
     let statsHistory = { cpu: [], ram: [], net: [] };
     let lastNet = null;
     const selectedContainers = new Map();
+    const pollingDefaults = { statsIntervalMs: 3000, logsIntervalMs: 4000, historyLimit: 40 };
+    const pollingPerformance = { statsIntervalMs: 5000, logsIntervalMs: 7000, historyLimit: 20 };
+    let statsIntervalMs = pollingDefaults.statsIntervalMs;
+    let logsIntervalMs = pollingDefaults.logsIntervalMs;
+    let statsSampleLimit = pollingDefaults.historyLimit;
+    let activeTab = 'info';
 
     const showToast = (message, { type = 'info', actions = [] } = {}) => {
       const toast = document.createElement('div');
@@ -583,6 +589,25 @@
       tabPanels.forEach(panel => panel.classList.toggle('active', panel.dataset.panel === name));
     };
 
+    const handleTabChange = (name) => {
+      setPanel(name);
+      activeTab = name;
+
+      if (window.d2haSettings?.performanceMode) {
+        stopPolling();
+        if (name === 'stats') {
+          updateStats();
+          statsInterval = setInterval(updateStats, statsIntervalMs);
+        }
+        if (name === 'logs') {
+          updateLogs();
+          if (logAuto.checked) {
+            logsInterval = setInterval(updateLogs, logsIntervalMs);
+          }
+        }
+      }
+    };
+
     const renderList = (target, items, formatter, emptyText = 'Nessun dato') => {
       if (!items || !items.length) {
         target.textContent = emptyText;
@@ -668,9 +693,9 @@
         statsHistory.cpu.push(data.cpu_percent);
         statsHistory.ram.push(data.mem_percent);
         statsHistory.net.push(netDelta.rx + netDelta.tx);
-        statsHistory.cpu = statsHistory.cpu.slice(-40);
-        statsHistory.ram = statsHistory.ram.slice(-40);
-        statsHistory.net = statsHistory.net.slice(-40);
+        statsHistory.cpu = statsHistory.cpu.slice(-statsSampleLimit);
+        statsHistory.ram = statsHistory.ram.slice(-statsSampleLimit);
+        statsHistory.net = statsHistory.net.slice(-statsSampleLimit);
 
         drawSpark(document.getElementById('chart-cpu'), statsHistory.cpu, '#31c4ff', 100);
         drawSpark(document.getElementById('chart-ram'), statsHistory.ram, '#8ef0c5', 100);
@@ -777,9 +802,9 @@
     const startPolling = () => {
       clearInterval(statsInterval);
       clearInterval(logsInterval);
-      statsInterval = setInterval(updateStats, 3000);
+      statsInterval = setInterval(updateStats, statsIntervalMs);
       if (logAuto.checked) {
-        logsInterval = setInterval(updateLogs, 4000);
+        logsInterval = setInterval(updateLogs, logsIntervalMs);
       }
     };
 
@@ -795,12 +820,26 @@
       lastNet = null;
       modalEl.classList.add('visible');
       modalEl.setAttribute('aria-hidden', 'false');
+      activeTab = initialTab;
       setPanel(initialTab);
       updateDetails();
-      updateStats();
-      updateLogs();
       updateUpdates();
-      startPolling();
+      if (window.d2haSettings?.performanceMode) {
+        if (initialTab === 'stats') {
+          updateStats();
+          statsInterval = setInterval(updateStats, statsIntervalMs);
+        }
+        if (initialTab === 'logs') {
+          updateLogs();
+          if (logAuto.checked) {
+            logsInterval = setInterval(updateLogs, logsIntervalMs);
+          }
+        }
+      } else {
+        updateStats();
+        updateLogs();
+        startPolling();
+      }
     };
 
     const closeModal = () => {
@@ -811,13 +850,43 @@
       lastLogs = '';
     };
 
+    window.registerPerformanceHandler?.((enabled) => {
+      statsIntervalMs = enabled ? pollingPerformance.statsIntervalMs : pollingDefaults.statsIntervalMs;
+      logsIntervalMs = enabled ? pollingPerformance.logsIntervalMs : pollingDefaults.logsIntervalMs;
+      statsSampleLimit = enabled ? pollingPerformance.historyLimit : pollingDefaults.historyLimit;
+      statsHistory.cpu = statsHistory.cpu.slice(-statsSampleLimit);
+      statsHistory.ram = statsHistory.ram.slice(-statsSampleLimit);
+      statsHistory.net = statsHistory.net.slice(-statsSampleLimit);
+
+      if (!modalEl.classList.contains('visible')) {
+        stopPolling();
+        return;
+      }
+
+      if (enabled) {
+        stopPolling();
+        if (activeTab === 'stats') {
+          updateStats();
+          statsInterval = setInterval(updateStats, statsIntervalMs);
+        }
+        if (activeTab === 'logs' && logAuto.checked) {
+          updateLogs();
+          logsInterval = setInterval(updateLogs, logsIntervalMs);
+        }
+      } else {
+        updateStats();
+        updateLogs();
+        startPolling();
+      }
+    });
+
     document.getElementById('modal-close').addEventListener('click', closeModal);
     modalEl.addEventListener('click', (e) => {
       if (e.target === modalEl) closeModal();
     });
 
     tabButtons.forEach(btn => {
-      btn.addEventListener('click', () => setPanel(btn.dataset.tab));
+      btn.addEventListener('click', () => handleTabChange(btn.dataset.tab));
     });
 
     document.querySelectorAll('[data-open-modal]').forEach(btn => {
@@ -843,7 +912,7 @@
 
     logAuto.addEventListener('change', () => {
       if (logAuto.checked) {
-        logsInterval = setInterval(updateLogs, 4000);
+        logsInterval = setInterval(updateLogs, logsIntervalMs);
       } else {
         clearInterval(logsInterval);
       }
