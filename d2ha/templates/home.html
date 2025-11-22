@@ -492,6 +492,16 @@
               <option value="all">Senza limiti</option>
             </select>
           </label>
+          <label class="muted">Severità
+            <select id="home-log-severity" class="select">
+              <option value="all" selected>Tutte</option>
+              <option value="error">Errori</option>
+              <option value="warn">Warning</option>
+              <option value="info">Info</option>
+              <option value="debug">Debug</option>
+              <option value="other">Altro</option>
+            </select>
+          </label>
           <button class="inline-btn" id="home-log-refresh">Aggiorna ora</button>
         </div>
         <pre class="logs-area" id="home-log-output">Seleziona un container...</pre>
@@ -510,10 +520,12 @@
     const homeLogOutput = document.getElementById('home-log-output');
     const homeLogAuto = document.getElementById('home-log-auto');
     const homeLogTail = document.getElementById('home-log-tail');
+    const homeLogSeverity = document.getElementById('home-log-severity');
     const homeLogRefresh = document.getElementById('home-log-refresh');
     const homeLogTriggers = Array.from(document.querySelectorAll('[data-open-home-logs]'));
     let homeLogContainerId = null;
     let homeLogInterval = null;
+    let homeLogBuffer = '';
 
     const escapeLogHtml = (str) =>
       (str || '')
@@ -532,6 +544,19 @@
       return 'log-other';
     };
 
+    const matchesHomeSeverity = (line, filter) => {
+      if (filter === 'all') return true;
+      const levelMap = {
+        'log-error': 'error',
+        'log-warn': 'warn',
+        'log-info': 'info',
+        'log-debug': 'debug',
+        'log-other': 'other',
+      };
+      const levelClass = getLogLevel(line);
+      return levelMap[levelClass] === filter;
+    };
+
     const renderHomeLogs = (logs) => {
       if (!logs) {
         homeLogOutput.textContent = 'Nessun log disponibile';
@@ -539,15 +564,17 @@
       }
 
       const lines = logs.split(/\r?\n/);
-      const html = lines
+      const filteredLines = lines
         .filter((line) => line !== '')
+        .filter((line) => matchesHomeSeverity(line, homeLogSeverity.value));
+      const html = filteredLines
         .map((line) => {
           const levelClass = getLogLevel(line);
           return `<div class="log-line ${levelClass}"><span class="log-bullet">•</span><span>${escapeLogHtml(line)}</span></div>`;
         })
         .join('');
 
-      homeLogOutput.innerHTML = html || '<div class="muted">Nessun log disponibile</div>';
+      homeLogOutput.innerHTML = html || '<div class="muted">Nessun log per la severità selezionata</div>';
     };
 
     const updateHomeLogs = async () => {
@@ -558,7 +585,8 @@
         const res = await fetch(`/api/containers/${homeLogContainerId}/logs?tail=${tail}`);
         if (!res.ok) throw new Error('Request failed');
         const data = await res.json();
-        renderHomeLogs(data.logs);
+        homeLogBuffer = data.logs;
+        renderHomeLogs(homeLogBuffer);
       } catch (err) {
         homeLogOutput.textContent = 'Impossibile recuperare i log';
       }
@@ -584,6 +612,7 @@
       clearInterval(homeLogInterval);
       homeLogInterval = null;
       homeLogContainerId = null;
+      homeLogBuffer = '';
       homeLogModal.classList.remove('visible');
       homeLogModal.setAttribute('aria-hidden', 'true');
     };
@@ -597,6 +626,7 @@
     homeLogRefresh.addEventListener('click', updateHomeLogs);
     homeLogAuto.addEventListener('change', startHomeLogLoop);
     homeLogTail.addEventListener('change', updateHomeLogs);
+    homeLogSeverity.addEventListener('change', () => renderHomeLogs(homeLogBuffer));
     homeLogClose.addEventListener('click', closeHomeLogModal);
     homeLogModal.addEventListener('click', (e) => {
       if (e.target === homeLogModal) closeHomeLogModal();
