@@ -849,7 +849,9 @@
         if (!opts.text || !chart.chartArea) return;
         const { ctx, chartArea: { width, height, left, top } } = chart;
         ctx.save();
-        ctx.fillStyle = '#e7ecf4';
+        const computed = getComputedStyle(document.body);
+        const textColor = computed.getPropertyValue('--text').trim() || '#e7ecf4';
+        ctx.fillStyle = textColor;
         ctx.font = '600 14px "Inter"';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
