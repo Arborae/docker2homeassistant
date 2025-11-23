@@ -6,8 +6,6 @@
   <p>{{ t('setup_autodiscovery.intro') }}</p>
   <p>{{ t('setup_autodiscovery.hint') }}</p>
 
-  {% include 'partials/flash_messages.html' %}
-
   <form method="post">
     <label class="auth-choice">
       <input type="radio" name="autodiscovery_choice" value="enable_all" {% if mqtt_default_entities_enabled %}checked{% endif %}>
