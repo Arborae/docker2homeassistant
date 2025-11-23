@@ -1,0 +1,73 @@
+{% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+    <style>
+      .flash-toast-container {
+        position: fixed;
+        top: 14px;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        padding: 0 16px;
+        pointer-events: none;
+        z-index: 90;
+      }
+      .flash-toast {
+        background: linear-gradient(145deg, var(--control-surface), var(--panel));
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        box-shadow: var(--shadow);
+        min-width: min(440px, 92vw);
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        pointer-events: auto;
+        font-weight: 700;
+        text-align: center;
+      }
+      .flash-toast.visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      .flash-toast.success { border-color: rgba(124, 255, 195, 0.35); box-shadow: 0 10px 28px rgba(124, 255, 195, 0.16); }
+      .flash-toast.error { border-color: rgba(255, 138, 122, 0.4); box-shadow: 0 10px 28px rgba(255, 138, 122, 0.2); }
+      .flash-toast.info { border-color: var(--accent-border); box-shadow: 0 10px 28px var(--accent-glow-soft); }
+      .flash-toast.warning { border-color: rgba(255, 213, 79, 0.4); box-shadow: 0 10px 28px rgba(255, 213, 79, 0.18); }
+    </style>
+    <div class="flash-toast-container" id="flash-toast-container" aria-live="polite">
+      {% for category, msg in messages %}
+        <div class="flash-toast {{ category }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+    <script>
+      (() => {
+        const container = document.getElementById('flash-toast-container');
+        if (!container) return;
+        const toasts = Array.from(container.querySelectorAll('.flash-toast'));
+        const displayMs = 4200;
+        const stagger = 80;
+
+        toasts.forEach((toast, index) => {
+          const showDelay = 20 + index * stagger;
+          const hideDelay = displayMs + index * stagger;
+          const removeDelay = hideDelay + 350;
+
+          setTimeout(() => toast.classList.add('visible'), showDelay);
+          setTimeout(() => toast.classList.remove('visible'), hideDelay);
+          setTimeout(() => toast.remove(), removeDelay);
+        });
+
+        const cleanupDelay = displayMs + 800 + toasts.length * stagger;
+        setTimeout(() => {
+          if (!container.children.length) {
+            container.remove();
+          }
+        }, cleanupDelay);
+      })();
+    </script>
+  {% endif %}
+{% endwith %}

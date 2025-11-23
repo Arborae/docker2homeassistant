@@ -153,10 +153,6 @@
       box-shadow: 0 8px 18px var(--accent-glow);
     }
     .btn:hover { filter: brightness(1.05); }
-    .flash-container { margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .flash { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
-    .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
-    .flash.success { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); }
     .hint { font-size: 0.9rem; color: var(--muted); }
   </style>
 </head>
@@ -193,15 +189,7 @@
     <p>{{ t("login.onboarding_hint")|safe }}</p>
     {% endif %}
 
-    {% with messages = get_flashed_messages(with_categories=True) %}
-      {% if messages %}
-        <div class="flash-container">
-          {% for category, msg in messages %}
-            <div class="flash {{ category }}">{{ msg }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+    {% include 'partials/flash_messages.html' %}
 
     <form method="post" autocomplete="off">
       <div>

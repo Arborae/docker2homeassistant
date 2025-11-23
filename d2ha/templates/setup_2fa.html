@@ -137,10 +137,6 @@
     .btn-primary { background: var(--accent-gradient); color: #0c121e; box-shadow: 0 8px 18px var(--accent-glow); }
     .btn-secondary { background: rgba(255,255,255,0.06); color: var(--text); border:1px solid var(--border); }
     input[type="text"] { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 1rem; }
-    .flash-container { margin: 12px 0; display: flex; flex-direction: column; gap: 8px; }
-    .flash { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
-    .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
-    .flash.success { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); }
     .layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 18px; align-items: flex-start; margin: 14px 0; }
     .qr-box { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; box-shadow: var(--shadow); }
     .qr-title { margin: 0 0 8px; font-weight: 800; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; font-size: 0.85rem; }
@@ -181,15 +177,7 @@
     <p>{{ t('setup_2fa.intro') }}</p>
     <p>{{ t('setup_2fa.hint') }}</p>
 
-    {% with messages = get_flashed_messages(with_categories=True) %}
-      {% if messages %}
-        <div class="flash-container">
-          {% for category, msg in messages %}
-            <div class="flash {{ category }}">{{ msg }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+    {% include 'partials/flash_messages.html' %}
 
     <div class="note">
       <p>{{ t('setup_2fa.step1') }}</p>
