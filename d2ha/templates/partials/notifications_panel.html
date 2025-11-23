@@ -1,4 +1,8 @@
-<div class="header-actions">
+<div class="header-actions header-actions-left">
+  <div class="header-clock" id="header-clock" aria-label="Orologio"></div>
+</div>
+
+<div class="header-actions header-actions-right">
   <div id="backend-status-indicator" class="backend-status backend-status-ok" title="Stato backend" aria-label="Stato backend">
     <svg class="backend-status-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M3 10.5c5.5-5.5 12.5-5.5 18 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -7,7 +11,6 @@
       <circle cx="12" cy="20" r="1.25" fill="currentColor" />
     </svg>
   </div>
-  <div class="header-clock" id="header-clock" aria-label="Orologio"></div>
   <div class="notif-area">
     <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
       <span class="notif-icon" aria-hidden="true">🔔</span>
@@ -41,6 +44,13 @@
         <div class="settings-row">
           <span>Uptime</span>
           <strong>{{ system_info.uptime }}</strong>
+        </div>
+        <div class="settings-row">
+          <div>
+            <span>Sicurezza</span>
+            <p class="settings-hint">Gestisci autenticazione e modalità sicura.</p>
+          </div>
+          <a class="settings-link" href="{{ url_for('security_settings') }}">Apri</a>
         </div>
         <div class="settings-row settings-row-toggle">
           <div>
