@@ -150,6 +150,21 @@ Popup di dettaglio con:
 
 ---
 
+## 🔐 Autenticazione e onboarding
+
+- **Credenziali iniziali:** `admin / admin`.
+- Al **primo login** viene avviata una procedura guidata:
+  - scelta di una nuova password (obbligatoria) e, se vuoi, di un nuovo username;
+  - scelta se abilitare subito la **2FA TOTP** (Google Authenticator, Aegis, ecc.) o rimandare.
+- La configurazione di sicurezza viene salvata nel file JSON `d2ha/auth_config.json` (creato automaticamente con permessi ristretti al primo avvio).
+- Variabili utili:
+  - `D2HA_SECRET_KEY` per impostare la chiave di sessione Flask (obbligatorio in produzione);
+  - `D2HA_ADMIN_USERNAME` per personalizzare l'username iniziale prima del primo avvio.
+
+> Suggerimento: esegui D2HA dietro a un reverse proxy HTTPS e considera la 2FA indispensabile se l'interfaccia è esposta in rete.
+
+---
+
 ## 🗂️ Struttura del progetto
 
 ```

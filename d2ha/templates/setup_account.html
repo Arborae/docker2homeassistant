@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Primo accesso</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 15% 15%, rgba(0,255,255,0.05), transparent 25%),
+                  radial-gradient(circle at 80% 10%, rgba(124,255,195,0.06), transparent 22%),
+                  var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .card {
+      width: min(520px, 100%);
+      background: linear-gradient(180deg, rgba(49,196,255,0.08), rgba(124,255,195,0.04)), var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    h1 { margin: 0 0 6px; letter-spacing: 0.08em; text-transform: uppercase; font-size: 1.1rem; }
+    p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: rgba(49,196,255,0.12); color: var(--accent); border:1px solid rgba(49,196,255,0.3); font-weight: 800; letter-spacing: 0.05em; }
+    form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+    label { font-weight: 700; color: var(--text); font-size: 0.9rem; }
+    input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 1rem; }
+    .btn { margin-top: 6px; padding: 12px; border: none; border-radius: 12px; background: linear-gradient(135deg, #1b87f1, #31c4ff); color: #0c121e; font-weight: 800; cursor: pointer; box-shadow: 0 8px 18px rgba(49,196,255,0.35); }
+    .btn:hover { filter: brightness(1.05); }
+    .flash-container { margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .flash { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
+    .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
+    .flash.success { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); }
+    ul { margin: 0 0 10px 20px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="pill">Primo avvio</div>
+    <h1>Proteggi il tuo accesso</h1>
+    <p>Stai accedendo con le credenziali predefinite <strong>admin / admin</strong>. Per sicurezza devi scegliere una nuova password (e, se vuoi, anche un nuovo username). La vecchia password smetterà di funzionare.</p>
+    <p>Consigli rapidi:</p>
+    <ul>
+      <li>Usa almeno 10 caratteri con lettere, numeri e simboli.</li>
+      <li>Evita parole comuni o password già usate altrove.</li>
+      <li>L'username può restare "{{ current_username }}" oppure puoi personalizzarlo.</li>
+    </ul>
+
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" autocomplete="off">
+      <div>
+        <label for="new_username">Nuovo username (facoltativo)</label>
+        <input type="text" id="new_username" name="new_username" placeholder="{{ current_username }}" />
+      </div>
+      <div>
+        <label for="new_password">Nuova password</label>
+        <input type="password" id="new_password" name="new_password" required />
+      </div>
+      <div>
+        <label for="new_password_confirm">Conferma password</label>
+        <input type="password" id="new_password_confirm" name="new_password_confirm" required />
+      </div>
+      <button type="submit" class="btn">Continua</button>
+    </form>
+  </div>
+</body>
+</html>

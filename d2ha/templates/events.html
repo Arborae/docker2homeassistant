@@ -42,6 +42,7 @@
     .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
     .tab:hover { color: var(--text); border-color: var(--border); }
     .tab.active { background: linear-gradient(135deg, #1b87f1, #31c4ff); color:#0c121e; box-shadow:0 6px 18px rgba(49,196,255,0.35); }
+    .logout-link { margin-left:auto; background: linear-gradient(135deg, #7cffc3, #31c4ff); color:#0c121e; box-shadow:0 6px 18px rgba(124,255,195,0.25); }
     main { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
     .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
@@ -66,6 +67,11 @@
     .muted { color: var(--muted); font-size:0.85rem; }
     .badge { padding:4px 8px; border-radius:8px; background: rgba(255,255,255,0.05); border:1px solid var(--border); font-size:0.8rem; }
     .empty { padding:18px; text-align:center; color: var(--muted); }
+    .flash-container { margin: 12px 18px 0; display:flex; flex-direction:column; gap:8px; }
+    .flash { padding:12px 14px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
+    .flash.success { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); }
+    .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
+    .flash.info { border-color: rgba(49,196,255,0.4); background: rgba(49,196,255,0.08); }
     @media (max-width: 960px) {
       table, thead, tbody, th, td, tr { display:block; }
       thead { display:none; }
@@ -89,8 +95,19 @@
       <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
       <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">Eventi</a>
       <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">Autodiscovery</a>
+      <a href="{{ url_for('logout') }}" class="tab logout-link">Logout</a>
     </nav>
   </header>
+
+  {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, msg in messages %}
+          <div class="flash {{ category }}">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
 
   <main>
     <section class="card filters">

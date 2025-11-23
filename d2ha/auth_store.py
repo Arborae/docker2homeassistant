@@ -1,0 +1,61 @@
+import json
+import os
+from datetime import datetime
+from typing import Any, Dict
+
+from werkzeug.security import generate_password_hash
+
+AUTH_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "auth_config.json")
+
+
+def _now_ts() -> str:
+    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+
+def ensure_default_auth_config() -> Dict[str, Any]:
+    if not os.path.exists(AUTH_CONFIG_PATH):
+        username = os.environ.get("D2HA_ADMIN_USERNAME", "admin")
+        timestamp = _now_ts()
+        default_config: Dict[str, Any] = {
+            "username": username,
+            "password_hash": generate_password_hash("admin"),
+            "onboarding_done": False,
+            "two_factor_enabled": False,
+            "totp_secret": None,
+            "created_at": timestamp,
+            "updated_at": timestamp,
+        }
+        try:
+            with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
+                json.dump(default_config, fp, indent=2)
+            try:
+                os.chmod(AUTH_CONFIG_PATH, 0o600)
+            except Exception:
+                pass
+        except Exception:
+            return default_config
+        return default_config
+
+    return load_auth_config()
+
+
+def load_auth_config() -> Dict[str, Any]:
+    try:
+        with open(AUTH_CONFIG_PATH, "r", encoding="utf-8") as fp:
+            return json.load(fp)
+    except FileNotFoundError:
+        return ensure_default_auth_config()
+    except Exception:
+        return ensure_default_auth_config()
+
+
+def save_auth_config(config: Dict[str, Any]) -> None:
+    config = dict(config)
+    config.setdefault("created_at", _now_ts())
+    config["updated_at"] = _now_ts()
+    with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
+        json.dump(config, fp, indent=2)
+    try:
+        os.chmod(AUTH_CONFIG_PATH, 0o600)
+    except Exception:
+        pass

@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+d2ha/auth_config.json
+.env
