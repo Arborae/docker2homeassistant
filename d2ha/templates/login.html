@@ -39,28 +39,40 @@
       const hideLabel = '{{ t('password.toggle.hide') }}';
 
       document.querySelectorAll('input[type="password"]').forEach((input) => {
-        if (input.closest('.password-input-wrapper')) return;
+        const existingWrapper = input.closest('.password-input-wrapper');
+        const wrapper = existingWrapper || (() => {
+          const created = document.createElement('div');
+          created.className = 'password-input-wrapper';
+          input.parentNode.insertBefore(created, input);
+          created.appendChild(input);
+          return created;
+        })();
 
-        const wrapper = document.createElement('div');
-        wrapper.className = 'password-input-wrapper';
-        input.parentNode.insertBefore(wrapper, input);
-        wrapper.appendChild(input);
+        let toggle = wrapper.querySelector('.password-toggle');
+        if (!toggle) {
+          toggle = document.createElement('button');
+          toggle.type = 'button';
+          toggle.className = 'password-toggle';
+          wrapper.appendChild(toggle);
+        }
 
-        const toggle = document.createElement('button');
-        toggle.type = 'button';
-        toggle.className = 'password-toggle';
-        toggle.setAttribute('aria-label', showLabel);
-        toggle.title = showLabel;
-        toggle.textContent = '👁';
+        if (toggle.dataset.bound === 'true') return;
+
+        const updateState = (isHidden) => {
+          toggle.setAttribute('aria-label', isHidden ? showLabel : hideLabel);
+          toggle.title = isHidden ? showLabel : hideLabel;
+          toggle.textContent = isHidden ? '👁' : '🙈';
+        };
+
+        updateState(true);
+
         toggle.addEventListener('click', () => {
           const isHidden = input.type === 'password';
           input.type = isHidden ? 'text' : 'password';
-          toggle.setAttribute('aria-label', isHidden ? hideLabel : showLabel);
-          toggle.title = isHidden ? hideLabel : showLabel;
-          toggle.textContent = isHidden ? '🙈' : '👁';
+          updateState(!isHidden);
         });
 
-        wrapper.appendChild(toggle);
+        toggle.dataset.bound = 'true';
       });
     })();
   </script>
