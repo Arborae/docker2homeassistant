@@ -30,6 +30,8 @@ from docker_service import (
     format_timedelta,
     human_bytes,
 )
+from i18n import DEFAULT_LANG, SUPPORTED_LANGS, get_current_lang, set_current_lang, t
+from theme import SUPPORTED_THEMES, get_current_theme, set_current_theme
 
 load_dotenv()
 
@@ -43,6 +45,11 @@ app.config.update(
     SESSION_COOKIE_SAMESITE="Lax",
 )
 app.jinja_env.globals["human_bytes"] = human_bytes
+app.jinja_env.globals["t"] = t
+app.jinja_env.globals["get_current_lang"] = get_current_lang
+app.jinja_env.globals["SUPPORTED_LANGS"] = SUPPORTED_LANGS
+app.jinja_env.globals["get_current_theme"] = get_current_theme
+app.jinja_env.globals["SUPPORTED_THEMES"] = SUPPORTED_THEMES
 
 ensure_default_auth_config()
 
@@ -267,6 +274,22 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for("login"))
+
+
+@app.route("/set-language", methods=["POST"])
+def set_language():
+    lang = (request.form.get("lang") or "").strip()
+    set_current_lang(lang)
+    next_url = request.form.get("next") or request.referrer or url_for("home")
+    return redirect(next_url)
+
+
+@app.route("/set-theme", methods=["POST"])
+def set_theme():
+    theme = (request.form.get("theme") or "").strip()
+    set_current_theme(theme)
+    next_url = request.form.get("next") or request.referrer or url_for("home")
+    return redirect(next_url)
 
 
 @app.route("/setup-account", methods=["GET", "POST"])
