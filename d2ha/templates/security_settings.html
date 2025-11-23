@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Sicurezza</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(0,255,255,0.05), transparent 25%),
+                  radial-gradient(circle at 90% 10%, rgba(124,255,195,0.05), transparent 20%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+    header {
+      background: linear-gradient(90deg, #0d111c, #12182a);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 22px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow);
+    }
+    .brand-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .brand-line h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(49,196,255,0.1);
+      color: var(--accent);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+    }
+    nav {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      font-weight: 600;
+      border: 1px solid transparent;
+      transition: all 0.15s ease;
+    }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active {
+      background: linear-gradient(135deg, #1b87f1, #31c4ff);
+      color: #0c121e;
+      box-shadow: 0 6px 18px rgba(49,196,255,0.35);
+    }
+    .logout-link {
+      margin-left: auto;
+      background: linear-gradient(135deg, #7cffc3, #31c4ff);
+      color: #0c121e;
+      box-shadow: 0 6px 18px rgba(124,255,195,0.25);
+    }
+    .container {
+      max-width: 1100px;
+      margin: 24px auto 40px;
+      padding: 0 18px;
+      display: grid;
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 1.2rem;
+    }
+    .muted { color: var(--muted); }
+    form { display: grid; gap: 12px; margin-top: 12px; }
+    label { font-weight: 600; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+    input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+    }
+    input:focus { outline: 2px solid rgba(49,196,255,0.4); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    button {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1b87f1, #31c4ff);
+      color: #0c121e;
+      box-shadow: 0 6px 18px rgba(49,196,255,0.35);
+    }
+    button.secondary { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); box-shadow: none; }
+    .status { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); display: inline-flex; gap: 8px; align-items: center; }
+    .status.on { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); color: #7cffc3; }
+    .status.off { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); color: #ff8d8d; }
+    .section-title { font-size: 1rem; margin: 16px 0 6px; color: var(--muted); }
+    .flash-container { margin: 18px 0 4px; display: grid; gap: 8px; }
+    .flash { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
+    .flash.success { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); }
+    .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
+    .flash.info { border-color: rgba(49,196,255,0.4); background: rgba(49,196,255,0.08); }
+    .flash.warning { border-color: rgba(255,192,99,0.5); background: rgba(255,192,99,0.08); }
+    .pending-box { margin-top: 12px; padding: 12px; border-radius: 12px; border: 1px dashed rgba(49,196,255,0.4); background: rgba(49,196,255,0.06); }
+    .qr-box { display: grid; gap: 10px; align-items: center; grid-template-columns: auto 1fr; }
+    .qr-box img { background: white; padding: 8px; border-radius: 10px; }
+    .secret-chip { padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); display: inline-block; }
+    @media (max-width: 700px) { .qr-box { grid-template-columns: 1fr; } nav { justify-content: flex-start; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand-line">
+      <h1>D2HA <span class="brand-pill">Webserver</span></h1>
+      {% include 'partials/notifications_panel.html' %}
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">Container</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">Immagini</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
+      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">Eventi</a>
+      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">Autodiscovery</a>
+      <a href="{{ url_for('security_settings') }}" class="tab {{ 'active' if active_page == 'security' else '' }}">Sicurezza</a>
+      <a href="{{ url_for('logout') }}" class="tab logout-link">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="card">
+      <h2>Impostazioni di sicurezza</h2>
+      <p class="muted">Questa pagina ti permette di aggiornare le credenziali admin e gestire la 2FA. L'account controlla Docker su questo host: usa password robuste e preferisci sempre la 2FA.</p>
+    </div>
+
+    <div class="card">
+      <h2>Cambia credenziali</h2>
+      <p class="muted">Aggiorna username e/o password. Richiede la password attuale e, se attiva, anche un codice 2FA.</p>
+      <form method="POST">
+        <input type="hidden" name="action" value="change_credentials" />
+        <label>
+          Password attuale
+          <input type="password" name="current_password" autocomplete="current-password" required />
+        </label>
+        {% if two_factor_enabled %}
+        <label>
+          Codice 2FA corrente
+          <input type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" />
+        </label>
+        {% endif %}
+        <label>
+          Nuovo username (facoltativo)
+          <input type="text" name="new_username" value="{{ current_username }}" autocomplete="username" />
+        </label>
+        <label>
+          Nuova password (facoltativa)
+          <input type="password" name="new_password" autocomplete="new-password" />
+        </label>
+        <label>
+          Conferma nuova password
+          <input type="password" name="new_password_confirm" autocomplete="new-password" />
+        </label>
+        <div class="actions">
+          <button type="submit">Aggiorna credenziali</button>
+          <span class="muted">Minimo 10 caratteri e niente "admin".</span>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Autenticazione a due fattori</h2>
+      <p class="muted">Proteggi l'accesso con un secondo fattore TOTP (Google Authenticator, Aegis...).</p>
+      <div class="status {{ 'on' if two_factor_enabled else 'off' }}">
+        <strong>Stato 2FA:</strong>
+        <span>{{ 'Attiva' if two_factor_enabled else 'Disattivata' }}</span>
+      </div>
+
+      {% if not two_factor_enabled %}
+        <form method="POST" style="margin-top: 14px;">
+          <input type="hidden" name="action" value="enable_2fa" />
+          <label>
+            Password attuale
+            <input type="password" name="current_password" autocomplete="current-password" required />
+          </label>
+          <div class="actions">
+            <button type="submit">Abilita 2FA</button>
+            <span class="muted">Richiede conferma con un codice generato.</span>
+          </div>
+        </form>
+      {% else %}
+        <form method="POST" style="margin-top: 14px;">
+          <input type="hidden" name="action" value="disable_2fa" />
+          <label>
+            Password attuale
+            <input type="password" name="current_password" autocomplete="current-password" required />
+          </label>
+          <label>
+            Codice 2FA corrente
+            <input type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" required />
+          </label>
+          <div class="actions">
+            <button type="submit" class="secondary">Disabilita 2FA</button>
+            <span class="muted">Servono password e codice valido.</span>
+          </div>
+        </form>
+      {% endif %}
+
+      {% if pending_2fa_setup and provisioning_uri %}
+        <div class="pending-box">
+          <p><strong>Setup 2FA in sospeso.</strong> Scansiona il QR o inserisci la chiave segreta, quindi verifica con un codice generato.</p>
+          <div class="qr-box">
+            {% if qr_code_data_uri %}
+              <img src="{{ qr_code_data_uri }}" alt="QR 2FA" width="180" height="180" />
+            {% endif %}
+            <div>
+              <div class="secret-chip">Segreto: {{ totp_secret or 'n/d' }}</div>
+              <p class="muted" style="word-break: break-all;">URI: {{ provisioning_uri }}</p>
+            </div>
+          </div>
+          <form method="POST" style="margin-top: 12px;">
+            <input type="hidden" name="action" value="confirm_enable_2fa" />
+            <label>
+              Inserisci un codice generato dall'app
+              <input type="text" name="verify_totp_code" inputmode="numeric" autocomplete="one-time-code" required />
+            </label>
+            <div class="actions">
+              <button type="submit">Conferma e abilita 2FA</button>
+            </div>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% include 'partials/notifications_script.html' %}
+</body>
+</html>

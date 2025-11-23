@@ -4,6 +4,7 @@ import json
 import os
 import secrets
 import time
+from collections import defaultdict
 from functools import wraps
 
 import pyotp
@@ -48,6 +49,12 @@ ensure_default_auth_config()
 
 def get_auth_config():
     return load_auth_config()
+
+
+FAILED_LOGINS = defaultdict(list)
+MAX_FAILED = 5  # max failed attempts before temporary block
+BLOCK_WINDOW = 15 * 60  # 15 minutes block window
+CLEANUP_WINDOW = 60 * 60  # keep failed attempts for 1 hour
 
 MQTT_BROKER = os.getenv("MQTT_BROKER")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
@@ -149,6 +156,27 @@ def is_onboarding_done():
     return bool(config.get("onboarding_done"))
 
 
+def _get_remote_addr():
+    # respect reverse proxy header if present
+    return request.headers.get("X-Forwarded-For", request.remote_addr or "unknown")
+
+
+def is_login_blocked(remote_addr: str) -> bool:
+    now = time.time()
+    attempts = FAILED_LOGINS[remote_addr]
+
+    # cleanup old attempts
+    FAILED_LOGINS[remote_addr] = [t for t in attempts if now - t < CLEANUP_WINDOW]
+    attempts = FAILED_LOGINS[remote_addr]
+
+    recent_attempts = [t for t in attempts if now - t < BLOCK_WINDOW]
+    return len(recent_attempts) >= MAX_FAILED
+
+
+def register_failed_login(remote_addr: str) -> None:
+    FAILED_LOGINS[remote_addr].append(time.time())
+
+
 def _read_system_uptime_seconds() -> float:
     try:
         with open("/proc/uptime", "r", encoding="utf-8") as fp:
@@ -193,6 +221,14 @@ def login():
     config = get_auth_config()
     next_url = request.args.get("next")
 
+    remote_addr = _get_remote_addr()
+    if is_login_blocked(remote_addr):
+        flash(
+            "Troppi tentativi di accesso falliti da questo indirizzo. Riprova più tardi.",
+            "error",
+        )
+        return render_template("login.html"), 429
+
     if session.get("user"):
         if not config.get("onboarding_done"):
             return redirect(url_for("setup_account"))
@@ -225,6 +261,7 @@ def login():
 
                 return redirect(next_url or url_for("index"))
 
+        register_failed_login(remote_addr)
         flash("Invalid credentials or 2FA code", "error")
 
     return render_template(
@@ -326,6 +363,180 @@ def setup_2fa():
     )
 
 
+
+
+@app.route("/settings/security", methods=["GET", "POST"])
+@login_required
+def security_settings():
+    config = get_auth_config()
+
+    if not is_onboarding_done():
+        return redirect(url_for("setup_account"))
+
+    provisioning_uri = None
+    qr_code_data_uri = None
+    pending_2fa_setup = False
+
+    def _require_current_password(value: str) -> bool:
+        if not check_password_hash(config.get("password_hash", ""), value):
+            flash("Password attuale non corretta.", "error")
+            return False
+        return True
+
+    def _require_totp(value: str) -> bool:
+        if not value:
+            flash("Inserisci il codice 2FA corrente.", "error")
+            return False
+        if not config.get("totp_secret"):
+            flash("Configurazione 2FA non valida. Riavvia la procedura.", "error")
+            return False
+        totp = pyotp.TOTP(config.get("totp_secret"))
+        if not totp.verify(value, valid_window=1):
+            flash("Codice 2FA non valido. Riprova.", "error")
+            return False
+        return True
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        current_password = request.form.get("current_password") or ""
+        current_totp_code = (request.form.get("current_totp_code") or "").strip()
+
+        if action == "change_credentials":
+            if not _require_current_password(current_password):
+                pass
+            elif bool(config.get("two_factor_enabled")) and not _require_totp(
+                current_totp_code
+            ):
+                pass
+            else:
+                new_username = (request.form.get("new_username") or "").strip()
+                new_password = request.form.get("new_password") or ""
+                new_password_confirm = request.form.get("new_password_confirm") or ""
+
+                username_change = new_username if new_username else None
+                password_hash = None
+                has_errors = False
+                changes_made = False
+
+                if username_change:
+                    changes_made = True
+
+                if new_password:
+                    if new_password != new_password_confirm:
+                        flash("Le nuove password non coincidono.", "error")
+                        has_errors = True
+                    elif new_password == "admin":
+                        flash(
+                            "Per sicurezza, la password non può essere 'admin'.",
+                            "error",
+                        )
+                        has_errors = True
+                    elif len(new_password) < 10:
+                        flash(
+                            "Scegli una password più lunga (almeno 10 caratteri).",
+                            "error",
+                        )
+                        has_errors = True
+                    else:
+                        password_hash = generate_password_hash(new_password)
+                        changes_made = True
+                        flash("Password aggiornata correttamente.", "success")
+
+                if not changes_made:
+                    flash("Nessuna modifica effettuata.", "info")
+                elif has_errors:
+                    flash("Correggi gli errori e riprova.", "error")
+                else:
+                    if username_change:
+                        config["username"] = username_change
+                        session["user"] = username_change
+                    if password_hash:
+                        config["password_hash"] = password_hash
+                    save_auth_config(config)
+                    flash("Credenziali aggiornate.", "success")
+
+        elif action == "enable_2fa":
+            if config.get("two_factor_enabled"):
+                flash("2FA già abilitata.", "info")
+            elif not _require_current_password(current_password):
+                pass
+            else:
+                secret = config.get("totp_secret") or pyotp.random_base32()
+                config["totp_secret"] = secret
+                save_auth_config(config)
+                provisioning_uri = pyotp.TOTP(secret).provisioning_uri(
+                    name=config.get("username", "admin"), issuer_name="D2HA"
+                )
+                qr_code_data_uri = _build_qr_code_data_uri(provisioning_uri)
+                pending_2fa_setup = True
+                flash(
+                    "Scansiona il codice e conferma con un token per abilitare la 2FA.",
+                    "info",
+                )
+
+        elif action == "confirm_enable_2fa":
+            if config.get("two_factor_enabled"):
+                flash("2FA già abilitata.", "info")
+            elif not config.get("totp_secret"):
+                flash("Segreto TOTP non disponibile. Riavvia la procedura.", "error")
+            else:
+                verify_totp_code = (request.form.get("verify_totp_code") or "").strip()
+                totp = pyotp.TOTP(config.get("totp_secret"))
+                if not totp.verify(verify_totp_code, valid_window=1):
+                    flash("Codice 2FA non valido. Riprova.", "error")
+                    provisioning_uri = totp.provisioning_uri(
+                        name=config.get("username", "admin"), issuer_name="D2HA"
+                    )
+                    qr_code_data_uri = _build_qr_code_data_uri(provisioning_uri)
+                    pending_2fa_setup = True
+                else:
+                    config["two_factor_enabled"] = True
+                    save_auth_config(config)
+                    flash(
+                        "Autenticazione a due fattori abilitata con successo.",
+                        "success",
+                    )
+
+        elif action == "disable_2fa":
+            if not config.get("two_factor_enabled"):
+                flash("2FA già disabilitata.", "info")
+            elif not _require_current_password(current_password):
+                pass
+            elif not _require_totp(current_totp_code):
+                pass
+            else:
+                config["two_factor_enabled"] = False
+                config["totp_secret"] = None
+                save_auth_config(config)
+                flash(
+                    "2FA disabilitata. Attenzione: l’account è ora protetto solo da username e password.",
+                    "warning",
+                )
+
+        config = get_auth_config()
+
+    if not provisioning_uri and config.get("totp_secret") and not config.get(
+        "two_factor_enabled"
+    ):
+        pending_2fa_setup = True
+        provisioning_uri = pyotp.TOTP(config.get("totp_secret")).provisioning_uri(
+            name=config.get("username", "admin"), issuer_name="D2HA"
+        )
+        qr_code_data_uri = _build_qr_code_data_uri(provisioning_uri)
+
+    return render_template(
+        "security_settings.html",
+        two_factor_enabled=bool(
+            config.get("two_factor_enabled") and config.get("totp_secret")
+        ),
+        has_totp_secret=bool(config.get("totp_secret")),
+        pending_2fa_setup=pending_2fa_setup,
+        provisioning_uri=provisioning_uri,
+        qr_code_data_uri=qr_code_data_uri,
+        active_page="security",
+        current_username=config.get("username", "admin"),
+        totp_secret=config.get("totp_secret"),
+    )
 
 
 def _build_notifications_summary(force: bool = False) -> dict:
