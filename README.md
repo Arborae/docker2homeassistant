@@ -50,7 +50,6 @@ Niente database, niente dipendenze strane: solo Docker, Flask e – se vuoi – 
   <img src="docs/pop-up-container.png" alt="Dettaglio container: risorse, env, label, rete, volumi" width="900"/>
 </p>
 
-> Suggerimento: salva gli screenshot nella cartella `docs/` del repo con gli stessi nomi per avere le anteprime funzionanti su GitHub.
 
 ---
 
