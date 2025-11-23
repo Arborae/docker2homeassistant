@@ -148,6 +148,22 @@
       background: var(--panel-2);
       color: var(--text);
     }
+    .password-input-wrapper { position: relative; display: flex; align-items: center; }
+    .password-input-wrapper input { padding-right: 42px; }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      opacity: 0.75;
+      transition: opacity 0.15s ease;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 4px;
+    }
+    .password-toggle:hover { opacity: 1; }
     input:focus { outline: 2px solid var(--accent-border); }
     .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
     button {
@@ -205,7 +221,10 @@
         <input type="hidden" name="action" value="update_session_timeout" />
         <label>
           Password attuale
-          <input type="password" name="current_password" autocomplete="current-password" required />
+          <div class="password-input-wrapper">
+            <input type="password" name="current_password" autocomplete="current-password" required />
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+          </div>
         </label>
         {% if two_factor_enabled %}
         <label>
@@ -231,7 +250,10 @@
         <input type="hidden" name="action" value="change_credentials" />
         <label>
           Password attuale
-          <input type="password" name="current_password" autocomplete="current-password" required />
+          <div class="password-input-wrapper">
+            <input type="password" name="current_password" autocomplete="current-password" required />
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+          </div>
         </label>
         {% if two_factor_enabled %}
         <label>
@@ -245,11 +267,17 @@
         </label>
         <label>
           Nuova password (facoltativa)
-          <input type="password" name="new_password" autocomplete="new-password" />
+          <div class="password-input-wrapper">
+            <input type="password" name="new_password" autocomplete="new-password" />
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+          </div>
         </label>
         <label>
           Conferma nuova password
-          <input type="password" name="new_password_confirm" autocomplete="new-password" />
+          <div class="password-input-wrapper">
+            <input type="password" name="new_password_confirm" autocomplete="new-password" />
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+          </div>
         </label>
         <div class="actions">
           <button type="submit">Aggiorna credenziali</button>
@@ -271,7 +299,10 @@
           <input type="hidden" name="action" value="enable_2fa" />
           <label>
             Password attuale
-            <input type="password" name="current_password" autocomplete="current-password" required />
+            <div class="password-input-wrapper">
+              <input type="password" name="current_password" autocomplete="current-password" required />
+              <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+            </div>
           </label>
           <div class="actions">
             <button type="submit">Abilita 2FA</button>
@@ -283,7 +314,10 @@
           <input type="hidden" name="action" value="disable_2fa" />
           <label>
             Password attuale
-            <input type="password" name="current_password" autocomplete="current-password" required />
+            <div class="password-input-wrapper">
+              <input type="password" name="current_password" autocomplete="current-password" required />
+              <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+            </div>
           </label>
           <label>
             Codice 2FA corrente
@@ -322,6 +356,38 @@
       {% endif %}
     </div>
   </div>
+
+  <script>
+    (function enhancePasswordInputs() {
+      const showLabel = '{{ t('password.toggle.show') }}';
+      const hideLabel = '{{ t('password.toggle.hide') }}';
+
+      document.querySelectorAll('input[type="password"]').forEach((input) => {
+        if (input.closest('.password-input-wrapper')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-input-wrapper';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'password-toggle';
+        toggle.setAttribute('aria-label', showLabel);
+        toggle.title = showLabel;
+        toggle.textContent = '👁';
+        toggle.addEventListener('click', () => {
+          const isHidden = input.type === 'password';
+          input.type = isHidden ? 'text' : 'password';
+          toggle.setAttribute('aria-label', isHidden ? hideLabel : showLabel);
+          toggle.title = isHidden ? hideLabel : showLabel;
+          toggle.textContent = isHidden ? '🙈' : '👁';
+        });
+
+        wrapper.appendChild(toggle);
+      });
+    })();
+  </script>
 
   {% include 'partials/notifications_script.html' %}
 </body>

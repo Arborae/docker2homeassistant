@@ -141,6 +141,22 @@
       color: var(--text);
       font-size: 1rem;
     }
+    .password-input-wrapper { position: relative; display: flex; align-items: center; }
+    .password-input-wrapper input { padding-right: 42px; }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      opacity: 0.75;
+      transition: opacity 0.15s ease;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 4px;
+    }
+    .password-toggle:hover { opacity: 1; }
     .btn {
       margin-top: 6px;
       padding: 12px;
@@ -198,7 +214,10 @@
       </div>
       <div>
         <label for="password">{{ t("login.password") }}</label>
-        <input type="password" id="password" name="password" required />
+        <div class="password-input-wrapper">
+          <input type="password" id="password" name="password" required />
+          <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+        </div>
       </div>
       {% if two_factor %}
       <div>
@@ -226,6 +245,36 @@
         onboardingToggle.setAttribute('aria-expanded', 'false');
       }
     });
+
+    (function enhancePasswordInputs() {
+      const showLabel = '{{ t('password.toggle.show') }}';
+      const hideLabel = '{{ t('password.toggle.hide') }}';
+
+      document.querySelectorAll('input[type="password"]').forEach((input) => {
+        if (input.closest('.password-input-wrapper')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-input-wrapper';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'password-toggle';
+        toggle.setAttribute('aria-label', showLabel);
+        toggle.title = showLabel;
+        toggle.textContent = '👁';
+        toggle.addEventListener('click', () => {
+          const isHidden = input.type === 'password';
+          input.type = isHidden ? 'text' : 'password';
+          toggle.setAttribute('aria-label', isHidden ? hideLabel : showLabel);
+          toggle.title = isHidden ? hideLabel : showLabel;
+          toggle.textContent = isHidden ? '🙈' : '👁';
+        });
+
+        wrapper.appendChild(toggle);
+      });
+    })();
   </script>
 </body>
 </html>

@@ -134,9 +134,29 @@
     form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
     label { font-weight: 700; color: var(--text); font-size: 0.9rem; }
     input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--panel-2); color: var(--text); font-size: 1rem; }
+    .password-input-wrapper { position: relative; display: flex; align-items: center; }
+    .password-input-wrapper input { padding-right: 42px; }
+    .password-toggle {
+      position: absolute;
+      right: 10px;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      opacity: 0.75;
+      transition: opacity 0.15s ease;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 4px;
+    }
+    .password-toggle:hover { opacity: 1; }
     .btn { margin-top: 6px; padding: 12px; border: none; border-radius: 12px; background: var(--accent-gradient); color: #0c121e; font-weight: 800; cursor: pointer; box-shadow: 0 8px 18px var(--accent-glow); }
     .btn:hover { filter: brightness(1.05); }
     ul { margin: 0 0 10px 20px; color: var(--muted); }
+    .password-hint { margin-top: 6px; font-size: 0.9rem; color: var(--muted); }
+    .strength-weak { color: #f87171; }
+    .strength-medium { color: #fbbf24; }
+    .strength-strong { color: #7cffc3; }
   </style>
 </head>
 <body class="theme-{{ get_current_theme() }}">
@@ -185,11 +205,19 @@
       </div>
       <div>
         <label for="new_password">{{ t('setup_account.new_password') }}</label>
-        <input type="password" id="new_password" name="new_password" required />
+        <div class="password-input-wrapper">
+          <input type="password" id="new_password" name="new_password" required />
+          <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+        </div>
+        <div id="passwordStrength" class="password-hint" aria-live="polite"></div>
       </div>
       <div>
         <label for="new_password_confirm">{{ t('setup_account.confirm_password') }}</label>
-        <input type="password" id="new_password_confirm" name="new_password_confirm" required />
+        <div class="password-input-wrapper">
+          <input type="password" id="new_password_confirm" name="new_password_confirm" required />
+          <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+        </div>
+        <div id="passwordMatch" class="password-hint" aria-live="polite"></div>
       </div>
       <button type="submit" class="btn">{{ t('setup_account.submit') }}</button>
     </form>
@@ -210,6 +238,97 @@
         onboardingToggle.setAttribute('aria-expanded', 'false');
       }
     });
+
+    const strengthLabel = document.getElementById('passwordStrength');
+    const matchLabel = document.getElementById('passwordMatch');
+    const passwordInput = document.getElementById('new_password');
+    const confirmInput = document.getElementById('new_password_confirm');
+    const strengthTexts = {
+      weak: '{{ t('password.strength.weak') }}',
+      medium: '{{ t('password.strength.medium') }}',
+      strong: '{{ t('password.strength.strong') }}',
+    };
+    const strengthPrefix = '{{ t('password.strength.label') }}';
+    const matchText = '{{ t('password.match') }}';
+    const mismatchText = '{{ t('password.mismatch') }}';
+    const showLabel = '{{ t('password.toggle.show') }}';
+    const hideLabel = '{{ t('password.toggle.hide') }}';
+
+    function enhancePasswordInputs() {
+      document.querySelectorAll('input[type="password"]').forEach((input) => {
+        if (input.closest('.password-input-wrapper')) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'password-input-wrapper';
+        input.parentNode.insertBefore(wrapper, input);
+        wrapper.appendChild(input);
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'password-toggle';
+        toggle.setAttribute('aria-label', showLabel);
+        toggle.title = showLabel;
+        toggle.textContent = '👁';
+        toggle.addEventListener('click', () => {
+          const isHidden = input.type === 'password';
+          input.type = isHidden ? 'text' : 'password';
+          toggle.setAttribute('aria-label', isHidden ? hideLabel : showLabel);
+          toggle.title = isHidden ? hideLabel : showLabel;
+          toggle.textContent = isHidden ? '🙈' : '👁';
+        });
+
+        wrapper.appendChild(toggle);
+      });
+    }
+
+    function evaluateStrength(password) {
+      if (!password) return null;
+      let score = 0;
+      if (password.length >= 10) score++;
+      if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+      if (/\d/.test(password)) score++;
+      if (/[^A-Za-z0-9]/.test(password)) score++;
+
+      if (score >= 3) return 'strong';
+      if (score === 2) return 'medium';
+      return 'weak';
+    }
+
+    function updateStrength() {
+      const value = passwordInput.value.trim();
+      const level = evaluateStrength(value);
+      strengthLabel.textContent = '';
+      strengthLabel.className = 'password-hint';
+
+      if (level) {
+        strengthLabel.textContent = `${strengthPrefix}: ${strengthTexts[level]}`;
+        strengthLabel.classList.add(`strength-${level}`);
+      }
+    }
+
+    function updateMatch() {
+      const password = passwordInput.value.trim();
+      const confirm = confirmInput.value.trim();
+      matchLabel.textContent = '';
+      matchLabel.className = 'password-hint';
+
+      if (!confirm) return;
+
+      if (password && password === confirm) {
+        matchLabel.textContent = matchText;
+        matchLabel.classList.add('strength-strong');
+      } else {
+        matchLabel.textContent = mismatchText;
+        matchLabel.classList.add('strength-weak');
+      }
+    }
+
+    enhancePasswordInputs();
+    passwordInput.addEventListener('input', () => {
+      updateStrength();
+      updateMatch();
+    });
+    confirmInput.addEventListener('input', updateMatch);
   </script>
 </body>
 </html>
