@@ -109,27 +109,28 @@ body.theme-light {
   color: #eaf6ff;
   font-weight: 800;
   text-shadow: 0 0 16px rgba(78, 201, 255, 0.48), 0 0 32px rgba(124, 255, 195, 0.32);
-  font-size: clamp(1.1rem, 2vw + 0.6rem, 1.5rem);
+  font-size: clamp(1.3rem, 2.2vw + 0.8rem, 1.9rem);
   opacity: 0.92;
   pointer-events: none;
 }
 
 .auth-logo {
   position: fixed;
-  right: 18px;
+  left: 50%;
   bottom: 18px;
+  transform: translateX(-50%);
   z-index: 3;
-  padding: 8px 10px;
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 12px;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  backdrop-filter: none;
+  box-shadow: none;
+  border: none;
 }
 
 .auth-logo img {
   display: block;
-  width: 120px;
+  width: 140px;
   height: auto;
   filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
 }
@@ -232,7 +233,7 @@ body.theme-light {
 }
 
 .password-input-wrapper input {
-  padding-right: 44px;
+  padding-right: 40px;
 }
 
 .password-toggle {
@@ -246,11 +247,11 @@ body.theme-light {
   cursor: pointer;
   opacity: 0.8;
   transition: opacity 0.15s ease;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   line-height: 1;
-  padding: 6px;
-  height: 32px;
-  width: 32px;
+  padding: 4px;
+  height: 28px;
+  width: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
