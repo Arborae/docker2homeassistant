@@ -17,6 +17,7 @@ _DEFAULT_CONFIG = {
     "safe_mode_enabled": True,
     "performance_mode_enabled": False,
     "mqtt_default_entities_enabled": True,
+    "session_timeout_minutes": 30,
 }
 
 
