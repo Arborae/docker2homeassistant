@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Autodiscovery</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
+{% extends "layouts/app_base.html" %}
+{% set page_title = 'D2HA – Autodiscovery' %}
+
+{% block page_styles %}
   <style>
-                :root {
+:root {
       --bg: #0f1116;
       --panel: #151924;
       --panel-2: #1b2131;
@@ -108,29 +105,10 @@
       .table th, .table td { font-size:0.82rem; }
     }
   </style>
-  {% include 'partials/notifications_styles.html' %}
-</head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
-  <header>
-    <div class="brand-line">
-      <h1>D2HA</h1>
-      {% include 'partials/notifications_panel.html' %}
-    </div>
-    <nav>
-      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
-  </header>
+{% endblock %}
 
-  {% include 'partials/flash_messages.html' %}
-
-  <main>
-    <section class="card">
+{% block page_content %}
+<section class="card">
       <div class="actions-bar">
         <div>
           <h3 class="title">Entità MQTT esposte</h3>
@@ -204,9 +182,11 @@
       {% endfor %}
     </form>
   </main>
-  {% include 'partials/notifications_script.html' %}
+{% endblock %}
+
+{% block page_scripts %}
   <script>
-    const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
+const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
     const deselectButtons = Array.from(document.querySelectorAll('.deselect-stack'));
     const autodiscoveryForm = document.getElementById('autodiscovery-form');
     stackToggles.forEach((header) => {
@@ -271,5 +251,4 @@
       applySafeModeLock(!!event.detail?.enabled);
     });
   </script>
-</body>
-</html>
+{% endblock %}

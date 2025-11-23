@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title|default('D2HA') }}{% endblock %}
+
+{% block head %}
+  {{ super() }}
+  {% include 'partials/notifications_styles.html' %}
+  <style>
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-10, 20px);
+    }
+
+    .app-header {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-card);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-10, 20px);
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .app-header__top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: var(--space-8, 16px);
+      margin-bottom: var(--space-8, 16px);
+    }
+
+    .app-brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4, 8px);
+      flex-wrap: wrap;
+    }
+
+    .app-brand__title {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .app-brand__pill {
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-muted);
+      color: var(--color-accent);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+    }
+
+    .app-nav {
+      display: flex;
+      gap: var(--space-4, 8px);
+      flex-wrap: wrap;
+    }
+
+    .app-nav a {
+      padding: var(--space-4, 8px) var(--space-8, 16px);
+      border-radius: var(--radius-control);
+      background: var(--color-surface-muted);
+      color: var(--color-muted);
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: all 160ms ease;
+      text-decoration: none;
+    }
+
+    .app-nav a:hover { color: var(--color-text); border-color: var(--color-border); }
+    .app-nav a.active { background: var(--gradient-accent); color: var(--color-on-accent); box-shadow: 0 6px 18px var(--color-accent-glow); }
+    .app-nav a.logout-link { margin-left: auto; }
+
+    .app-content {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-10, 20px);
+    }
+
+    @media (max-width: 900px) {
+      .app-header { position: sticky; top: 0; }
+      .app-header__top { grid-template-columns: 1fr; }
+      .app-nav { justify-content: flex-start; }
+    }
+  </style>
+  {% block page_styles %}{% endblock %}
+{% endblock %}
+
+{% block topbar %}
+  <div class="app-shell">
+    <div class="app-header">
+      <div class="app-header__top">
+        <div class="app-brand">
+          <h1 class="app-brand__title">D2HA</h1>
+          <span class="app-brand__pill">Docker ➜ Home Assistant</span>
+        </div>
+        {% include 'partials/notifications_panel.html' %}
+      </div>
+      <nav class="app-nav" aria-label="Navigazione principale">
+        <a href="{{ url_for('index') }}" class="{{ 'active' if active_page == 'home' else '' }}">Home</a>
+        <a href="{{ url_for('containers_view') }}" class="{{ 'active' if active_page == 'containers' else '' }}">{{ t('nav.containers') }}</a>
+        <a href="{{ url_for('images_view') }}" class="{{ 'active' if active_page == 'images' else '' }}">{{ t('nav.images') }}</a>
+        <a href="{{ url_for('updates') }}" class="{{ 'active' if active_page == 'updates' else '' }}">{{ t('nav.updates') }}</a>
+        <a href="{{ url_for('events_view') }}" class="{{ 'active' if active_page == 'events' else '' }}">{{ t('nav.events') }}</a>
+        <a href="{{ url_for('autodiscovery_view') }}" class="{{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t('nav.autodiscovery') }}</a>
+        <a href="{{ url_for('logout') }}" class="logout-link">{{ t('nav.logout') }}</a>
+      </nav>
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <div class="app-content">
+    {% include 'partials/flash_messages.html' %}
+    {% block page_content %}{% endblock %}
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  {% include 'partials/notifications_script.html' %}
+  {% block page_scripts %}{% endblock %}
+{% endblock %}

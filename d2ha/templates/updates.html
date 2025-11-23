@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Aggiornamenti</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
-    <style>
-    :root {
+{% extends "layouts/app_base.html" %}
+{% set page_title = 'D2HA – Aggiornamenti' %}
+
+{% block page_styles %}
+  <style>
+:root {
       --bg: #0f1116;
       --panel: #151924;
       --panel-2: #1b2131;
@@ -111,29 +108,10 @@
       .status-meta { align-items:flex-start; text-align:left; }
     }
   </style>
-  {% include 'partials/notifications_styles.html' %}
-</head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
-  <header>
-    <div class="brand-line">
-      <h1>D2HA</h1>
-      {% include 'partials/notifications_panel.html' %}
-    </div>
-    <nav>
-      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
-  </header>
+{% endblock %}
 
-  {% include 'partials/flash_messages.html' %}
-
-  <main>
-    <div class="card">
+{% block page_content %}
+<div class="card">
       {% set total = stacks | map(attribute='containers') | map('length') | sum %}
       <div class="muted">{{ total }} container analizzati · {{ summary.images }} immagini installate</div>
       <div class="performance-hint" id="updates-performance-hint">
@@ -255,9 +233,11 @@
     </div>
   </div>
 
-  {% include 'partials/notifications_script.html' %}
+{% endblock %}
+
+{% block page_scripts %}
   <script>
-    const statusClasses = {
+const statusClasses = {
       update_available: 'warn',
       up_to_date: 'success',
       unknown: 'error'
@@ -398,5 +378,4 @@
       closeConfirm();
     });
   </script>
-</body>
-</html>
+{% endblock %}

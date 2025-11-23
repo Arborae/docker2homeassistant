@@ -1,16 +1,21 @@
 <style>
-  .header-actions {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
+  .app-header-actions {
+    display: grid;
+    grid-template-columns: auto auto;
     align-items: center;
-    gap: 10px;
+    justify-content: space-between;
+    gap: var(--space-6, 12px);
   }
 
-  .header-actions-right { right: 0; }
+  .header-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-4, 8px);
+  }
 
-  .header-actions-left { left: 0; }
+  .header-actions-right {
+    justify-content: flex-end;
+  }
   .backend-status {
     display: inline-flex;
     align-items: center;

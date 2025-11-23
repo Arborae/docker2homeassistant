@@ -1,77 +1,17 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Immagini</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
+{% extends "layouts/app_base.html" %}
+{% set page_title = 'D2HA – Immagini' %}
+
+{% block page_styles %}
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: var(--font-base, "Inter", system-ui, -apple-system, "Segoe UI", sans-serif);
-      background: var(--gradient-overlay, transparent), var(--color-bg, #0f1629);
-      color: var(--color-text, #e5ecf8);
-    }
-
-    a { color: inherit; text-decoration: none; }
 
     .page-shell {
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       gap: var(--space-12, 24px);
-      padding: var(--space-12, 24px);
     }
-
-    header {
-      background: var(--color-surface, #151d32);
-      border: 1px solid var(--color-border, rgba(255,255,255,0.1));
-      border-radius: var(--radius-card, 18px);
-      padding: var(--space-10, 20px);
-      box-shadow: var(--shadow-md, 0 12px 32px rgba(0,0,0,0.42));
-    }
-
-    .brand-line {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-6, 12px);
-      flex-wrap: wrap;
-    }
-
-    .brand-line h1 {
-      margin: 0;
-      font-size: 1.2rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    nav {
-      margin-top: var(--space-6, 12px);
-      display: flex;
-      gap: var(--space-4, 8px);
-      flex-wrap: wrap;
-    }
-
-    .tab {
-      padding: var(--space-4, 8px) var(--space-8, 16px);
-      border-radius: var(--radius-control, 12px);
-      background: var(--color-surface-muted, #1b243b);
-      color: var(--color-muted, #9eb0c9);
-      font-weight: 700;
-      border: 1px solid transparent;
-      transition: all 160ms ease;
-    }
-
-    .tab:hover { color: var(--color-text); border-color: var(--color-border); }
-    .tab.active { background: var(--gradient-accent); color: #0c121e; box-shadow: 0 6px 18px rgba(49,196,255,0.25); }
-    .logout-link { margin-left: auto; }
-
-    main { display: flex; flex-direction: column; gap: var(--space-10, 20px); }
 
     .card-body { display: flex; flex-direction: column; gap: var(--space-6, 12px); }
-
     .card-meta { color: var(--color-muted, #9eb0c9); font-size: var(--font-size-sm, 0.875rem); }
 
     .table-wrapper { overflow-x: auto; }
@@ -81,7 +21,6 @@
     .actions { text-align: right; }
 
     @media (max-width: 900px) {
-      header { position: sticky; top: 0; z-index: 10; }
       .table, .table thead, .table tbody, .table th, .table td, .table tr { display: block; }
       .table thead { display: none; }
       .table tr { margin-bottom: var(--space-4, 8px); border: 1px solid var(--color-border); border-radius: var(--radius-control, 12px); overflow: hidden; }
@@ -90,83 +29,57 @@
       .actions { text-align: left; }
     }
   </style>
-  {% include 'partials/notifications_styles.html' %}
-</head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
+{% endblock %}
+
+{% block page_content %}
   <div class="page-shell">
-    <header>
-      <div class="brand-line">
-        <h1>D2HA</h1>
-        {% include 'partials/notifications_panel.html' %}
+    <section class="card">
+      <div class="card-body">
+        <div class="card-meta">Totale immagini: {{ images|length }} · Container attivi: {{ summary.running }}</div>
       </div>
-      <nav>
-        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-      </nav>
-    </header>
+    </section>
 
-    {% include 'partials/flash_messages.html' %}
-
-    <main>
-      <section class="card">
-        <div class="card-body">
-          <div class="card-meta">Totale immagini: {{ images|length }} · Container attivi: {{ summary.running }}</div>
+    <section class="card">
+      <div class="card-header">
+        <h2>Immagini Docker</h2>
+        <div class="actions">
+          <a href="{{ url_for('containers_view') }}" class="btn btn-secondary">{{ t("nav.containers") }}</a>
         </div>
-      </section>
-
-      <section class="card">
-        <div class="card-header">
-          <h2>Immagini installate</h2>
-          <span class="status-pill info">{{ images|length }} immagini trovate</span>
-        </div>
-        <div class="card-body table-wrapper">
+      </div>
+      <div class="card-body">
+        <div class="table-wrapper">
           <table class="table">
             <thead>
               <tr>
-                <th>Tag</th>
-                <th>ID</th>
-                <th>Dimensione</th>
-                <th>Utilizzo</th>
-                <th class="actions">Azioni</th>
+                <th class="text-left">{{ t("images.table.name") }}</th>
+                <th>{{ t("images.table.tags") }}</th>
+                <th>{{ t("images.table.size") }}</th>
+                <th class="text-right">{{ t("images.table.actions") }}</th>
               </tr>
             </thead>
             <tbody>
-              {% for img in images %}
-                {% set is_used = img.used_by|length > 0 %}
-                <tr>
-                  <td data-label="Tag">
-                    <div><strong>{{ img.tags|join(', ') }}</strong></div>
-                    <div class="card-meta">Creata: {{ img.created }}</div>
-                  </td>
-                  <td data-label="ID">{{ img.short_id }}</td>
-                  <td data-label="Dimensione">{{ human_bytes(img.size) }}</td>
-                  <td data-label="Utilizzo">
-                    {% if is_used %}
-                      <span class="status-pill info">In uso</span>
-                      <div class="card-meta">{{ img.used_by|join(', ') }}</div>
-                    {% else %}
-                      <span class="status-pill warn">Non utilizzata</span>
-                    {% endif %}
-                  </td>
-                  <td data-label="Azioni" class="actions">
-                    <form method="post" action="{{ url_for('delete_image', image_id=img.id) }}" data-safe-confirm="Eliminare l'immagine {{ img.short_id }}?">
-                      <button class="btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
-                    </form>
-                  </td>
-                </tr>
+              {% for image in images %}
+              <tr>
+                <td data-label="{{ t('images.table.name') }}"><strong>{{ image.repository }}</strong></td>
+                <td data-label="{{ t('images.table.tags') }}">
+                  {% if image.tags %}
+                  {{ image.tags|join(', ') }}
+                  {% else %}
+                  <span class="text-muted">{{ t('images.no_tags') }}</span>
+                  {% endif %}
+                </td>
+                <td data-label="{{ t('images.table.size') }}">{{ image.size }}</td>
+                <td data-label="{{ t('images.table.actions') }}" class="actions">
+                  <form action="{{ url_for('delete_image', image_id=image.id) }}" method="post" style="display: inline;">
+                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{{ t('images.confirm_delete') }}')">{{ t("images.delete") }}</button>
+                  </form>
+                </td>
+              </tr>
               {% endfor %}
             </tbody>
           </table>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
   </div>
-
-  {% include 'partials/notifications_script.html' %}
-</body>
-</html>
+{% endblock %}
