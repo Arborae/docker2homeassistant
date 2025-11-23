@@ -1,0 +1,35 @@
+{% extends "layouts/auth_base.html" %}
+{% block title %}D2HA – Configura 2FA{% endblock %}
+
+{% block auth_content %}
+  <h1>{{ t('setup_2fa.title') }}</h1>
+  <p>{{ t('setup_2fa.intro') }}</p>
+  <p>{{ t('setup_2fa.hint') }}</p>
+
+  <div class="note">
+    <p>{{ t('setup_2fa.step1') }}</p>
+    <p>{{ t('setup_2fa.step2') }}</p>
+    <p>{{ t('setup_2fa.step3') }}</p>
+  </div>
+
+  <div class="layout">
+    <div class="qr-box">
+      <p class="qr-title">{{ t('setup_2fa.qr_title') }}</p>
+      <img class="qr-image" src="{{ qr_code_data_uri }}" alt="QR code" loading="lazy" />
+    </div>
+    <div>
+      <p class="section-title">{{ t('setup_2fa.secret') }}</p>
+      <div class="secret-box">{{ secret }}</div>
+      <p class="muted" style="color: var(--muted); word-break: break-all;">{{ t('setup_2fa.uri').format(uri=provisioning_uri) }}</p>
+    </div>
+  </div>
+
+  <form method="post" autocomplete="off" class="auth-actions-form">
+    <label for="token">{{ t('setup_2fa.token_label') }}</label>
+    <input type="text" id="token" name="token" pattern="\d{6}" inputmode="numeric" autocomplete="one-time-code" />
+    <div class="actions">
+      <button class="btn btn-primary" type="submit" name="choice" value="enable">{{ t('setup_2fa.enable') }}</button>
+      <button class="btn btn-secondary" type="submit" name="choice" value="skip">{{ t('setup_2fa.skip') }}</button>
+    </div>
+  </form>
+{% endblock %}

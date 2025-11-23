@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Autodiscovery</title>
+  <style>
+                :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(49,196,255,0.35);
+      --accent-glow-soft: rgba(49,196,255,0.25);
+      --accent-border-strong: rgba(49,196,255,0.55);
+      --accent-border: rgba(49,196,255,0.45);
+      --accent-border-soft: rgba(49,196,255,0.3);
+      --accent-surface: rgba(49,196,255,0.08);
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
+      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
+      --control-surface: #0f141f;
+    }
+
+    body.theme-light {
+      --bg: #fff7ed;
+      --panel: #ffffff;
+      --panel-2: #fff3df;
+      --accent: #f97316;
+      --accent-2: #fb923c;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(249,115,22,0.3);
+      --accent-glow-soft: rgba(249,115,22,0.18);
+      --accent-border-strong: rgba(249,115,22,0.55);
+      --accent-border: rgba(249,115,22,0.42);
+      --accent-border-soft: rgba(249,115,22,0.26);
+      --accent-surface: rgba(249,115,22,0.08);
+      --text: #1f2937;
+      --muted: #4b5563;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 24px rgba(0,0,0,0.1);
+      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
+      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
+      --control-surface: #fffaf3;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    header { background: var(--header-bg); border-bottom:1px solid var(--border); padding:16px 22px 12px; box-shadow: var(--shadow); position:sticky; top:0; z-index:10; }
+    .brand-line { position: relative; display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; }
+    .brand-line h1 { margin:0; font-size:1.35rem; letter-spacing:0.12em; text-transform:uppercase; text-align:center; }
+    .brand-pill { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background: var(--accent-surface); color: var(--accent); font-size:0.8rem; letter-spacing:0.04em; }
+    nav { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow); }
+    .logout-link { margin-left:auto; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow-soft); }
+    main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
+    .meta { color: var(--muted); font-size:0.9rem; }
+    .title { margin:0 0 6px 0; font-size:1rem; }
+    .stacks { display:flex; flex-direction:column; gap:14px; }
+    .stack { background: var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow: var(--shadow); overflow:hidden; }
+    .stack-header { display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--border); gap:10px; flex-wrap:wrap; }
+    .stack-header.stack-toggle { cursor:pointer; border-bottom-width:0; }
+    .stack-title { font-weight:700; font-size:1rem; letter-spacing:0.08em; display:flex; align-items:center; gap:8px; text-transform: uppercase; }
+    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.05); color: var(--muted); font-size:0.8rem; }
+    .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:8px; padding:4px 8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+    .stack-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .stack-toggle-btn .chevron { display:inline-block; width:10px; text-align:center; }
+    .stack-content { border-top:1px solid var(--border); }
+    .stack-content.collapsed { display:none; }
+    .stack-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    table { width:100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:left; }
+    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing:0.04em; font-size:0.78rem; }
+    tr:last-child td { border-bottom:none; }
+    tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
+    .checkbox { display:flex; justify-content:center; align-items:center; }
+    .checkbox-row { display:flex; align-items:center; justify-content:flex-start; gap:10px; flex-wrap:wrap; }
+    .checkbox-item { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
+    .checkbox input { width:18px; height:18px; accent-color: var(--accent); margin:0; }
+    .checkbox-label { font-weight:700; letter-spacing:0.01em; }
+    .align-center { text-align:center; }
+    .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .name { font-weight:700; }
+    .muted { color: var(--muted); font-size:0.85rem; }
+    .actions-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .btn-primary { background: var(--accent-gradient); border:none; color:#0b111c; border-radius:12px; padding:10px 16px; font-weight:800; cursor:pointer; box-shadow:0 6px 18px var(--accent-glow); }
+    .btn-secondary { background: rgba(255,255,255,0.06); border:1px solid var(--border); color: var(--text); border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; transition: all 0.15s ease; }
+    .btn-secondary:hover { border-color: rgba(49,196,255,0.5); color: var(--accent); }
+    .note { background: var(--accent-surface); border:1px solid var(--accent-glow-soft); padding:10px 12px; border-radius:12px; font-size:0.9rem; }
+    .safe-locked .checkbox-item { opacity: 0.45; pointer-events: none; }
+    .safe-locked .checkbox input { pointer-events: none; }
+    .safe-locked .btn-secondary { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+    .col-name { width: 240px; }
+    .col-image { width: 220px; }
+    .col-status { width: 140px; }
+    .col-pref { width: 260px; }
+    @media(max-width: 960px) {
+      table { min-width: 720px; }
+      th, td { font-size:0.82rem; }
+    }
+  </style>
+  {% include 'partials/notifications_styles.html' %}
+</head>
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
+  <header>
+    <div class="brand-line">
+      <h1>D2HA</h1>
+      {% include 'partials/notifications_panel.html' %}
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+    </nav>
+  </header>
+
+  {% include 'partials/flash_messages.html' %}
+
+  <main>
+    <section class="card">
+      <div class="actions-bar">
+        <div>
+          <h3 class="title">Entità MQTT esposte</h3>
+          <div class="meta">{{ summary.running }} container attivi · {{ summary.total_containers }} totali · {{ summary.images }} immagini installate</div>
+        </div>
+        <button type="submit" form="autodiscovery-form" class="btn-primary">Salva preferenze</button>
+      </div>
+    </section>
+
+    <form id="autodiscovery-form" class="stacks" method="POST">
+      {% for stack, containers in stack_map.items() %}
+        <section class="stack">
+          <div class="stack-header stack-toggle" data-stack-toggle>
+            <div class="stack-title">
+              <button type="button" class="stack-toggle-btn" aria-expanded="true" aria-label="Mostra o nascondi sezione">
+                <span class="chevron">▾</span>
+              </button>
+              <span>{{ ('Senza stack' if stack == '_no_stack' else stack) | upper }}</span>
+            </div>
+            <div class="stack-actions">
+              <button type="button" class="btn-secondary deselect-stack">Seleziona/Deseleziona tutti</button>
+              <div class="stack-chip">{{ containers|length }} container</div>
+            </div>
+          </div>
+          <div class="stack-content" style="overflow-x:auto;">
+            <table>
+              <colgroup>
+                <col class="col-name">
+                <col class="col-image">
+                <col class="col-status">
+                <col class="col-pref">
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>{{ t("nav.containers") }}</th>
+                  <th>Immagine</th>
+                  <th>Stato</th>
+                  <th class="align-center">Preferenze</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for c in containers %}
+                  {% set pref = preferences.get(c.stable_id, {'state': True, 'actions': {}}) %}
+                  <tr>
+                    <td data-label="Container">
+                      <div class="name">{{ c.name }}</div>
+                      <div class="muted">{{ c.short_id }}</div>
+                    </td>
+                    <td data-label="Immagine">{{ c.image }}</td>
+                    <td data-label="Stato">{{ c.status }}</td>
+                    <td data-label="Preferenze" class="checkbox align-center">
+                      <div class="checkbox-row">
+                        <label class="checkbox-item" title="Autodiscovery stato per {{ c.name }}">
+                          <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
+                          <span class="checkbox-label">Stato</span>
+                        </label>
+                        {% for action in actions %}
+                          <label class="checkbox-item" title="{{ action.replace('_', ' ')|title }} per {{ c.name }}">
+                            <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
+                            <span class="checkbox-label">{{ action.replace('_', ' ')|title }}</span>
+                          </label>
+                        {% endfor %}
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      {% endfor %}
+    </form>
+  </main>
+  {% include 'partials/notifications_script.html' %}
+  <script>
+    const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
+    const deselectButtons = Array.from(document.querySelectorAll('.deselect-stack'));
+    const autodiscoveryForm = document.getElementById('autodiscovery-form');
+    stackToggles.forEach((header) => {
+      const btn = header.querySelector('.stack-toggle-btn');
+      const content = header.nextElementSibling;
+      const chevron = btn ? btn.querySelector('.chevron') : null;
+      if (!btn || !content) return;
+
+      const setExpanded = (expanded) => {
+        content.classList.toggle('collapsed', !expanded);
+        btn.setAttribute('aria-expanded', expanded);
+        if (chevron) chevron.textContent = expanded ? '▾' : '▸';
+      };
+
+      setExpanded(true);
+
+      const toggle = () => {
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        setExpanded(!isExpanded);
+      };
+
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggle();
+      });
+
+      header.addEventListener('click', (event) => {
+        if (event.target === btn || btn.contains(event.target)) return;
+        toggle();
+      });
+    });
+
+    deselectButtons.forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const stackSection = button.closest('.stack');
+        if (!stackSection) return;
+
+        const checkboxes = Array.from(stackSection.querySelectorAll('input[type="checkbox"]'));
+        const shouldSelectAll = checkboxes.some((checkbox) => !checkbox.checked);
+
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = shouldSelectAll;
+        });
+      });
+    });
+
+    function applySafeModeLock(enabled) {
+      if (!autodiscoveryForm) return;
+      autodiscoveryForm.classList.toggle('safe-locked', enabled);
+      autodiscoveryForm.querySelectorAll('input[type="checkbox"]').forEach((checkbox) => {
+        checkbox.disabled = enabled;
+      });
+      deselectButtons.forEach((button) => {
+        button.disabled = enabled;
+      });
+    }
+
+    const initialSafeMode = window.d2haSafeMode?.enabled ?? ((document.body.dataset.safeMode || '0') === '1');
+    applySafeModeLock(initialSafeMode);
+    document.addEventListener('safe-mode-changed', (event) => {
+      applySafeModeLock(!!event.detail?.enabled);
+    });
+  </script>
+</body>
+</html>

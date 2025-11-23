@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Eventi</title>
+  <style>
+                :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(49,196,255,0.35);
+      --accent-glow-soft: rgba(49,196,255,0.25);
+      --accent-border-strong: rgba(49,196,255,0.55);
+      --accent-border: rgba(49,196,255,0.45);
+      --accent-border-soft: rgba(49,196,255,0.3);
+      --accent-surface: rgba(49,196,255,0.08);
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
+      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
+      --control-surface: #0f141f;
+    }
+
+    body.theme-light {
+      --bg: #fff7ed;
+      --panel: #ffffff;
+      --panel-2: #fff3df;
+      --accent: #f97316;
+      --accent-2: #fb923c;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(249,115,22,0.3);
+      --accent-glow-soft: rgba(249,115,22,0.18);
+      --accent-border-strong: rgba(249,115,22,0.55);
+      --accent-border: rgba(249,115,22,0.42);
+      --accent-border-soft: rgba(249,115,22,0.26);
+      --accent-surface: rgba(249,115,22,0.08);
+      --text: #1f2937;
+      --muted: #4b5563;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 24px rgba(0,0,0,0.1);
+      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
+      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
+      --control-surface: #fffaf3;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(0,255,255,0.05), transparent 25%),
+                  radial-gradient(circle at 90% 10%, rgba(124,255,195,0.05), transparent 20%),
+                  var(--bg);
+      color: var(--text);
+    }
+    a { color: inherit; text-decoration: none; }
+    header {
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 22px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--shadow);
+    }
+    .brand-line { position: relative; display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; }
+    .brand-line h1 { margin:0; font-size:1.35rem; letter-spacing:0.12em; text-transform:uppercase; text-align:center; }
+    .brand-pill { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background: var(--accent-surface); color: var(--accent); font-size:0.8rem; letter-spacing:0.04em; }
+    nav { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow); }
+    .logout-link { margin-left:auto; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow-soft); }
+    main { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
+    .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    .select, .input { background: var(--control-surface); color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:0.9rem; }
+    .btn { border:none; border-radius:10px; padding:9px 14px; font-weight:700; cursor:pointer; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow); }
+    .table-card { padding:0; overflow:hidden; }
+    .table-head { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border); background: rgba(255,255,255,0.02); flex-wrap:wrap; gap:10px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px 12px; text-align:left; font-size:0.85rem; border-bottom:1px solid var(--border); }
+    th { color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
+    tr:last-child td { border-bottom:none; }
+    tr:hover { background: rgba(255,255,255,0.03); }
+    .sev-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-weight:700; text-transform: uppercase; font-size:0.75rem; }
+    .sev-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+    .sev-info { background: var(--accent-surface); color: #31c4ff; }
+    .sev-info .sev-dot { background:#31c4ff; }
+    .sev-warning { background: rgba(255,213,79,0.16); color: #ffd54f; }
+    .sev-warning .sev-dot { background:#ffd54f; }
+    .sev-error { background: rgba(255,138,122,0.15); color: #ff8a7a; }
+    .sev-error .sev-dot { background:#ff8a7a; }
+    .meta { color: var(--muted); font-size:0.9rem; }
+    .muted { color: var(--muted); font-size:0.85rem; }
+    .badge { padding:4px 8px; border-radius:8px; background: rgba(255,255,255,0.05); border:1px solid var(--border); font-size:0.8rem; }
+    .empty { padding:18px; text-align:center; color: var(--muted); }
+    @media (max-width: 960px) {
+      table, thead, tbody, th, td, tr { display:block; }
+      thead { display:none; }
+      tr { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+      td { display:flex; justify-content: space-between; border-bottom:1px solid var(--border); }
+      td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
+    }
+  </style>
+  {% include 'partials/notifications_styles.html' %}
+</head>
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
+  <header>
+    <div class="brand-line">
+      <h1>D2HA</h1>
+      {% include 'partials/notifications_panel.html' %}
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+    </nav>
+  </header>
+
+  {% include 'partials/flash_messages.html' %}
+
+  <main>
+    <section class="card filters">
+      <form method="get" class="filters" aria-label="Filtri eventi">
+        <label>
+          <span class="muted">Intervallo</span><br />
+          <select name="hours" class="select">
+            {% for opt in [1,6,12,24,72,168] %}
+              <option value="{{ opt }}" {% if selected_hours == opt %}selected{% endif %}>Ultime {{ opt }} ore</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span class="muted">Severità</span><br />
+          <select name="severity" class="select">
+            <option value="all" {% if selected_severity == 'all' %}selected{% endif %}>Tutte</option>
+            <option value="info" {% if selected_severity == 'info' %}selected{% endif %}>Info</option>
+            <option value="warning" {% if selected_severity == 'warning' %}selected{% endif %}>Warning</option>
+            <option value="error" {% if selected_severity == 'error' %}selected{% endif %}>Errori</option>
+          </select>
+        </label>
+        <button class="btn" type="submit">Aggiorna</button>
+      </form>
+    </section>
+
+    <section class="card table-card">
+      <div class="table-head">
+        <div>
+          <div class="meta">{{ events|length }} eventi trovati</div>
+          <div class="muted">Host: {{ events[0].host if events else '-' }}</div>
+        </div>
+        <div class="badge">{{ selected_hours }}h di cronologia · Severità: {{ 'Tutte' if selected_severity == 'all' else selected_severity|title }}</div>
+      </div>
+      <table aria-label="Registro eventi di sistema">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Categoria</th>
+            <th>Severità</th>
+            <th>Dettagli evento</th>
+            <th>{{ t("nav.containers") }}</th>
+            <th>Host</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if events %}
+            {% for ev in events %}
+              <tr>
+                <td data-label="Data">{{ ev.timestamp_local.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                <td data-label="Categoria">{{ ev.type|title }}</td>
+                <td data-label="Severità">
+                  <span class="sev-pill {% if ev.severity == 'error' %}sev-error{% elif ev.severity == 'warning' %}sev-warning{% else %}sev-info{% endif %}">
+                    <span class="sev-dot"></span>{{ ev.severity|title }}
+                  </span>
+                </td>
+                <td data-label="Dettagli">
+                  <div>{{ ev.detail }}</div>
+                  <div class="muted">{{ ev.source }}</div>
+                </td>
+                <td data-label="Container">{{ ev.name }} <span class="muted">({{ ev.id }})</span></td>
+                <td data-label="Host">{{ ev.host }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6" class="empty">Nessun evento disponibile per l'intervallo selezionato.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </section>
+  </main>
+  {% include 'partials/notifications_script.html' %}
+</body>
+</html>

@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Aggiornamenti</title>
+  <style>
+                :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(49,196,255,0.35);
+      --accent-glow-soft: rgba(49,196,255,0.25);
+      --accent-border-strong: rgba(49,196,255,0.55);
+      --accent-border: rgba(49,196,255,0.45);
+      --accent-border-soft: rgba(49,196,255,0.3);
+      --accent-surface: rgba(49,196,255,0.08);
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
+      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
+      --control-surface: #0f141f;
+    }
+
+    body.theme-light {
+      --bg: #fff7ed;
+      --panel: #ffffff;
+      --panel-2: #fff3df;
+      --accent: #f97316;
+      --accent-2: #fb923c;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(249,115,22,0.3);
+      --accent-glow-soft: rgba(249,115,22,0.18);
+      --accent-border-strong: rgba(249,115,22,0.55);
+      --accent-border: rgba(249,115,22,0.42);
+      --accent-border-soft: rgba(249,115,22,0.26);
+      --accent-surface: rgba(249,115,22,0.08);
+      --text: #1f2937;
+      --muted: #4b5563;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 24px rgba(0,0,0,0.1);
+      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
+      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
+      --control-surface: #fffaf3;
+    }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    header { background: var(--header-bg); border-bottom:1px solid var(--border); padding:16px 22px 12px; box-shadow: var(--shadow); position:sticky; top:0; z-index:10; }
+    .brand-line { position: relative; display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; }
+    .brand-line h1 { margin:0; font-size:1.35rem; letter-spacing:0.12em; text-transform:uppercase; text-align:center; }
+    .brand-pill { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background: var(--accent-surface); color: var(--accent); font-size:0.8rem; letter-spacing:0.04em; }
+    nav { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
+    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow); }
+    .logout-link { margin-left:auto; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow-soft); }
+    main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
+    .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
+    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; table-layout: fixed; }
+    th, td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
+    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: rgba(255,255,255,0.03); }
+    .stack-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background: rgba(156, 204, 101, 0.12); color: #c5e1a5; font-size: 0.78rem; }
+    .stack-tag.nostack { background: rgba(158, 158, 158, 0.12); color: #e0e0e0; }
+    .status-pill { display:inline-flex; align-items:center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
+    .status-up-to-date { background: rgba(76, 175, 80, 0.15); color: #81c784; }
+    .status-update-available { background: rgba(255, 193, 7, 0.18); color: #ffeb3b; }
+    .status-unknown { background: rgba(158, 158, 158, 0.15); color: #eeeeee; }
+    .changelog, .breaking { max-height: 80px; overflow-y: auto; font-size: 0.82rem; line-height: 1.35; padding-right: 4px; }
+    .changelog::-webkit-scrollbar, .breaking::-webkit-scrollbar { width: 4px; }
+    .changelog::-webkit-scrollbar-thumb, .breaking::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
+    .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.78rem; color: #ccc; }
+    .badge-null { opacity: 0.6; }
+    .actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .actions-cell { text-align: right; }
+    .col-name { width: 240px; }
+    .col-status { width: 170px; }
+    .col-version { width: 160px; }
+    .col-log, .col-breaking { width: 200px; }
+    .col-actions { width: 180px; }
+    .btn { border: 1px solid var(--border); border-radius: 12px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; background: var(--control-surface); color: var(--text); transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease; text-align: center; box-shadow: 0 8px 18px var(--shadow); }
+    .btn:hover { transform: translateY(-1px); filter: brightness(1.02); box-shadow: 0 10px 22px var(--accent-glow-soft); color: var(--accent); border-color: var(--accent-border); }
+    .btn-full-update { background: var(--accent-gradient); color:#04101c; font-weight: 800; letter-spacing: 0.01em; border-color: var(--accent-border); box-shadow: 0 10px 22px var(--accent-glow); }
+    .btn-full-update:hover { filter: brightness(1.05); color: #0b111c; }
+    .small { font-size: 0.82rem; color: #adb7c7; }
+    .performance-hint { display:none; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border:1px dashed var(--border); align-items: center; gap: 12px; }
+    .performance-hint.visible { display: flex; justify-content: space-between; flex-wrap: wrap; }
+    .performance-hint .hint-title { font-weight: 800; margin-bottom: 4px; display: block; }
+    code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: 0.75rem; }
+    .stack-card { margin-bottom: 12px; display:flex; flex-direction:column; gap:10px; }
+    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background: var(--stack-header-bg); cursor:pointer; box-shadow: var(--shadow); }
+    .stack-left { display:flex; align-items:center; gap:10px; min-width:0; }
+    .stack-heading { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .stack-title { font-weight:800; font-size:1rem; letter-spacing:0.08em; text-transform: uppercase; }
+    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--muted); font-size:0.85rem; font-weight:700; text-transform: uppercase; letter-spacing:0.05em; }
+    .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:10px; padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; min-height:32px; }
+    .stack-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .chevron { transition: transform 0.2s ease; font-size: 0.95rem; color: var(--muted); display:inline-block; width:12px; text-align:center; }
+    .collapsed .chevron { transform: rotate(-90deg); }
+    .stack-body { margin-top: 10px; display:block; }
+    .collapsed .stack-body { display:none; }
+    .status-meta { display:flex; flex-direction:column; gap:4px; }
+    .pill-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .confirm-backdrop { position:fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:50; padding:18px; }
+    .confirm-backdrop.visible { display:flex; }
+    .confirm-modal { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; width:min(420px, 100%); box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
+    .confirm-title { margin:0; font-size:1rem; }
+    .confirm-actions { display:flex; justify-content:flex-end; gap:8px; }
+    .btn-ghost { background: var(--control-surface); color: var(--text); border-color: var(--border); }
+    @media(max-width: 1100px) {
+      table, thead, tbody, th, td, tr { display:block; }
+      thead { display:none; }
+      table { border-radius: 0; }
+      tr { margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+      td { border-bottom:1px solid var(--border); display:flex; justify-content: space-between; }
+      td::before { content: attr(data-label); font-weight: 700; color: var(--muted); margin-right: 10px; }
+    }
+  </style>
+  {% include 'partials/notifications_styles.html' %}
+</head>
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
+  <header>
+    <div class="brand-line">
+      <h1>D2HA</h1>
+      {% include 'partials/notifications_panel.html' %}
+    </div>
+    <nav>
+      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+    </nav>
+  </header>
+
+  {% include 'partials/flash_messages.html' %}
+
+  <main>
+    <div class="card">
+      {% set total = stacks | map(attribute='containers') | map('length') | sum %}
+      <div class="muted">{{ total }} container analizzati · {{ summary.images }} immagini installate</div>
+      <div class="performance-hint" id="updates-performance-hint">
+        <div>
+          <span class="hint-title">Modalità prestazioni attiva</span>
+          <p class="small">Per ridurre il carico, la scansione automatica è disattivata. Avvia manualmente quando serve.</p>
+        </div>
+        <button class="btn btn-ghost" type="button" id="updates-scan-btn">Scansiona aggiornamenti</button>
+      </div>
+    </div>
+    {% for stack in stacks %}
+      <section class="card stack-card" data-stack="{{ stack.name }}">
+        <div class="stack-header stack-toggle" data-stack-toggle>
+          <div class="stack-left">
+            <button class="stack-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
+              <span class="chevron">▾</span>
+            </button>
+            <div class="stack-heading">
+              <div class="stack-title">{{ ('Senza stack' if stack.name == '_no_stack' else stack.name) | upper }}</div>
+              <div class="small">{{ stack.containers|length }} container</div>
+            </div>
+          </div>
+          <div class="stack-chip">{{ stack.containers|length }} container</div>
+        </div>
+        <div class="stack-body">
+          <table>
+            <colgroup>
+              <col class="col-name">
+              <col class="col-status">
+              <col class="col-version">
+              <col class="col-version">
+              <col class="col-log">
+              <col class="col-breaking">
+              <col class="col-actions">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>{{ t("nav.containers") }}</th>
+                <th>Stato</th>
+                <th>Vers. installata</th>
+                <th>Vers. remota</th>
+                <th>Change log</th>
+                <th>Breaking</th>
+                <th>Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for c in stack.containers %}
+                <tr class="container-row" data-container-id="{{ c.id }}">
+                  <td data-label="Container">
+                    <div><strong>{{ c.name }}</strong></div>
+                    <div class="small">{{ c.image_ref }}</div>
+                    <div class="small">Stack: {{ 'no stack' if c.stack == '_no_stack' else c.stack }}</div>
+                  </td>
+                  <td data-label="Stato">
+                    {% set state = c.update_state %}
+                    {% set status_class = "status-pill " %}
+                    {% if state == 'update_available' %}
+                      {% set status_class = status_class + 'status-update-available' %}
+                      {% set status_label = 'Update disponibile' %}
+                    {% elif state == 'up_to_date' %}
+                      {% set status_class = status_class + 'status-up-to-date' %}
+                      {% set status_label = 'Aggiornato' %}
+                    {% else %}
+                      {% set status_class = status_class + 'status-unknown' %}
+                      {% set status_label = 'Sconosciuto' %}
+                    {% endif %}
+                    <div class="status-meta">
+                      <span class="{{ status_class }}" data-status-pill>{{ status_label }}</span>
+                      <div class="small" data-status-hint>
+                        {% if c.installed_version and c.remote_version %}
+                          {{ c.installed_version }} → {{ c.remote_version }}
+                        {% elif c.remote_version %}
+                          Remota: {{ c.remote_version }}
+                        {% else %}
+                          In attesa di dati dal registry
+                        {% endif %}
+                      </div>
+                    </div>
+                  </td>
+                  <td data-label="Vers. installata">
+                    <div class="pill-row">
+                      <span class="badge" data-installed-version>{{ c.installed_version or 'n/d' }}</span>
+                      <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
+                    </div>
+                  </td>
+                  <td data-label="Vers. remota">
+                    <div class="pill-row">
+                      <span class="badge {% if not c.remote_version %}badge-null{% endif %}" data-remote-version>{{ c.remote_version or 'n/d' }}</span>
+                      <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{ c.remote_id_short or '' }}</span>
+                    </div>
+                  </td>
+                  <td data-label="Change log">
+                    {% if c.changelog %}
+                      <div class="changelog" data-changelog>{{ c.changelog }}</div>
+                    {% else %}
+                      <span class="small" data-changelog>Nessuna nota</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Breaking">
+                    {% if c.breaking_changes %}
+                      <div class="breaking" data-breaking>{{ c.breaking_changes }}</div>
+                    {% else %}
+                      <span class="small" data-breaking>Nessuna info</span>
+                    {% endif %}
+                  </td>
+                  <td class="actions-cell" data-label="Azioni">
+                    <div class="actions">
+                      <form class="full-update-form" data-container-name="{{ c.name }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
+                        <button class="btn btn-full-update" type="submit">Aggiorna immagine</button>
+                      </form>
+                      <div class="small">ID: <code>{{ c.id }}</code></div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    {% endfor %}
+  </main>
+
+  <div class="confirm-backdrop" id="confirm-modal">
+    <div class="confirm-modal">
+      <h3 class="confirm-title">Aggiornare l'immagine?</h3>
+      <p id="confirm-message" class="small"></p>
+      <div class="confirm-actions">
+        <button type="button" class="btn btn-ghost" id="cancel-confirm">Annulla</button>
+        <button type="button" class="btn btn-full-update" id="confirm-continue">Procedi</button>
+      </div>
+    </div>
+  </div>
+
+  {% include 'partials/notifications_script.html' %}
+  <script>
+    const statusClasses = {
+      update_available: 'status-update-available',
+      up_to_date: 'status-up-to-date',
+      unknown: 'status-unknown'
+    };
+    const updatesHint = document.getElementById('updates-performance-hint');
+    const manualScanBtn = document.getElementById('updates-scan-btn');
+    const pollingDefaults = { intervalMs: 20000 };
+    const pollingPerformance = { intervalMs: 45000 };
+    let refreshIntervalMs = pollingDefaults.intervalMs;
+    let refreshTimer = null;
+    let autoScanEnabled = !(window.d2haSettings?.performanceMode);
+
+    function toggleStack(card) {
+      card.classList.toggle('collapsed');
+    }
+
+    document.querySelectorAll('.stack-card').forEach(card => {
+      const header = card.querySelector('.stack-header');
+      header.addEventListener('click', () => toggleStack(card));
+    });
+
+    function applyStatus(row, state) {
+      const pill = row.querySelector('[data-status-pill]');
+      if (!pill) return;
+      pill.classList.remove('status-update-available', 'status-up-to-date', 'status-unknown');
+      pill.classList.add(statusClasses[state] || 'status-unknown');
+
+      let label = 'Sconosciuto';
+      if (state === 'update_available') label = 'Update disponibile';
+      else if (state === 'up_to_date') label = 'Aggiornato';
+      pill.textContent = label;
+    }
+
+    async function refreshRow(row) {
+      const id = row.dataset.containerId;
+      try {
+        const res = await fetch(`/api/containers/${id}/updates`, { method: 'POST' });
+        if (!res.ok) return;
+        const data = await res.json();
+        applyStatus(row, data.update_state);
+
+        const installedEl = row.querySelector('[data-installed-version]');
+        const installedIdEl = row.querySelector('[data-installed-id]');
+        const remoteEl = row.querySelector('[data-remote-version]');
+        const remoteIdEl = row.querySelector('[data-remote-id]');
+        const statusHint = row.querySelector('[data-status-hint]');
+
+        if (installedEl) installedEl.textContent = data.installed_version || 'n/d';
+        if (installedIdEl) installedIdEl.textContent = data.installed_id_short || '';
+
+        if (remoteEl) {
+          remoteEl.textContent = data.remote_version || 'n/d';
+          remoteEl.classList.toggle('badge-null', !data.remote_version);
+        }
+
+        if (remoteIdEl) {
+          if (data.remote_id_short) {
+            remoteIdEl.textContent = data.remote_id_short;
+            remoteIdEl.style.display = 'inline';
+          } else {
+            remoteIdEl.textContent = '';
+            remoteIdEl.style.display = 'none';
+          }
+        }
+
+        if (statusHint) {
+          if (data.installed_version && data.remote_version) {
+            statusHint.textContent = `${data.installed_version} → ${data.remote_version}`;
+          } else if (data.remote_version) {
+            statusHint.textContent = `Remota: ${data.remote_version}`;
+          } else {
+            statusHint.textContent = 'In attesa di dati dal registry';
+          }
+        }
+      } catch (e) {
+        // silently ignore
+      }
+    }
+
+    function scheduleRefresh() {
+      const rows = Array.from(document.querySelectorAll('.container-row'));
+      rows.forEach(row => refreshRow(row));
+    }
+    function startUpdatesPolling() {
+      clearInterval(refreshTimer);
+      if (!autoScanEnabled) return;
+      scheduleRefresh();
+      refreshTimer = setInterval(scheduleRefresh, refreshIntervalMs);
+    }
+
+    manualScanBtn?.addEventListener('click', () => {
+      scheduleRefresh();
+    });
+
+    window.registerPerformanceHandler?.((enabled) => {
+      refreshIntervalMs = enabled ? pollingPerformance.intervalMs : pollingDefaults.intervalMs;
+      autoScanEnabled = !enabled;
+      updatesHint?.classList.toggle('visible', enabled);
+      startUpdatesPolling();
+    });
+
+    startUpdatesPolling();
+
+    const modal = document.getElementById('confirm-modal');
+    const messageEl = document.getElementById('confirm-message');
+    const cancelBtn = document.getElementById('cancel-confirm');
+    const confirmBtn = document.getElementById('confirm-continue');
+    let pendingForm = null;
+
+    function openConfirm(form) {
+      pendingForm = form;
+      const name = form.dataset.containerName || 'questo container';
+      messageEl.textContent = `Vuoi aggiornare l'immagine di "${name}"?`;
+      modal.classList.add('visible');
+    }
+
+    function closeConfirm() {
+      pendingForm = null;
+      modal.classList.remove('visible');
+    }
+
+    document.querySelectorAll('.full-update-form').forEach(form => {
+      form.addEventListener('submit', (evt) => {
+        evt.preventDefault();
+        openConfirm(form);
+      });
+    });
+
+    cancelBtn.addEventListener('click', closeConfirm);
+    modal.addEventListener('click', (evt) => {
+      if (evt.target === modal) closeConfirm();
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      if (pendingForm) {
+        pendingForm.submit();
+      }
+      closeConfirm();
+    });
+  </script>
+</body>
+</html>

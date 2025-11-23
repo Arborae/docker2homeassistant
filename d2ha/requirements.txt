@@ -1,0 +1,6 @@
+flask
+docker
+paho-mqtt
+python-dotenv
+pyotp
+qrcode[pil]

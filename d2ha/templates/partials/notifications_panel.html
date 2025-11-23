@@ -1,0 +1,128 @@
+<div class="header-actions header-actions-left">
+  <div class="header-clock" id="header-clock" aria-label="Orologio"></div>
+</div>
+
+<div class="header-actions header-actions-right">
+  <div id="backend-status-indicator" class="backend-status backend-status-ok" title="{{ t('settings.backend_status') }}" aria-label="{{ t('settings.backend_status') }}">
+    <svg class="backend-status-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M3 10.5c5.5-5.5 12.5-5.5 18 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M6.5 14c3.25-3.25 7.75-3.25 11 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M10 17.5c1.1-1.1 2.9-1.1 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="12" cy="20" r="1.25" fill="currentColor" />
+    </svg>
+  </div>
+  <div class="notif-area">
+    <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
+      <span class="notif-icon" aria-hidden="true">🔔</span>
+      <span class="notif-badge" id="notifBadge">0</span>
+    </button>
+    <div class="notif-panel" id="notifPanel" role="region" aria-label="{{ t('settings.notifications') }}">
+      <div class="notif-header">
+        <span>{{ t('settings.notifications') }}</span>
+      </div>
+      <div class="notif-list" id="notifList"></div>
+    </div>
+  </div>
+
+  <div class="settings-area">
+    <button class="settings-toggle" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel">
+      <span class="settings-icon" aria-hidden="true">⚙️</span>
+    </button>
+    <div class="settings-panel" id="settingsPanel" role="region" aria-label="{{ t('settings.title') }}">
+      <div class="settings-header">
+        <span>{{ t('settings.title') }}</span>
+      </div>
+      <div class="settings-body">
+        <div class="settings-row">
+          <span>{{ t('settings.os') }}</span>
+          <strong>{{ system_info.os }}</strong>
+        </div>
+        <div class="settings-row">
+          <span>{{ t('settings.docker') }}</span>
+          <strong>{{ system_info.docker_version }}</strong>
+        </div>
+        <div class="settings-row">
+          <span>{{ t('settings.uptime') }}</span>
+          <strong>{{ system_info.uptime }}</strong>
+        </div>
+        <div class="settings-row">
+          <div>
+            <span>{{ t('nav.security') }}</span>
+            <p class="settings-hint">{{ t('settings.security_hint') }}</p>
+          </div>
+          <a class="settings-link settings-link-icon" href="{{ url_for('security_settings') }}" aria-label="Apri impostazioni di sicurezza">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 3l7 4v5c0 4.97-3.58 9.36-7 9.97-3.42-.61-7-5-7-9.97V7l7-4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+              <path d="M9.5 12.5l2 2 3-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
+        </div>
+        <div class="settings-row settings-row-toggle">
+          <div>
+            <span>{{ t('performance_mode.label') }}</span>
+            <p class="settings-hint">{{ t('settings.performance_hint') }}</p>
+          </div>
+          <div class="switch" title="Riduce il carico iniziale e le frequenze di refresh">
+            <input type="checkbox" id="performance-mode-toggle" />
+            <span class="slider"></span>
+          </div>
+        </div>
+        <div class="settings-safe">
+          <div>
+            <div class="settings-row">
+              <span>{{ t('safe_mode.label') }}</span>
+              <div class="switch" title="Richiedi conferma per le operazioni sensibili">
+                <input type="checkbox" id="safeModeToggle" {% if safe_mode_enabled %}checked{% endif %} />
+                <span class="slider"></span>
+              </div>
+            </div>
+            <p class="settings-hint">{{ t('settings.safe_hint') }}</p>
+          </div>
+        </div>
+        <div class="settings-row settings-row-toggle">
+          <div>
+            <span>{{ t('theme.label') }}</span>
+            <p class="settings-hint">{{ t('theme.switch_label') }}</p>
+          </div>
+          <form method="post" action="{{ url_for('set_theme') }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <select name="theme" onchange="this.form.submit()">
+              {% for theme in SUPPORTED_THEMES %}
+              <option value="{{ theme }}" {% if get_current_theme() == theme %}selected{% endif %}>
+                {{ t('theme.' + theme) }}
+              </option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+        <div class="settings-row settings-row-toggle">
+          <div>
+            <span>{{ t('language.label') }}</span>
+            <p class="settings-hint">{{ t('wizard.step1.title') }}</p>
+          </div>
+          <form method="post" action="{{ url_for('set_language') }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <select name="lang" onchange="this.form.submit()">
+              {% for lang_code in SUPPORTED_LANGS %}
+              <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
+                {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
+              </option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="backend-status-modal" class="backend-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="backend-status-title">
+  <div class="backend-modal" role="document">
+    <h2 id="backend-status-title">{{ t('settings.backend_status') }}</h2>
+    <p id="backend-status-last-update" class="backend-modal-text">{{ t('backend_status.no_recent_update') }}</p>
+    <div class="backend-modal-actions">
+      <button type="button" id="backend-status-refresh-btn" class="backend-modal-btn primary">{{ t('settings.refresh') }}</button>
+      <button type="button" id="backend-status-close-btn" class="backend-modal-btn">{{ t('settings.close') }}</button>
+    </div>
+  </div>
+</div>

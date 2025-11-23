@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  d2ha_server:
+    build: .
+    container_name: d2ha_server
+    ports:
+      - "12021:12021"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - MQTT_BASE_TOPIC=${MQTT_BASE_TOPIC:-d2ha_server}
+      - MQTT_DISCOVERY_PREFIX=${MQTT_DISCOVERY_PREFIX:-homeassistant}
+      - MQTT_NODE_ID=${MQTT_NODE_ID:-d2ha_server}
+    restart: unless-stopped

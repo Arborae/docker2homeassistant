@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}D2HA{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="theme-{{ get_current_theme() }}">
+  <div class="auth-page">
+    <!-- Auth animated tech background (login + wizard) -->
+    <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
+    <div class="auth-title" aria-hidden="true">D2HA</div>
+    <div class="auth-logo" aria-hidden="true">
+      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="D2HA Logo">
+    </div>
+
+    <div class="auth-overlay">
+      {% include 'partials/flash_messages.html' %}
+
+      <div class="onboarding-toolbar">
+        <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false" aria-controls="onboardingMenu" title="{{ t('settings.title') }}">🌐</button>
+        <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">
+          <h2>{{ t('settings.title') }}</h2>
+          <form method="post" action="{{ url_for('set_language') }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <label for="onboarding-lang">{{ t('language.label') }}</label>
+            <select id="onboarding-lang" name="lang" onchange="this.form.submit()">
+              {% for lang_code in SUPPORTED_LANGS %}
+              <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
+                {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
+              </option>
+              {% endfor %}
+            </select>
+          </form>
+          <form method="post" action="{{ url_for('set_theme') }}">
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <label for="onboarding-theme">{{ t('theme.label') }}</label>
+            <select id="onboarding-theme" name="theme" onchange="this.form.submit()">
+              {% for theme in SUPPORTED_THEMES %}
+              <option value="{{ theme }}" {% if get_current_theme() == theme %}selected{% endif %}>{{ t('theme.' + theme) }}</option>
+              {% endfor %}
+            </select>
+          </form>
+        </div>
+      </div>
+
+      <div class="auth-card">
+        {% block auth_content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/auth_background.js') }}"></script>
+  <script>
+    const onboardingToggle = document.getElementById('onboardingToggle');
+    const onboardingMenu = document.getElementById('onboardingMenu');
+
+    if (onboardingToggle && onboardingMenu) {
+      onboardingToggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        onboardingMenu.classList.toggle('open');
+        onboardingToggle.setAttribute('aria-expanded', onboardingMenu.classList.contains('open'));
+      });
+
+      document.addEventListener('click', (event) => {
+        if (!onboardingMenu.contains(event.target) && event.target !== onboardingToggle) {
+          onboardingMenu.classList.remove('open');
+          onboardingToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+  </script>
+  {% block auth_scripts %}{% endblock %}
+</body>
+</html>
