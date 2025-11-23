@@ -152,7 +152,9 @@
     .password-input-wrapper input { padding-right: 42px; }
     .password-toggle {
       position: absolute;
+      top: 50%;
       right: 10px;
+      transform: translateY(-50%);
       background: transparent;
       border: none;
       color: var(--muted);
@@ -162,6 +164,11 @@
       font-size: 1rem;
       line-height: 1;
       padding: 4px;
+      height: 32px;
+      width: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
     .password-toggle:hover { opacity: 1; }
     input:focus { outline: 2px solid var(--accent-border); }
