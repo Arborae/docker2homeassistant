@@ -165,6 +165,17 @@ Popup di dettaglio con:
 
 ---
 
+## 🛡️ Sicurezza
+
+- **Rate limiting login:** dopo troppi tentativi falliti l'endpoint `/login` restituisce HTTP 429 per 15 minuti, rallentando attacchi bruteforce.
+- **Pagina Sicurezza:** da `/settings/security` (anche dalla navbar) puoi cambiare username/password dell'admin e gestire la 2FA.
+  - Ogni modifica richiede la password attuale e, se la 2FA è attiva, anche un codice TOTP valido.
+  - L'abilitazione 2FA è guidata: viene mostrato il QR/URI da scansionare e viene richiesta una verifica esplicita del codice.
+  - La disattivazione della 2FA richiede password + codice corrente.
+- **Best practice:** esegui sempre dietro reverse proxy HTTPS (Caddy, Traefik, Nginx) e ricorda che chi accede a D2HA può controllare Docker sull'host.
+
+---
+
 ## 🗂️ Struttura del progetto
 
 ```
