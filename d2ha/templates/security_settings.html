@@ -37,20 +37,19 @@
       box-shadow: var(--shadow);
     }
     .brand-line {
+      position: relative;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       gap: 12px;
       flex-wrap: wrap;
     }
     .brand-line h1 {
       margin: 0;
-      font-size: 1.1rem;
-      letter-spacing: 0.1em;
+      font-size: 1.35rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      text-align: center;
     }
     .brand-pill {
       padding: 4px 10px;
@@ -151,7 +150,7 @@
 <body data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
   <header>
     <div class="brand-line">
-      <h1>D2HA <span class="brand-pill">Webserver</span></h1>
+      <h1>D2HA</h1>
       {% include 'partials/notifications_panel.html' %}
     </div>
     <nav>
