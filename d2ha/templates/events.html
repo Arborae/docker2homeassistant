@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Eventi</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
+{% extends "layouts/app_base.html" %}
+{% set page_title = 'D2HA – Eventi' %}
+
+{% block page_styles %}
   <style>
-    :root { color-scheme: light dark; }
+:root { color-scheme: light dark; }
 
     body {
       margin: 0;
@@ -108,29 +105,10 @@
       .table td::before { content: attr(data-label); font-weight: 700; color: var(--color-muted); margin-right: var(--space-4); }
     }
   </style>
-  {% include 'partials/notifications_styles.html' %}
-</head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
-  <header>
-    <div class="brand-line">
-      <h1>D2HA</h1>
-      {% include 'partials/notifications_panel.html' %}
-    </div>
-    <nav>
-      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
-  </header>
+{% endblock %}
 
-  {% include 'partials/flash_messages.html' %}
-
-  <main>
-    <section class="card">
+{% block page_content %}
+<section class="card">
       <div class="card-header">
         <h2>Filtra eventi</h2>
       </div>
@@ -212,6 +190,4 @@
       </div>
     </section>
   </main>
-  {% include 'partials/notifications_script.html' %}
-</body>
-</html>
+{% endblock %}

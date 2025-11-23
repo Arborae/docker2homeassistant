@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Home</title>
+{% extends "layouts/app_base.html" %}
+{% set page_title = 'D2HA – Home' %}
+
+{% block page_styles %}
   <style>
-                :root {
+:root {
       --bg: var(--color-bg);
       --panel: var(--color-surface);
       --panel-2: var(--color-surface-muted);
@@ -363,70 +361,10 @@
       .layout { grid-template-columns: 1fr; }
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  {% include 'partials/notifications_styles.html' %}
-</head>
-  <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
-    <header>
-      <div class="brand-line">
-        <h1>D2HA</h1>
-        {% include 'partials/notifications_panel.html' %}
-      </div>
-      <nav>
-        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
-  </header>
+{% endblock %}
 
-  {% include 'partials/flash_messages.html' %}
-
-  <div class="layout">
-    <aside>
-      <p class="aside-title">{{ t('home.aside_title') }}</p>
-      {% for stack in stacks %}
-        <details open>
-          <summary>
-            <span>{{ t('home.no_stack') if stack.name == '_no_stack' else stack.name }}</span>
-            <span class="stack-chip">{{ stack.containers|length }} {{ t('home.stack_container_label') }}</span>
-          </summary>
-          <ul class="container-list">
-            {% for c in stack.containers %}
-              <li class="stack-container-row">
-                <div class="stack-container-main">
-                  <div>{{ c.name }}</div>
-                  <small>{{ c.image }}</small>
-                </div>
-                {% set status = c.status.lower() %}
-                <div class="container-actions">
-                  <button
-                    class="log-link"
-                    type="button"
-                    data-open-home-logs
-                    data-container-id="{{ c.id }}"
-                    data-container-name="{{ c.name }}"
-                    title="{{ t('home.log.open').format(name=c.name) }}"
-                    aria-label="{{ t('home.log.open').format(name=c.name) }}"
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                      <path d="M7 4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h10a2 2 0 0 0 2-2V8.5L13.5 4H7zm6 5V5.5L17.5 9H13z"/>
-                    </svg>
-                  </button>
-                  <span class="status-indicator {% if status == 'running' %}status-running{% elif status == 'paused' %}status-paused{% else %}status-stopped{% endif %}" title="{{ c.status }}" aria-label="{{ c.status }}"></span>
-                </div>
-              </li>
-            {% endfor %}
-          </ul>
-        </details>
-      {% endfor %}
-    </aside>
-
-    <main>
-      <div class="card">
+{% block page_content %}
+<div class="card">
         <div class="flex-between">
           <div>
             <h2 style="margin:6px 0 0;">{{ t('home.server_status') }}</h2>
@@ -553,10 +491,11 @@
     </div>
   </div>
 
-  {% include 'partials/notifications_script.html' %}
+{% endblock %}
 
+{% block page_scripts %}
   <script>
-    const initialData = {{ {"summary": summary, "stacks": stacks}|tojson }};
+const initialData = {{ {"summary": summary, "stacks": stacks}|tojson }};
     const homeText = {
       totalLabel: "{{ t('home.total_label') }}",
       paused: "{{ t('home.paused') }}",
@@ -1020,5 +959,4 @@
       startOverviewPolling();
     });
   </script>
-</body>
-</html>
+{% endblock %}

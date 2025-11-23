@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Container</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
+{% extends "layouts/app_base.html" %}
+{% set page_title = 'D2HA – Container' %}
+
+{% block page_styles %}
   <style>
-    * { box-sizing: border-box; }
+* { box-sizing: border-box; }
     body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--color-bg); color: var(--color-text); }
     a { color: inherit; text-decoration: none; }
     header { background: var(--color-surface); border-bottom:1px solid var(--color-border); padding:16px 22px 12px; box-shadow: var(--shadow-sm); position:sticky; top:0; z-index:10; }
@@ -114,28 +111,9 @@
       td::before { content: attr(data-label); font-weight:700; color: var(--color-muted); margin-right: 10px; }
     }
   </style>
-  {% include 'partials/notifications_styles.html' %}
-</head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
-  <header>
-    <div class="brand-line">
-      <h1>D2HA</h1>
-      {% include 'partials/notifications_panel.html' %}
-    </div>
-    <nav>
-      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
-  </header>
+{% endblock %}
 
-  {% include 'partials/flash_messages.html' %}
-
-  <main>
+{% block page_content %}
     <div class="card">
       <div class="card-header">
         <h2>Riepilogo container</h2>
@@ -251,8 +229,7 @@
         </div>
       </section>
     {% endfor %}
-  </main>
-
+  
   <div class="bulk-bar" id="bulk-bar" aria-hidden="true">
     <div class="bulk-summary"><span id="bulk-count">0</span> container selezionati</div>
     <div class="bulk-actions">
@@ -422,9 +399,11 @@
     </div>
   </div>
   <div class="toast-container" id="toast-container"></div>
-  {% include 'partials/notifications_script.html' %}
+{% endblock %}
+
+{% block page_scripts %}
   <script>
-    const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
+const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
     stackToggles.forEach((header) => {
       const btn = header.querySelector('.stack-toggle-btn');
       const content = header.nextElementSibling;
@@ -962,7 +941,5 @@
         });
       }
     });
-
   </script>
-</body>
-</html>
+{% endblock %}
