@@ -1,3 +1,5 @@
+import base64
+import io
 import json
 import os
 import secrets
@@ -5,6 +7,7 @@ import time
 from functools import wraps
 
 import pyotp
+import qrcode
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -157,6 +160,21 @@ def _read_system_uptime_seconds() -> float:
     return -1.0
 
 
+def _build_qr_code_data_uri(data: str) -> str:
+    try:
+        qr = qrcode.QRCode(version=1, box_size=6, border=2)
+        qr.add_data(data)
+        qr.make(fit=True)
+        image = qr.make_image(fill_color="#0f1116", back_color="white")
+
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+        return f"data:image/png;base64,{encoded}"
+    except Exception:
+        return ""
+
+
 def _get_system_info():
     host_info = docker_service.get_host_info()
     uptime_seconds = _read_system_uptime_seconds()
@@ -265,6 +283,7 @@ def setup_2fa():
     provisioning_uri = pyotp.TOTP(secret).provisioning_uri(
         name=config.get("username", "admin"), issuer_name="D2HA"
     )
+    qr_code_data_uri = _build_qr_code_data_uri(provisioning_uri)
 
     if request.method == "POST":
         choice = request.form.get("choice")
@@ -298,6 +317,7 @@ def setup_2fa():
         "setup_2fa.html",
         secret=secret,
         provisioning_uri=provisioning_uri,
+        qr_code_data_uri=qr_code_data_uri,
         username=config.get("username", "admin"),
     )
 
