@@ -222,10 +222,7 @@ def login():
 
     remote_addr = _get_remote_addr()
     if is_login_blocked(remote_addr):
-        flash(
-            "Troppi tentativi di accesso falliti da questo indirizzo. Riprova più tardi.",
-            "error",
-        )
+        flash(t("flash.login_rate_limited"), "error")
         return render_template("login.html"), 429
 
     if session.get("user"):
@@ -261,7 +258,7 @@ def login():
                 return redirect(next_url or url_for("index"))
 
         register_failed_login(remote_addr)
-        flash("Invalid credentials or 2FA code", "error")
+        flash(t("flash.invalid_credentials"), "error")
 
     return render_template(
         "login.html",
@@ -305,19 +302,19 @@ def setup_account():
         new_password_confirm = request.form.get("new_password_confirm") or ""
 
         if not new_password:
-            flash("Please choose a password.", "error")
+            flash(t("flash.password_required"), "error")
         elif new_password != new_password_confirm:
-            flash("Passwords do not match.", "error")
+            flash(t("flash.passwords_mismatch"), "error")
         elif new_password == "admin":
-            flash("For security, the password cannot remain 'admin'.", "error")
+            flash(t("flash.password_admin_forbidden"), "error")
         elif len(new_password) < 10:
-            flash("Choose a longer password (at least 10 characters).", "error")
+            flash(t("flash.password_length_short"), "error")
         else:
             config["username"] = new_username or config.get("username", "admin")
             config["password_hash"] = generate_password_hash(new_password)
             save_auth_config(config)
             session["user"] = config["username"]
-            flash("Account aggiornato. Completiamo la configurazione della sicurezza.", "success")
+            flash(t("flash.account_updated_onboarding"), "success")
             return redirect(url_for("setup_2fa"))
 
     return render_template(
@@ -348,10 +345,7 @@ def setup_2fa():
             config["totp_secret"] = None
             save_auth_config(config)
             session.pop("pending_totp_secret", None)
-            flash(
-                "L'autenticazione a due fattori è disattivata. Potrai abilitarla più tardi nelle Impostazioni di sicurezza.",
-                "info",
-            )
+            flash(t("flash.setup2fa_skipped"), "info")
             return redirect(url_for("setup_modes"))
 
         if choice == "enable":
@@ -362,10 +356,10 @@ def setup_2fa():
                 config["totp_secret"] = secret
                 save_auth_config(config)
                 session.pop("pending_totp_secret", None)
-                flash("Two-factor authentication enabled.", "success")
+                flash(t("flash.setup2fa_enabled"), "success")
                 return redirect(url_for("setup_modes"))
 
-            flash("Invalid verification code. Please try again.", "error")
+            flash(t("flash.setup2fa_invalid_code"), "error")
 
     return render_template(
         "setup_2fa.html",
@@ -443,7 +437,7 @@ def setup_autodiscovery():
     if request.method == "POST":
         choice = request.form.get("autodiscovery_choice")
         if choice not in ("enable_all", "disable_all"):
-            flash("Seleziona una opzione valida per l'autodiscovery MQTT.", "error")
+            flash(t("flash.autodiscovery_invalid_choice"), "error")
         else:
             enable_all = choice == "enable_all"
             config["mqtt_default_entities_enabled"] = enable_all
@@ -457,24 +451,15 @@ def setup_autodiscovery():
                 app.logger.exception(
                     "Failed to apply autodiscovery defaults during onboarding"
                 )
-                flash(
-                    "Impossibile applicare automaticamente l'autodiscovery MQTT. Puoi riprovare dalla pagina Autodiscovery.",
-                    "error",
-                )
+                flash(t("flash.autodiscovery_apply_failed"), "error")
 
             config["onboarding_done"] = True
             save_auth_config(config)
 
             if autodiscovery_applied:
-                flash(
-                    "Configurazione iniziale completata. Potrai modificare queste impostazioni in qualsiasi momento.",
-                    "success",
-                )
+                flash(t("flash.autodiscovery_complete"), "success")
             else:
-                flash(
-                    "Configurazione iniziale completata, ma alcune impostazioni MQTT potrebbero richiedere un nuovo tentativo dalla pagina Autodiscovery.",
-                    "info",
-                )
+                flash(t("flash.autodiscovery_partial"), "info")
             return redirect(url_for("index"))
 
     return render_template(
@@ -493,26 +478,26 @@ def security_settings():
     if not is_onboarding_done():
         return redirect(url_for("setup_account"))
 
-    provisioning_uri = None
-    qr_code_data_uri = None
-    pending_2fa_setup = False
+        provisioning_uri = None
+        qr_code_data_uri = None
+        pending_2fa_setup = False
 
     def _require_current_password(value: str) -> bool:
         if not check_password_hash(config.get("password_hash", ""), value):
-            flash("Password attuale non corretta.", "error")
+            flash(t("flash.security_current_password_incorrect"), "error")
             return False
         return True
 
     def _require_totp(value: str) -> bool:
         if not value:
-            flash("Inserisci il codice 2FA corrente.", "error")
+            flash(t("flash.security_current_totp_missing"), "error")
             return False
         if not config.get("totp_secret"):
-            flash("Configurazione 2FA non valida. Riavvia la procedura.", "error")
+            flash(t("flash.security_totp_config_invalid"), "error")
             return False
         totp = pyotp.TOTP(config.get("totp_secret"))
         if not totp.verify(value, valid_window=1):
-            flash("Codice 2FA non valido. Riprova.", "error")
+            flash(t("flash.security_totp_invalid"), "error")
             return False
         return True
 
@@ -543,29 +528,23 @@ def security_settings():
 
                 if new_password:
                     if new_password != new_password_confirm:
-                        flash("Le nuove password non coincidono.", "error")
+                        flash(t("flash.security_new_passwords_mismatch"), "error")
                         has_errors = True
                     elif new_password == "admin":
-                        flash(
-                            "Per sicurezza, la password non può essere 'admin'.",
-                            "error",
-                        )
+                        flash(t("flash.security_new_password_admin_forbidden"), "error")
                         has_errors = True
                     elif len(new_password) < 10:
-                        flash(
-                            "Scegli una password più lunga (almeno 10 caratteri).",
-                            "error",
-                        )
+                        flash(t("flash.security_new_password_short"), "error")
                         has_errors = True
                     else:
                         password_hash = generate_password_hash(new_password)
                         changes_made = True
-                        flash("Password aggiornata correttamente.", "success")
+                        flash(t("flash.security_password_updated"), "success")
 
                 if not changes_made:
-                    flash("Nessuna modifica effettuata.", "info")
+                    flash(t("flash.security_no_changes"), "info")
                 elif has_errors:
-                    flash("Correggi gli errori e riprova.", "error")
+                    flash(t("flash.security_fix_errors"), "error")
                 else:
                     if username_change:
                         config["username"] = username_change
@@ -573,11 +552,11 @@ def security_settings():
                     if password_hash:
                         config["password_hash"] = password_hash
                     save_auth_config(config)
-                    flash("Credenziali aggiornate.", "success")
+                    flash(t("flash.security_credentials_updated"), "success")
 
         elif action == "enable_2fa":
             if config.get("two_factor_enabled"):
-                flash("2FA già abilitata.", "info")
+                flash(t("flash.security_2fa_already_enabled"), "info")
             elif not _require_current_password(current_password):
                 pass
             else:
@@ -589,21 +568,18 @@ def security_settings():
                 )
                 qr_code_data_uri = _build_qr_code_data_uri(provisioning_uri)
                 pending_2fa_setup = True
-                flash(
-                    "Scansiona il codice e conferma con un token per abilitare la 2FA.",
-                    "info",
-                )
+                flash(t("flash.security_scan_qr_to_enable"), "info")
 
         elif action == "confirm_enable_2fa":
             if config.get("two_factor_enabled"):
-                flash("2FA già abilitata.", "info")
+                flash(t("flash.security_2fa_already_enabled"), "info")
             elif not config.get("totp_secret"):
-                flash("Segreto TOTP non disponibile. Riavvia la procedura.", "error")
+                flash(t("flash.security_totp_secret_missing"), "error")
             else:
                 verify_totp_code = (request.form.get("verify_totp_code") or "").strip()
                 totp = pyotp.TOTP(config.get("totp_secret"))
                 if not totp.verify(verify_totp_code, valid_window=1):
-                    flash("Codice 2FA non valido. Riprova.", "error")
+                    flash(t("flash.security_2fa_enabled_invalid_code"), "error")
                     provisioning_uri = totp.provisioning_uri(
                         name=config.get("username", "admin"), issuer_name="D2HA"
                     )
@@ -612,14 +588,11 @@ def security_settings():
                 else:
                     config["two_factor_enabled"] = True
                     save_auth_config(config)
-                    flash(
-                        "Autenticazione a due fattori abilitata con successo.",
-                        "success",
-                    )
+                    flash(t("flash.security_2fa_enabled"), "success")
 
         elif action == "disable_2fa":
             if not config.get("two_factor_enabled"):
-                flash("2FA già disabilitata.", "info")
+                flash(t("flash.security_2fa_already_disabled"), "info")
             elif not _require_current_password(current_password):
                 pass
             elif not _require_totp(current_totp_code):
@@ -628,10 +601,7 @@ def security_settings():
                 config["two_factor_enabled"] = False
                 config["totp_secret"] = None
                 save_auth_config(config)
-                flash(
-                    "2FA disabilitata. Attenzione: l’account è ora protetto solo da username e password.",
-                    "warning",
-                )
+                flash(t("flash.security_2fa_disabled_warning"), "warning")
 
         config = get_auth_config()
 

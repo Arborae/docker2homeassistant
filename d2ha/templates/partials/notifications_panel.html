@@ -105,7 +105,7 @@
             <select name="lang" onchange="this.form.submit()">
               {% for lang_code in SUPPORTED_LANGS %}
               <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
-                {{ 'Italiano' if lang_code == 'it' else 'English' }}
+                {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
               </option>
               {% endfor %}
             </select>
@@ -118,11 +118,11 @@
 
 <div id="backend-status-modal" class="backend-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="backend-status-title">
   <div class="backend-modal" role="document">
-    <h2 id="backend-status-title">Stato aggiornamento dati</h2>
-    <p id="backend-status-last-update" class="backend-modal-text">Nessun aggiornamento riuscito di recente</p>
+    <h2 id="backend-status-title">{{ t('settings.backend_status') }}</h2>
+    <p id="backend-status-last-update" class="backend-modal-text">{{ t('backend_status.no_recent_update') }}</p>
     <div class="backend-modal-actions">
-      <button type="button" id="backend-status-refresh-btn" class="backend-modal-btn primary">Aggiorna ora</button>
-      <button type="button" id="backend-status-close-btn" class="backend-modal-btn">Chiudi</button>
+      <button type="button" id="backend-status-refresh-btn" class="backend-modal-btn primary">{{ t('settings.refresh') }}</button>
+      <button type="button" id="backend-status-close-btn" class="backend-modal-btn">{{ t('settings.close') }}</button>
     </div>
   </div>
 </div>
