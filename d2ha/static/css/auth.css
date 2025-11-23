@@ -27,30 +27,30 @@
 }
 
 body.theme-light {
-  --bg: #f8fbff;
-  --panel: rgba(255, 255, 255, 0.72);
-  --panel-2: rgba(255, 255, 255, 0.64);
-  --accent: #1d9bf0;
-  --accent-2: #7cd4ff;
+  --bg: linear-gradient(135deg, #fff3e0, #ffe0c2);
+  --panel: rgba(255, 255, 255, 0.82);
+  --panel-2: rgba(255, 255, 255, 0.72);
+  --accent: #ff8a3d;
+  --accent-2: #ffce73;
   --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-  --accent-glow: rgba(29, 155, 240, 0.25);
-  --accent-glow-soft: rgba(29, 155, 240, 0.18);
-  --accent-border-strong: rgba(29, 155, 240, 0.55);
-  --accent-border: rgba(29, 155, 240, 0.4);
-  --accent-border-soft: rgba(29, 155, 240, 0.22);
-  --accent-surface: rgba(29, 155, 240, 0.08);
+  --accent-glow: rgba(255, 138, 61, 0.25);
+  --accent-glow-soft: rgba(255, 138, 61, 0.18);
+  --accent-border-strong: rgba(255, 138, 61, 0.6);
+  --accent-border: rgba(255, 138, 61, 0.42);
+  --accent-border-soft: rgba(255, 138, 61, 0.25);
+  --accent-surface: rgba(255, 138, 61, 0.12);
   --text: #0f172a;
   --muted: #475569;
   --border: rgba(15, 23, 42, 0.08);
   --shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-  --header-bg: linear-gradient(90deg, #e8f3ff, #d8ecff);
-  --stack-header-bg: linear-gradient(135deg, #e8f3ff, #cfe4ff);
-  --control-surface: #f2f7ff;
-  --auth-bg-1: #dbeafe;
-  --auth-bg-2: #b7d4f9;
-  --auth-point: #1d4ed8;
-  --auth-line: #0ea5e9;
-  --auth-glow: rgba(14, 165, 233, 0.28);
+  --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
+  --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
+  --control-surface: #fff7ed;
+  --auth-bg-1: #ffe9d6;
+  --auth-bg-2: #ffd0a1;
+  --auth-point: #f97316;
+  --auth-line: #f59e0b;
+  --auth-glow: rgba(245, 158, 11, 0.3);
 }
 
 * {
@@ -65,6 +65,12 @@ body {
     radial-gradient(circle at 84% 18%, rgba(124, 255, 195, 0.06), transparent 24%),
     var(--bg);
   color: var(--text);
+}
+
+body.theme-light {
+  background: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
+    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
+    var(--bg);
 }
 
 .auth-page {
