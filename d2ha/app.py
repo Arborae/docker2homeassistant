@@ -359,7 +359,7 @@ def setup_modes():
     config = get_auth_config()
 
     if config.get("onboarding_done"):
-        return redirect(url_for("home"))
+        return redirect(url_for("index"))
 
     safe_mode_enabled = bool(config.get("safe_mode_enabled", True))
     performance_mode_enabled = bool(config.get("performance_mode_enabled", False))
@@ -411,7 +411,7 @@ def setup_autodiscovery():
     config = get_auth_config()
 
     if config.get("onboarding_done"):
-        return redirect(url_for("home"))
+        return redirect(url_for("index"))
 
     mqtt_default_entities_enabled = bool(
         config.get("mqtt_default_entities_enabled", True)
@@ -452,7 +452,7 @@ def setup_autodiscovery():
                     "Configurazione iniziale completata, ma alcune impostazioni MQTT potrebbero richiedere un nuovo tentativo dalla pagina Autodiscovery.",
                     "info",
                 )
-            return redirect(url_for("home"))
+            return redirect(url_for("index"))
 
     return render_template(
         "setup_autodiscovery.html",
