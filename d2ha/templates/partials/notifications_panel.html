@@ -50,7 +50,12 @@
             <span>Sicurezza</span>
             <p class="settings-hint">Gestisci autenticazione e modalità sicura.</p>
           </div>
-          <a class="settings-link" href="{{ url_for('security_settings') }}">Apri</a>
+          <a class="settings-link settings-link-icon" href="{{ url_for('security_settings') }}" aria-label="Apri impostazioni di sicurezza">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 3l7 4v5c0 4.97-3.58 9.36-7 9.97-3.42-.61-7-5-7-9.97V7l7-4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+              <path d="M9.5 12.5l2 2 3-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </a>
         </div>
         <div class="settings-row settings-row-toggle">
           <div>
