@@ -475,12 +475,12 @@ def setup_autodiscovery():
 def security_settings():
     config = get_auth_config()
 
+    provisioning_uri = None
+    qr_code_data_uri = None
+    pending_2fa_setup = False
+
     if not is_onboarding_done():
         return redirect(url_for("setup_account"))
-
-        provisioning_uri = None
-        qr_code_data_uri = None
-        pending_2fa_setup = False
 
     def _require_current_password(value: str) -> bool:
         if not check_password_hash(config.get("password_hash", ""), value):
