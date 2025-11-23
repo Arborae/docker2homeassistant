@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="{{ get_current_lang() }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,6 +14,18 @@
       --muted: #9aa7bd;
       --border: rgba(255,255,255,0.08);
       --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+
+    body.theme-light {
+      --bg: #f8f8f8;
+      --panel: #ffffff;
+      --panel-2: #f2f4f8;
+      --accent: #2563eb;
+      --accent-2: #16a34a;
+      --text: #111827;
+      --muted: #4b5563;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 24px rgba(0,0,0,0.1);
     }
     * { box-sizing: border-box; }
     body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
@@ -97,7 +109,7 @@
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
   <header>
     <div class="brand-line">
       <h1>D2HA</h1>
@@ -105,12 +117,12 @@
     </div>
     <nav>
       <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">Container</a>
-      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">Immagini</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">Aggiornamenti</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">Eventi</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">Autodiscovery</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">Logout</a>
+      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
     </nav>
   </header>
 
@@ -163,7 +175,7 @@
             </colgroup>
             <thead>
               <tr>
-                <th>Container</th>
+                <th>{{ t("nav.containers") }}</th>
                 <th>Stato</th>
                 <th>Vers. installata</th>
                 <th>Vers. remota</th>

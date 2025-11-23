@@ -24,6 +24,8 @@
 
 Niente database, niente dipendenze strane: solo Docker, Flask e – se vuoi – MQTT.
 
+La UI ora supporta **multi-lingua (Italiano e Inglese)** e un **theme switcher (dark/light)** selezionabili dal menu a ingranaggio in alto a destra. Le scelte vengono ricordate e si applicano a tutto, dal login al wizard di onboarding.
+
 ---
 
 ## 📸 Screenshot

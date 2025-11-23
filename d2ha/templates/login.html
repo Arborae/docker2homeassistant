@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="{{ get_current_lang() }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Login</title>
+  <title>{{ t("login.title") }}</title>
   <style>
     :root {
       --bg: #0f1116;
@@ -15,6 +15,17 @@
       --muted: #9aa7bd;
       --border: rgba(255,255,255,0.08);
       --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    body.theme-light {
+      --bg: #f8f8f8;
+      --panel: #ffffff;
+      --panel-2: #f2f4f8;
+      --accent: #2563eb;
+      --accent-2: #16a34a;
+      --text: #111827;
+      --muted: #4b5563;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 24px rgba(0,0,0,0.1);
     }
     * { box-sizing: border-box; }
     body {
@@ -70,9 +81,9 @@
     .hint { font-size: 0.9rem; color: var(--muted); }
   </style>
 </head>
-<body>
+<body class="theme-{{ get_current_theme() }}">
   <div class="card">
-    <h1>D2HA • Login</h1>
+    <h1>{{ t("login.heading") }}</h1>
     {% if show_onboarding_hint %}
     <p>Accedi con le credenziali amministrative. Al primo login con <strong>admin / admin</strong> ti guideremo in un rapido setup sicuro.</p>
     {% endif %}
@@ -89,22 +100,43 @@
 
     <form method="post" autocomplete="off">
       <div>
-        <label for="username">Username</label>
+        <label for="username">{{ t("login.username") }}</label>
         <input type="text" id="username" name="username" required />
       </div>
       <div>
-        <label for="password">Password</label>
+        <label for="password">{{ t("login.password") }}</label>
         <input type="password" id="password" name="password" required />
       </div>
       {% if two_factor %}
       <div>
-        <label for="token">Codice 2FA (6 cifre)</label>
+        <label for="token">{{ t("login.token") }}</label>
         <input type="text" id="token" name="token" pattern="\d{6}" inputmode="numeric" autocomplete="one-time-code" />
-        <p class="hint">Hai attivato l'autenticazione a due fattori. Inserisci il codice temporaneo dall'app Authenticator.</p>
+        <p class="hint">{{ t("wizard.step2.title") }}</p>
       </div>
       {% endif %}
-      <button type="submit" class="btn">Entra</button>
+      <button type="submit" class="btn">{{ t("login.button") }}</button>
     </form>
+    <div class="flash-container" style="margin-top:12px; gap:10px;">
+      <form method="post" action="{{ url_for('set_language') }}">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <label for="login-lang" class="hint">{{ t('language.label') }}</label>
+        <select id="login-lang" name="lang" onchange="this.form.submit()">
+          {% for lang_code in SUPPORTED_LANGS %}
+            <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
+              {{ 'Italiano' if lang_code == 'it' else 'English' }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+      <form method="post" action="{{ url_for('set_theme') }}">
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <label for="login-theme" class="hint">{{ t('theme.label') }}</label>
+        <select id="login-theme" name="theme" onchange="this.form.submit()">
+          <option value="dark" {% if get_current_theme() == 'dark' %}selected{% endif %}>{{ t('theme.dark') }}</option>
+          <option value="light" {% if get_current_theme() == 'light' %}selected{% endif %}>{{ t('theme.light') }}</option>
+        </select>
+      </form>
+    </div>
   </div>
 </body>
 </html>

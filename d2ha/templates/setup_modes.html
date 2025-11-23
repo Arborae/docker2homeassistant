@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="{{ get_current_lang() }}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,6 +15,18 @@
       --muted: #9aa7bd;
       --border: rgba(255,255,255,0.08);
       --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+
+    body.theme-light {
+      --bg: #f8f8f8;
+      --panel: #ffffff;
+      --panel-2: #f2f4f8;
+      --accent: #2563eb;
+      --accent-2: #16a34a;
+      --text: #111827;
+      --muted: #4b5563;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 24px rgba(0,0,0,0.1);
     }
     * { box-sizing: border-box; }
     body {
@@ -52,7 +64,7 @@
     .hint { font-size: 0.85rem; opacity: 0.8; margin-top: -6px; }
   </style>
 </head>
-<body>
+<body class="theme-{{ get_current_theme() }}">
   <div class="card">
     <h1>Modalità del sistema</h1>
     <p>Queste opzioni ti aiutano a bilanciare sicurezza e prestazioni. Puoi sempre modificarle in seguito dal pulsante con l'icona dell'ingranaggio in alto a destra.</p>
