@@ -1,9 +1,24 @@
 import json
 import os
+import secrets
 import time
-from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from functools import wraps
 
+import pyotp
+from dotenv import load_dotenv
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
+from werkzeug.security import check_password_hash, generate_password_hash
+
+from auth_store import ensure_default_auth_config, load_auth_config, save_auth_config
 from docker_service import (
     AutodiscoveryPreferences,
     DockerService,
@@ -15,7 +30,19 @@ from docker_service import (
 load_dotenv()
 
 app = Flask(__name__)
+app.config.update(
+    SECRET_KEY=os.environ.get("D2HA_SECRET_KEY") or secrets.token_hex(32),
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SECURE=not app.debug,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
 app.jinja_env.globals["human_bytes"] = human_bytes
+
+ensure_default_auth_config()
+
+
+def get_auth_config():
+    return load_auth_config()
 
 MQTT_BROKER = os.getenv("MQTT_BROKER")
 MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
@@ -54,6 +81,34 @@ _safe_mode_state = {"enabled": True}
 _safe_mode_file = os.path.join(os.path.dirname(__file__), "safe_mode_state.json")
 
 
+def login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        config = get_auth_config()
+        current_user = session.get("user")
+        if not current_user or current_user != config.get("username"):
+            session.clear()
+            return redirect(url_for("login", next=request.url))
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
+def onboarding_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        config = get_auth_config()
+        current_user = session.get("user")
+        if not current_user or current_user != config.get("username"):
+            session.clear()
+            return redirect(url_for("login", next=request.url))
+        if not is_onboarding_done():
+            return redirect(url_for("setup_account"))
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
 def _load_safe_mode_state():
     global _safe_mode_state
     try:
@@ -84,6 +139,11 @@ def set_safe_mode(enabled: bool) -> bool:
     return is_safe_mode_enabled()
 
 
+def is_onboarding_done():
+    config = get_auth_config()
+    return bool(config.get("onboarding_done"))
+
+
 def _read_system_uptime_seconds() -> float:
     try:
         with open("/proc/uptime", "r", encoding="utf-8") as fp:
@@ -106,6 +166,138 @@ def _get_system_info():
         or "-",
         "uptime": format_timedelta(uptime_seconds) if uptime_seconds >= 0 else "-",
     }
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    config = get_auth_config()
+    next_url = request.args.get("next")
+
+    if session.get("user"):
+        if not config.get("onboarding_done"):
+            return redirect(url_for("setup_account"))
+        return redirect(next_url or url_for("index"))
+
+    two_factor = bool(config.get("two_factor_enabled") and config.get("totp_secret"))
+
+    if request.method == "POST":
+        username_input = (request.form.get("username") or "").strip()
+        password_input = request.form.get("password") or ""
+        token_input = (request.form.get("token") or "").strip()
+
+        if username_input == config.get("username") and check_password_hash(
+            config.get("password_hash", ""), password_input
+        ):
+            totp_valid = True
+            if two_factor:
+                totp = pyotp.TOTP(config.get("totp_secret"))
+                totp_valid = bool(token_input) and bool(
+                    totp.verify(token_input, valid_window=1)
+                )
+
+            if totp_valid:
+                session.clear()
+                session["user"] = config.get("username")
+                session["logged_at"] = int(time.time())
+
+                if not config.get("onboarding_done"):
+                    return redirect(url_for("setup_account"))
+
+                return redirect(next_url or url_for("index"))
+
+        flash("Invalid credentials or 2FA code", "error")
+
+    return render_template("login.html", two_factor=two_factor)
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
+@app.route("/setup-account", methods=["GET", "POST"])
+@login_required
+def setup_account():
+    config = get_auth_config()
+    if config.get("onboarding_done"):
+        return redirect(url_for("index"))
+
+    if request.method == "POST":
+        new_username = (request.form.get("new_username") or config.get("username", "")).strip()
+        new_password = request.form.get("new_password") or ""
+        new_password_confirm = request.form.get("new_password_confirm") or ""
+
+        if not new_password:
+            flash("Please choose a password.", "error")
+        elif new_password != new_password_confirm:
+            flash("Passwords do not match.", "error")
+        elif new_password == "admin":
+            flash("For security, the password cannot remain 'admin'.", "error")
+        elif len(new_password) < 10:
+            flash("Choose a longer password (at least 10 characters).", "error")
+        else:
+            config["username"] = new_username or config.get("username", "admin")
+            config["password_hash"] = generate_password_hash(new_password)
+            save_auth_config(config)
+            session["user"] = config["username"]
+            flash("Account updated. Let's finish setting up security.", "success")
+            return redirect(url_for("setup_2fa"))
+
+    return render_template(
+        "setup_account.html",
+        current_username=config.get("username", "admin"),
+    )
+
+
+@app.route("/setup-2fa", methods=["GET", "POST"])
+@login_required
+def setup_2fa():
+    config = get_auth_config()
+
+    if config.get("onboarding_done"):
+        return redirect(url_for("index"))
+
+    secret = session.get("pending_totp_secret") or pyotp.random_base32()
+    session["pending_totp_secret"] = secret
+    provisioning_uri = pyotp.TOTP(secret).provisioning_uri(
+        name=config.get("username", "admin"), issuer_name="D2HA"
+    )
+
+    if request.method == "POST":
+        choice = request.form.get("choice")
+        if choice == "skip":
+            config["two_factor_enabled"] = False
+            config["totp_secret"] = None
+            config["onboarding_done"] = True
+            save_auth_config(config)
+            session.pop("pending_totp_secret", None)
+            flash(
+                "2FA is currently disabled. You can enable it later in Security Settings.",
+                "info",
+            )
+            return redirect(url_for("index"))
+
+        if choice == "enable":
+            token = (request.form.get("token") or "").strip()
+            totp = pyotp.TOTP(secret)
+            if totp.verify(token, valid_window=1):
+                config["two_factor_enabled"] = True
+                config["totp_secret"] = secret
+                config["onboarding_done"] = True
+                save_auth_config(config)
+                session.pop("pending_totp_secret", None)
+                flash("Two-factor authentication enabled.", "success")
+                return redirect(url_for("index"))
+
+            flash("Invalid verification code. Please try again.", "error")
+
+    return render_template(
+        "setup_2fa.html",
+        secret=secret,
+        provisioning_uri=provisioning_uri,
+        username=config.get("username", "admin"),
+    )
 
 
 
@@ -264,6 +456,7 @@ def _build_home_context():
 
 @app.route("/", methods=["GET"])
 @app.route("/home", methods=["GET"])
+@onboarding_required
 def index():
     stacks, summary = _build_home_context()
     notifications = _build_notifications_summary()
@@ -277,6 +470,7 @@ def index():
 
 
 @app.route("/containers", methods=["GET"])
+@onboarding_required
 def containers_view():
     stacks, summary = _build_home_context()
     notifications = _build_notifications_summary()
@@ -290,6 +484,7 @@ def containers_view():
 
 
 @app.route("/images", methods=["GET"])
+@onboarding_required
 def images_view():
     images = docker_service.list_images_overview()
     stacks, summary = _build_home_context()
@@ -304,6 +499,7 @@ def images_view():
 
 
 @app.route("/events", methods=["GET"])
+@onboarding_required
 def events_view():
     hours_param = request.args.get("hours", default="24")
     severity_param = (request.args.get("severity") or "all").lower()
@@ -333,6 +529,7 @@ def events_view():
 
 
 @app.route("/updates", methods=["GET"])
+@onboarding_required
 def updates():
     containers_info = docker_service.collect_containers_info_for_updates()
     mqtt_manager.publish_autodiscovery_and_state(containers_info)
@@ -357,6 +554,7 @@ def updates():
 
 
 @app.route("/autodiscovery", methods=["GET", "POST"])
+@onboarding_required
 def autodiscovery_view():
     containers_info = docker_service.collect_containers_info_for_updates()
     containers_info = [
@@ -402,12 +600,14 @@ def autodiscovery_view():
 
 
 @app.route("/api/overview", methods=["GET"])
+@onboarding_required
 def api_overview():
     stacks, summary = _build_home_context()
     return jsonify({"summary": summary, "stacks": stacks})
 
 
 @app.route("/api/notifications", methods=["GET"])
+@onboarding_required
 def api_notifications():
     force_refresh = request.args.get("refresh") == "1"
     data = _build_notifications_summary(force=force_refresh)
@@ -415,6 +615,7 @@ def api_notifications():
 
 
 @app.route("/api/safe_mode", methods=["GET", "POST"])
+@onboarding_required
 def api_safe_mode():
     if request.method == "GET":
         return jsonify({"enabled": is_safe_mode_enabled()})
@@ -425,6 +626,7 @@ def api_safe_mode():
 
 
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
+@onboarding_required
 def container_action(container_id, action):
     if action == "play":
         action = "start"
@@ -440,6 +642,7 @@ def container_action(container_id, action):
 
 
 @app.route("/containers/<container_id>/full_update", methods=["POST"])
+@onboarding_required
 def container_full_update(container_id):
     docker_service.recreate_container_with_latest_image(container_id)
     _publish_current_state()
@@ -447,12 +650,14 @@ def container_full_update(container_id):
 
 
 @app.route("/images/<path:image_id>/delete", methods=["POST"])
+@onboarding_required
 def delete_image(image_id):
     docker_service.remove_image(image_id)
     return redirect(url_for("images_view"))
 
 
 @app.route("/api/containers/<container_id>/details", methods=["GET"])
+@onboarding_required
 def api_container_details(container_id):
     details = docker_service.get_container_detail(container_id)
     if not details:
@@ -461,6 +666,7 @@ def api_container_details(container_id):
 
 
 @app.route("/api/containers/<container_id>/stats", methods=["GET"])
+@onboarding_required
 def api_container_stats(container_id):
     stats = docker_service.get_container_live_stats(container_id)
     if stats is None:
@@ -469,6 +675,7 @@ def api_container_stats(container_id):
 
 
 @app.route("/api/containers/<container_id>/logs", methods=["GET"])
+@onboarding_required
 def api_container_logs(container_id):
     tail_param = request.args.get("tail", default="100")
     tail_val = 100
@@ -487,6 +694,7 @@ def api_container_logs(container_id):
 
 
 @app.route("/api/containers/<container_id>/updates", methods=["GET", "POST"])
+@onboarding_required
 def api_container_updates(container_id):
     force_refresh = request.method == "POST"
     info = docker_service.get_container_update_info(container_id, force_refresh=force_refresh)
@@ -496,6 +704,7 @@ def api_container_updates(container_id):
 
 
 @app.route("/api/containers/<container_id>/updates/frequency", methods=["POST"])
+@onboarding_required
 def api_container_updates_frequency(container_id):
     data = request.get_json(force=True, silent=True) or {}
     minutes = int(data.get("minutes", 60))
@@ -504,6 +713,7 @@ def api_container_updates_frequency(container_id):
 
 
 @app.route("/api/containers/<container_id>/compose", methods=["GET", "POST"])
+@onboarding_required
 def api_container_compose(container_id):
     if request.method == "GET":
         compose_info = docker_service.get_compose_file_for_container(container_id)
@@ -523,6 +733,7 @@ def api_container_compose(container_id):
 
 
 @app.route("/api/compose", methods=["GET", "POST"])
+@onboarding_required
 def api_compose_file():
     if request.method == "GET":
         content = docker_service.get_compose_file()
