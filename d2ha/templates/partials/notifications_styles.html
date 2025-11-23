@@ -47,7 +47,7 @@
     padding: 10px 12px;
     border-radius: 10px;
     border: 1px solid var(--border);
-    background: rgba(255,255,255,0.04);
+    background: var(--control-surface);
     color: var(--text);
     letter-spacing: 0.08em;
     box-shadow: var(--shadow);
@@ -63,7 +63,7 @@
   .notif-toggle,
   .settings-toggle {
     position: relative;
-    background: rgba(255,255,255,0.05);
+    background: var(--control-surface);
     border: 1px solid var(--border);
     color: var(--text);
     border-radius: 10px;
@@ -150,12 +150,12 @@
     transition: border-color 0.15s ease, background 0.15s ease, transform 0.05s ease;
   }
   .backend-modal-btn.primary {
-    background: linear-gradient(135deg, #1b87f1, #31c4ff);
+    background: var(--accent-gradient);
     color: #0c121e;
-    border-color: rgba(49,196,255,0.55);
-    box-shadow: 0 6px 18px rgba(49,196,255,0.35);
+    border-color: var(--accent-border-strong);
+    box-shadow: 0 6px 18px var(--accent-glow);
   }
-  .backend-modal-btn:hover { transform: translateY(-1px); border-color: rgba(49,196,255,0.4); }
+  .backend-modal-btn:hover { transform: translateY(-1px); border-color: var(--accent-border); }
   .notif-panel {
     position: absolute;
     right: 0;
@@ -268,7 +268,7 @@
     width: 18px;
     height: 18px;
   }
-  .settings-link:hover { border-color: rgba(49,196,255,0.45); color: var(--accent); }
+  .settings-link:hover { border-color: var(--accent-border); color: var(--accent); }
   .switch { position: relative; width: 46px; height: 26px; }
   .switch input {
     opacity: 0;
@@ -302,8 +302,8 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   }
   .switch input:checked + .slider {
-    background: linear-gradient(135deg, #1b87f1, #31c4ff);
-    border-color: rgba(49,196,255,0.55);
+    background: var(--accent-gradient);
+    border-color: var(--accent-border-strong);
   }
   .switch input:checked + .slider::before { transform: translateX(18px); }
 
@@ -356,5 +356,5 @@
     color: var(--text);
   }
 
-  .btn-secondary:hover { border-color: rgba(49,196,255,0.45); }
+  .btn-secondary:hover { border-color: var(--accent-border); }
 </style>

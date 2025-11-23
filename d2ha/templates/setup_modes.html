@@ -5,28 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Modalità del sistema</title>
   <style>
-    :root {
+                :root {
       --bg: #0f1116;
       --panel: #151924;
       --panel-2: #1b2131;
       --accent: #31c4ff;
       --accent-2: #7cffc3;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(49,196,255,0.35);
+      --accent-glow-soft: rgba(49,196,255,0.25);
+      --accent-border-strong: rgba(49,196,255,0.55);
+      --accent-border: rgba(49,196,255,0.45);
+      --accent-border-soft: rgba(49,196,255,0.3);
+      --accent-surface: rgba(49,196,255,0.08);
       --text: #e7ecf4;
       --muted: #9aa7bd;
       --border: rgba(255,255,255,0.08);
       --shadow: 0 10px 30px rgba(0,0,0,0.45);
+      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
+      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
+      --control-surface: #0f141f;
     }
 
     body.theme-light {
-      --bg: #f8f8f8;
+      --bg: #fff7ed;
       --panel: #ffffff;
-      --panel-2: #f2f4f8;
-      --accent: #2563eb;
-      --accent-2: #16a34a;
-      --text: #111827;
+      --panel-2: #fff3df;
+      --accent: #f97316;
+      --accent-2: #fb923c;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(249,115,22,0.3);
+      --accent-glow-soft: rgba(249,115,22,0.18);
+      --accent-border-strong: rgba(249,115,22,0.55);
+      --accent-border: rgba(249,115,22,0.42);
+      --accent-border-soft: rgba(249,115,22,0.26);
+      --accent-surface: rgba(249,115,22,0.08);
+      --text: #1f2937;
       --muted: #4b5563;
       --border: rgba(0,0,0,0.08);
       --shadow: 0 8px 24px rgba(0,0,0,0.1);
+      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
+      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
+      --control-surface: #fffaf3;
     }
     * { box-sizing: border-box; }
     body {
@@ -44,7 +64,7 @@
     }
     .card {
       width: min(520px, 100%);
-      background: linear-gradient(180deg, rgba(49,196,255,0.08), rgba(124,255,195,0.04)), var(--panel);
+      background: linear-gradient(180deg, var(--accent-surface), rgba(124,255,195,0.04)), var(--panel);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 20px 22px;
@@ -52,11 +72,11 @@
     }
     h1 { margin: 0 0 6px; letter-spacing: 0.08em; text-transform: uppercase; font-size: 1.1rem; }
     p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
-    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: rgba(49,196,255,0.12); color: var(--accent); border:1px solid rgba(49,196,255,0.3); font-weight: 800; letter-spacing: 0.05em; }
+    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: var(--accent-surface); color: var(--accent); border:1px solid var(--accent-border-soft); font-weight: 800; letter-spacing: 0.05em; }
     form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
     label { font-weight: 700; color: var(--text); font-size: 0.95rem; }
     input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
-    button { margin-top: 10px; padding: 12px; border: none; border-radius: 12px; background: linear-gradient(135deg, #1b87f1, #31c4ff); color: #0c121e; font-weight: 800; cursor: pointer; box-shadow: var(--shadow); }
+    button { margin-top: 10px; padding: 12px; border: none; border-radius: 12px; background: var(--accent-gradient); color: #0c121e; font-weight: 800; cursor: pointer; box-shadow: var(--shadow); }
     button:hover { filter: brightness(1.05); }
     .flash-container { margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
     .flash { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
