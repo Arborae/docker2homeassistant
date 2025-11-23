@@ -73,7 +73,9 @@
 <body>
   <div class="card">
     <h1>D2HA • Login</h1>
+    {% if show_onboarding_hint %}
     <p>Accedi con le credenziali amministrative. Al primo login con <strong>admin / admin</strong> ti guideremo in un rapido setup sicuro.</p>
+    {% endif %}
 
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}

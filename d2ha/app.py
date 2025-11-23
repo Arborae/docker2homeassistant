@@ -227,7 +227,11 @@ def login():
 
         flash("Invalid credentials or 2FA code", "error")
 
-    return render_template("login.html", two_factor=two_factor)
+    return render_template(
+        "login.html",
+        two_factor=two_factor,
+        show_onboarding_hint=not bool(config.get("onboarding_done")),
+    )
 
 
 @app.route("/logout")
