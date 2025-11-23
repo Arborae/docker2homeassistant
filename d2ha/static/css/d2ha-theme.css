@@ -179,12 +179,31 @@ body,
   border-color: var(--color-border-strong);
 }
 
-.btn-primary:hover { transform: translateY(-1px); }
+.btn-primary:hover,
+.btn-primary:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 34px rgba(49, 196, 255, 0.4);
+}
 
 .btn-secondary {
   background: var(--color-surface-muted);
   color: var(--color-text);
   border-color: var(--color-border);
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--color-border-strong);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-danger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-border-soft), var(--shadow-sm);
 }
 
 .btn-ghost {

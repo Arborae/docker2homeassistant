@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Aggiornamenti</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
-  <style>
-                :root {
+    <style>
+    :root {
       --bg: #0f1116;
       --panel: #151924;
       --panel-2: #1b2131;
@@ -63,33 +63,7 @@
     .logout-link { margin-left:auto; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow-soft); }
     main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
-    .table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; table-layout: fixed; }
-    .table th, .table td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
-    .table thead th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
-    .table tbody tr:last-child td { border-bottom: none; }
-    .table tbody tr:hover { background: rgba(255,255,255,0.03); }
-    .stack-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background: rgba(156, 204, 101, 0.12); color: #c5e1a5; font-size: 0.78rem; }
-    .stack-tag.nostack { background: rgba(158, 158, 158, 0.12); color: #e0e0e0; }
-    .status-pill { display:inline-flex; align-items:center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
-    .status-up-to-date { background: rgba(76, 175, 80, 0.15); color: #81c784; }
-    .status-update-available { background: rgba(255, 193, 7, 0.18); color: #ffeb3b; }
-    .status-unknown { background: rgba(158, 158, 158, 0.15); color: #eeeeee; }
-    .changelog, .breaking { max-height: 80px; overflow-y: auto; font-size: 0.82rem; line-height: 1.35; padding-right: 4px; }
-    .changelog::-webkit-scrollbar, .breaking::-webkit-scrollbar { width: 4px; }
-    .changelog::-webkit-scrollbar-thumb, .breaking::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
-    .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.78rem; color: #ccc; }
-    .badge-null { opacity: 0.6; }
-    .actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-    .actions-cell { text-align: right; }
-    .col-name { width: 240px; }
-    .col-status { width: 170px; }
-    .col-version { width: 160px; }
-    .col-log, .col-breaking { width: 200px; }
-    .col-actions { width: 180px; }
-    .btn { border: 1px solid var(--border); border-radius: 12px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; background: var(--control-surface); color: var(--text); transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease; text-align: center; box-shadow: 0 8px 18px var(--shadow); }
-    .btn:hover { transform: translateY(-1px); filter: brightness(1.02); box-shadow: 0 10px 22px var(--accent-glow-soft); color: var(--accent); border-color: var(--accent-border); }
-    .btn-full-update { background: var(--accent-gradient); color:#04101c; font-weight: 800; letter-spacing: 0.01em; border-color: var(--accent-border); box-shadow: 0 10px 22px var(--accent-glow); }
-    .btn-full-update:hover { filter: brightness(1.05); color: #0b111c; }
+    .muted { color: var(--muted); }
     .small { font-size: 0.82rem; color: #adb7c7; }
     .performance-hint { display:none; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border:1px dashed var(--border); align-items: center; gap: 12px; }
     .performance-hint.visible { display: flex; justify-content: space-between; flex-wrap: wrap; }
@@ -107,21 +81,34 @@
     .collapsed .chevron { transform: rotate(-90deg); }
     .stack-body { margin-top: 10px; display:block; }
     .collapsed .stack-body { display:none; }
-    .status-meta { display:flex; flex-direction:column; gap:4px; }
+    .status-meta { display:flex; flex-direction:column; gap:6px; align-items:flex-end; text-align:right; }
     .pill-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+    .container-card { background: var(--panel-2); border:1px solid var(--border); border-radius:14px; padding:14px; box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
+    .container-header { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; }
+    .container-title { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .container-title strong { font-size:1rem; }
+    .meta-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; color: var(--muted); font-size:0.9rem; }
+    .version-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; }
+    .version-card { background: rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
+    .version-label { font-weight:700; color: var(--muted); font-size:0.85rem; letter-spacing:0.02em; text-transform: uppercase; }
+    .badge { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.82rem; color: #ccc; border:1px solid var(--border); }
+    .badge-null { opacity: 0.6; }
+    .log-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:10px; }
+    .log-card { background: var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px 12px; box-shadow: var(--shadow); display:flex; flex-direction:column; gap:8px; }
+    .log-card h4 { margin:0; font-size:0.95rem; letter-spacing:0.02em; }
+    .changelog, .breaking { max-height: 120px; overflow-y: auto; font-size: 0.9rem; line-height: 1.45; padding-right: 4px; }
+    .changelog::-webkit-scrollbar, .breaking::-webkit-scrollbar { width: 4px; }
+    .changelog::-webkit-scrollbar-thumb, .breaking::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
+    .actions { display: flex; flex-wrap:wrap; gap: 8px; justify-content: flex-end; align-items:center; }
     .confirm-backdrop { position:fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:50; padding:18px; }
     .confirm-backdrop.visible { display:flex; }
     .confirm-modal { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:18px; width:min(420px, 100%); box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
     .confirm-title { margin:0; font-size:1rem; }
-    .confirm-actions { display:flex; justify-content:flex-end; gap:8px; }
-    .btn-ghost { background: var(--control-surface); color: var(--text); border-color: var(--border); }
-    @media(max-width: 1100px) {
-      .table, .table thead, .table tbody, .table th, .table td, .table tr { display:block; }
-      .table thead { display:none; }
-      .table { border-radius: 0; }
-      .table tr { margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
-      .table td { border-bottom:1px solid var(--border); display:flex; justify-content: space-between; }
-      .table td::before { content: attr(data-label); font-weight: 700; color: var(--muted); margin-right: 10px; }
+    .confirm-actions { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+    @media(max-width: 900px) {
+      header { position: sticky; top: 0; }
+      .container-header { flex-direction: column; align-items:flex-start; }
+      .status-meta { align-items:flex-start; text-align:left; }
     }
   </style>
   {% include 'partials/notifications_styles.html' %}
@@ -154,7 +141,7 @@
           <span class="hint-title">Modalità prestazioni attiva</span>
           <p class="small">Per ridurre il carico, la scansione automatica è disattivata. Avvia manualmente quando serve.</p>
         </div>
-        <button class="btn btn-ghost" type="button" id="updates-scan-btn">Scansiona aggiornamenti</button>
+        <button class="btn-secondary" type="button" id="updates-scan-btn">Scansiona aggiornamenti</button>
       </div>
     </div>
     {% for stack in stacks %}
@@ -172,99 +159,86 @@
           <div class="stack-chip">{{ stack.containers|length }} container</div>
         </div>
         <div class="stack-body">
-          <table class="table">
-            <colgroup>
-              <col class="col-name">
-              <col class="col-status">
-              <col class="col-version">
-              <col class="col-version">
-              <col class="col-log">
-              <col class="col-breaking">
-              <col class="col-actions">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>{{ t("nav.containers") }}</th>
-                <th>Stato</th>
-                <th>Vers. installata</th>
-                <th>Vers. remota</th>
-                <th>Change log</th>
-                <th>Breaking</th>
-                <th>Azioni</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for c in stack.containers %}
-                <tr class="container-row" data-container-id="{{ c.id }}">
-                  <td data-label="Container">
-                    <div><strong>{{ c.name }}</strong></div>
-                    <div class="small">{{ c.image_ref }}</div>
-                    <div class="small">Stack: {{ 'no stack' if c.stack == '_no_stack' else c.stack }}</div>
-                  </td>
-                  <td data-label="Stato">
-                    {% set state = c.update_state %}
-                    {% set status_class = "status-pill " %}
-                    {% if state == 'update_available' %}
-                      {% set status_class = status_class + 'status-update-available' %}
-                      {% set status_label = 'Update disponibile' %}
-                    {% elif state == 'up_to_date' %}
-                      {% set status_class = status_class + 'status-up-to-date' %}
-                      {% set status_label = 'Aggiornato' %}
+          {% for c in stack.containers %}
+            <article class="container-card" data-container-id="{{ c.id }}">
+              <div class="container-header">
+                <div class="container-title">
+                  <strong>{{ c.name }}</strong>
+                  <div class="meta-row">
+                    <span class="small">{{ c.image_ref }}</span>
+                    <span class="small">Stack: {{ 'no stack' if c.stack == '_no_stack' else c.stack }}</span>
+                  </div>
+                </div>
+                {% set state = c.update_state %}
+                {% set status_class = "status-pill " %}
+                {% if state == 'update_available' %}
+                  {% set status_class = status_class + 'warn' %}
+                  {% set status_label = 'Update disponibile' %}
+                {% elif state == 'up_to_date' %}
+                  {% set status_class = status_class + 'success' %}
+                  {% set status_label = 'Aggiornato' %}
+                {% else %}
+                  {% set status_class = status_class + 'error' %}
+                  {% set status_label = 'Sconosciuto' %}
+                {% endif %}
+                <div class="status-meta">
+                  <span class="{{ status_class }}" data-status-pill>{{ status_label }}</span>
+                  <div class="small" data-status-hint>
+                    {% if c.installed_version and c.remote_version %}
+                      {{ c.installed_version }} → {{ c.remote_version }}
+                    {% elif c.remote_version %}
+                      Remota: {{ c.remote_version }}
                     {% else %}
-                      {% set status_class = status_class + 'status-unknown' %}
-                      {% set status_label = 'Sconosciuto' %}
+                      In attesa di dati dal registry
                     {% endif %}
-                    <div class="status-meta">
-                      <span class="{{ status_class }}" data-status-pill>{{ status_label }}</span>
-                      <div class="small" data-status-hint>
-                        {% if c.installed_version and c.remote_version %}
-                          {{ c.installed_version }} → {{ c.remote_version }}
-                        {% elif c.remote_version %}
-                          Remota: {{ c.remote_version }}
-                        {% else %}
-                          In attesa di dati dal registry
-                        {% endif %}
-                      </div>
-                    </div>
-                  </td>
-                  <td data-label="Vers. installata">
-                    <div class="pill-row">
-                      <span class="badge" data-installed-version>{{ c.installed_version or 'n/d' }}</span>
-                      <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
-                    </div>
-                  </td>
-                  <td data-label="Vers. remota">
-                    <div class="pill-row">
-                      <span class="badge {% if not c.remote_version %}badge-null{% endif %}" data-remote-version>{{ c.remote_version or 'n/d' }}</span>
-                      <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{ c.remote_id_short or '' }}</span>
-                    </div>
-                  </td>
-                  <td data-label="Change log">
-                    {% if c.changelog %}
-                      <div class="changelog" data-changelog>{{ c.changelog }}</div>
-                    {% else %}
-                      <span class="small" data-changelog>Nessuna nota</span>
-                    {% endif %}
-                  </td>
-                  <td data-label="Breaking">
-                    {% if c.breaking_changes %}
-                      <div class="breaking" data-breaking>{{ c.breaking_changes }}</div>
-                    {% else %}
-                      <span class="small" data-breaking>Nessuna info</span>
-                    {% endif %}
-                  </td>
-                  <td class="actions-cell" data-label="Azioni">
-                    <div class="actions">
-                      <form class="full-update-form" data-container-name="{{ c.name }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
-                        <button class="btn btn-full-update" type="submit">Aggiorna immagine</button>
-                      </form>
-                      <div class="small">ID: <code>{{ c.id }}</code></div>
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="version-grid">
+                <div class="version-card">
+                  <span class="version-label">Vers. installata</span>
+                  <div class="pill-row">
+                    <span class="badge" data-installed-version>{{ c.installed_version or 'n/d' }}</span>
+                    <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
+                  </div>
+                </div>
+                <div class="version-card">
+                  <span class="version-label">Vers. remota</span>
+                  <div class="pill-row">
+                    <span class="badge {% if not c.remote_version %}badge-null{% endif %}" data-remote-version>{{ c.remote_version or 'n/d' }}</span>
+                    <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{ c.remote_id_short or '' }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="log-grid">
+                <div class="log-card">
+                  <h4>Change log</h4>
+                  {% if c.changelog %}
+                    <div class="changelog" data-changelog>{{ c.changelog }}</div>
+                  {% else %}
+                    <span class="small" data-changelog>Nessuna nota</span>
+                  {% endif %}
+                </div>
+                <div class="log-card">
+                  <h4>Breaking</h4>
+                  {% if c.breaking_changes %}
+                    <div class="breaking" data-breaking>{{ c.breaking_changes }}</div>
+                  {% else %}
+                    <span class="small" data-breaking>Nessuna info</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="actions">
+                <div class="small">ID: <code>{{ c.id }}</code></div>
+                <form class="full-update-form" data-container-name="{{ c.name }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
+                  <button class="btn-primary" type="submit">Aggiorna immagine</button>
+                </form>
+              </div>
+            </article>
+          {% endfor %}
         </div>
       </section>
     {% endfor %}
@@ -274,19 +248,19 @@
     <div class="confirm-modal">
       <h3 class="confirm-title">Aggiornare l'immagine?</h3>
       <p id="confirm-message" class="small"></p>
-      <div class="confirm-actions">
-        <button type="button" class="btn btn-ghost" id="cancel-confirm">Annulla</button>
-        <button type="button" class="btn btn-full-update" id="confirm-continue">Procedi</button>
-      </div>
+        <div class="confirm-actions">
+          <button type="button" class="btn-secondary" id="cancel-confirm">Annulla</button>
+          <button type="button" class="btn-primary" id="confirm-continue">Procedi</button>
+        </div>
     </div>
   </div>
 
   {% include 'partials/notifications_script.html' %}
   <script>
     const statusClasses = {
-      update_available: 'status-update-available',
-      up_to_date: 'status-up-to-date',
-      unknown: 'status-unknown'
+      update_available: 'warn',
+      up_to_date: 'success',
+      unknown: 'error'
     };
     const updatesHint = document.getElementById('updates-performance-hint');
     const manualScanBtn = document.getElementById('updates-scan-btn');
@@ -308,8 +282,8 @@
     function applyStatus(row, state) {
       const pill = row.querySelector('[data-status-pill]');
       if (!pill) return;
-      pill.classList.remove('status-update-available', 'status-up-to-date', 'status-unknown');
-      pill.classList.add(statusClasses[state] || 'status-unknown');
+      pill.classList.remove('warn', 'success', 'error');
+      pill.classList.add(statusClasses[state] || 'error');
 
       let label = 'Sconosciuto';
       if (state === 'update_available') label = 'Update disponibile';
@@ -364,7 +338,7 @@
     }
 
     function scheduleRefresh() {
-      const rows = Array.from(document.querySelectorAll('.container-row'));
+      const rows = Array.from(document.querySelectorAll('.container-card'));
       rows.forEach(row => refreshRow(row));
     }
     function startUpdatesPolling() {
