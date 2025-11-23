@@ -173,6 +173,7 @@
     async function pingBackend() {
       const start = performance.now();
       let durationMs = 0;
+      backendStatusEl?.classList.add('backend-status-updating');
       try {
         const res = await fetch('/api/overview', { cache: 'no-store' });
         durationMs = performance.now() - start;
@@ -186,6 +187,8 @@
         console.error('Backend healthcheck failed', err);
         consecutiveErrors += 1;
         updateBackendStatus(durationMs);
+      } finally {
+        backendStatusEl?.classList.remove('backend-status-updating');
       }
     }
 
