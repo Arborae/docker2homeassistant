@@ -6,54 +6,36 @@
   <title>D2HA – Home</title>
   <style>
                 :root {
-      --bg: #0f1116;
-      --panel: #151924;
-      --panel-2: #1b2131;
-      --accent: #31c4ff;
-      --accent-2: #7cffc3;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
-      --text: #e7ecf4;
-      --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
-      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-      --control-surface: #0f141f;
-    }
-
-    body.theme-light {
-      --bg: #fff7ed;
-      --panel: #ffffff;
-      --panel-2: #fff3df;
-      --accent: #f97316;
-      --accent-2: #fb923c;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.3);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
-      --text: #1f2937;
-      --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
-      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
-      --control-surface: #fffaf3;
+      --bg: var(--color-bg);
+      --panel: var(--color-surface);
+      --panel-2: var(--color-surface-muted);
+      --accent: var(--color-accent);
+      --accent-2: var(--color-accent-2);
+      --accent-gradient: var(--gradient-accent);
+      --accent-glow: var(--color-accent-glow);
+      --accent-glow-soft: var(--color-accent-glow-soft);
+      --accent-border-strong: var(--color-border-strong);
+      --accent-border: var(--color-border);
+      --accent-border-soft: var(--color-border-soft);
+      --accent-surface: var(--color-accent-surface);
+      --text: var(--color-text);
+      --muted: var(--color-muted);
+      --border: var(--color-border);
+      --shadow: var(--shadow-md);
+      --header-bg: var(--color-surface);
+      --stack-header-bg: var(--color-surface-muted);
+      --control-surface: var(--color-surface-alt);
+      --text-on-accent: var(--color-on-accent);
+      --frosted-weak: color-mix(in srgb, var(--color-text) 8%, transparent);
+      --frosted-strong: color-mix(in srgb, var(--color-text) 12%, transparent);
+      --frosted-intense: color-mix(in srgb, var(--color-text) 18%, transparent);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at 10% 20%, rgba(0,255,255,0.05), transparent 25%),
-                  radial-gradient(circle at 90% 10%, rgba(124,255,195,0.05), transparent 20%),
+      background: radial-gradient(circle at 10% 20%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 25%),
+                  radial-gradient(circle at 90% 10%, color-mix(in srgb, var(--accent-2) 12%, transparent), transparent 20%),
                   var(--bg);
       color: var(--text);
     }
@@ -100,7 +82,7 @@
     .tab {
       padding: 8px 14px;
       border-radius: 8px;
-      background: rgba(255,255,255,0.04);
+      background: var(--frosted-weak);
       color: var(--muted);
       font-weight: 600;
       border: 1px solid transparent;
@@ -109,13 +91,13 @@
     .tab:hover { color: var(--text); border-color: var(--border); }
     .tab.active {
       background: var(--accent-gradient);
-      color: #0c121e;
+      color: var(--text-on-accent);
       box-shadow: 0 6px 18px var(--accent-glow);
     }
     .logout-link {
       margin-left: auto;
       background: var(--accent-gradient);
-      color: #0c121e;
+      color: var(--text-on-accent);
       box-shadow: 0 6px 18px var(--accent-glow-soft);
     }
     .layout {
@@ -227,11 +209,11 @@
     .logs-area .log-line { padding:4px 8px; border-left:3px solid transparent; margin-bottom:2px; border-radius:8px; display:flex; gap:8px; align-items:flex-start; }
     .logs-area .log-line:last-child { margin-bottom:0; }
     .logs-area .log-bullet { opacity:0.4; }
-    .logs-area .log-info { border-color: var(--accent); background:rgba(49,196,255,0.06); }
-    .logs-area .log-warn { border-color:#ffd54f; background:rgba(255,213,79,0.07); }
-    .logs-area .log-error { border-color:#ff8a7a; background:rgba(255,138,122,0.08); }
-    .logs-area .log-debug { border-color:#9aa7bd; background:rgba(154,167,189,0.08); color: var(--text); }
-    .logs-area .log-other { border-color:rgba(255,255,255,0.08); }
+    .logs-area .log-info { border-color: var(--accent); background: var(--color-accent-surface); }
+    .logs-area .log-warn { border-color: var(--color-warn); background: var(--color-warn-surface); }
+    .logs-area .log-error { border-color: var(--color-error); background: var(--color-error-surface); }
+    .logs-area .log-debug { border-color: var(--muted); background: var(--frosted-weak); color: var(--text); }
+    .logs-area .log-other { border-color: var(--border); }
     .pill {
       padding: 4px 10px;
       border-radius: 999px;
@@ -258,12 +240,12 @@
       border-radius: 50%;
       display: block;
     }
-    .status-running { background: rgba(124,255,195,0.15); color: #7cffc3; }
-    .status-stopped { background: rgba(255,99,71,0.15); color: #ff8a7a; }
-    .status-paused { background: rgba(255,193,7,0.15); color: #ffd54f; }
-    .status-indicator.status-running::before { background: #7cffc3; box-shadow: 0 0 0 4px rgba(124,255,195,0.12); }
-    .status-indicator.status-stopped::before { background: #ff8a7a; box-shadow: 0 0 0 4px rgba(255,138,122,0.12); }
-    .status-indicator.status-paused::before { background: #ffd54f; box-shadow: 0 0 0 4px rgba(255,213,79,0.12); }
+    .status-running { background: var(--color-success-surface); color: var(--color-success); }
+    .status-stopped { background: var(--color-error-surface); color: var(--color-error); }
+    .status-paused { background: var(--color-warn-surface); color: var(--color-warn); }
+    .status-indicator.status-running::before { background: var(--color-success); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-success) 24%, transparent); }
+    .status-indicator.status-stopped::before { background: var(--color-error); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-error) 24%, transparent); }
+    .status-indicator.status-paused::before { background: var(--color-warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-warn) 24%, transparent); }
     main {
       display: flex;
       flex-direction: column;
@@ -372,6 +354,11 @@
       border-radius: 50%;
       display: inline-block;
     }
+    .dot.accent { background: var(--accent); }
+    .dot.success { background: var(--color-success); }
+    .dot.warn { background: var(--color-warn); }
+    .dot.error { background: var(--color-error); }
+    .dot.surface { background: var(--panel-2); border: 1px solid var(--border); }
     @media (max-width: 960px) {
       .layout { grid-template-columns: 1fr; }
     }
@@ -455,7 +442,7 @@
               <canvas id="cpuChart"></canvas>
             </div>
             <div class="chart-caption">
-              <span class="dot" style="background:#31c4ff;"></span>
+              <span class="dot accent"></span>
               <span>{{ t('home.cpu_caption') }}</span>
             </div>
           </div>
@@ -468,7 +455,7 @@
               <canvas id="ramChart"></canvas>
             </div>
             <div class="chart-caption">
-              <span class="dot" style="background:#7cffc3;"></span>
+              <span class="dot success"></span>
               <span>{{ t('home.ram_caption') }}</span>
             </div>
           </div>
@@ -480,9 +467,9 @@
               <canvas id="containersChart"></canvas>
             </div>
             <div class="chart-caption">
-              <span class="dot" style="background:#7cffc3;"></span>{{ t('home.legend.running') }}
-              <span class="dot" style="background:#ffd54f;"></span>{{ t('home.legend.paused') }}
-              <span class="dot" style="background:#ff8a7a;"></span>{{ t('home.legend.stopped') }}
+              <span class="dot success"></span>{{ t('home.legend.running') }}
+              <span class="dot warn"></span>{{ t('home.legend.paused') }}
+              <span class="dot error"></span>{{ t('home.legend.stopped') }}
             </div>
           </div>
           <div class="metric">
@@ -493,8 +480,8 @@
               <canvas id="imagesChart"></canvas>
             </div>
             <div class="chart-caption">
-              <span class="dot" style="background:#31c4ff;"></span>{{ t('home.legend.in_use') }}
-              <span class="dot" style="background:#1b2131;"></span>{{ t('home.legend.not_in_use') }}
+              <span class="dot accent"></span>{{ t('home.legend.in_use') }}
+              <span class="dot surface"></span>{{ t('home.legend.not_in_use') }}
             </div>
           </div>
         </div>
@@ -719,8 +706,25 @@
     Chart.defaults.font.family = 'Inter, system-ui, -apple-system, "Segoe UI", sans-serif';
     Chart.defaults.font.weight = '600';
 
-    const gridColor = 'rgba(255,255,255,0.06)';
-    const tickColor = '#a8b5cb';
+    const rootStyles = getComputedStyle(document.documentElement);
+    const cssVar = (name, fallback) => (rootStyles.getPropertyValue(name) || fallback).trim() || fallback;
+    const palette = {
+      accent: cssVar('--color-accent', '#31c4ff'),
+      accent2: cssVar('--color-accent-2', '#7cffc3'),
+      warn: cssVar('--color-warn', '#f4b22e'),
+      error: cssVar('--color-error', '#ef476f'),
+      info: cssVar('--color-info', '#4ea8ff'),
+      success: cssVar('--color-success', '#35c48d'),
+      text: cssVar('--color-text', '#e7ecf4'),
+      muted: cssVar('--color-muted', '#9aa7bd'),
+      bg: cssVar('--color-bg', '#0f1116'),
+      panel: cssVar('--color-surface', '#151d32'),
+      border: cssVar('--color-border', 'rgba(255,255,255,0.1)')
+    };
+
+    const withAlpha = (color, alphaHex = '33') => `${color}${alphaHex}`;
+    const gridColor = palette.border;
+    const tickColor = palette.muted;
     const formatPercent = (value) => `${value}%`;
     const chartDefaults = (formatter = formatPercent) => ({
       responsive: true,
@@ -728,11 +732,11 @@
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#0f1116',
-          borderColor: 'rgba(255,255,255,0.1)',
+          backgroundColor: palette.panel,
+          borderColor: palette.border,
           borderWidth: 1,
-          titleColor: '#e7ecf4',
-          bodyColor: '#d9e1f0',
+          titleColor: palette.text,
+          bodyColor: palette.text,
           padding: 10,
           callbacks: {
             label: (context) => `${context.dataset.label || 'Valore'}: ${formatter(context.parsed.y)}`
@@ -767,8 +771,8 @@
 
     function buildLineChart(ctx, color, label) {
       const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
-      gradient.addColorStop(0, color + '33');
-      gradient.addColorStop(1, 'rgba(255,255,255,0)');
+      gradient.addColorStop(0, withAlpha(color));
+      gradient.addColorStop(1, 'transparent');
       return new Chart(ctx, {
         type: 'line',
         data: {
@@ -791,11 +795,11 @@
 
     function buildNetChart(ctx) {
       const gradientRx = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
-      gradientRx.addColorStop(0, '#31c4ff33');
-      gradientRx.addColorStop(1, 'rgba(255,255,255,0)');
+      gradientRx.addColorStop(0, withAlpha(palette.accent));
+      gradientRx.addColorStop(1, 'transparent');
       const gradientTx = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
-      gradientTx.addColorStop(0, '#ff8a7a33');
-      gradientTx.addColorStop(1, 'rgba(255,255,255,0)');
+      gradientTx.addColorStop(0, withAlpha(palette.error));
+      gradientTx.addColorStop(1, 'transparent');
 
       return new Chart(ctx, {
         type: 'line',
@@ -805,7 +809,7 @@
             {
               data: [],
               label: 'Ingress',
-              borderColor: '#31c4ff',
+              borderColor: palette.accent,
               backgroundColor: gradientRx,
               tension: 0.35,
               fill: true,
@@ -816,7 +820,7 @@
             {
               data: [],
               label: 'Uscita',
-              borderColor: '#ff8a7a',
+              borderColor: palette.error,
               backgroundColor: gradientTx,
               tension: 0.35,
               fill: true,
@@ -836,9 +840,7 @@
         if (!opts.text || !chart.chartArea) return;
         const { ctx, chartArea: { width, height, left, top } } = chart;
         ctx.save();
-        const computed = getComputedStyle(document.body);
-        const textColor = computed.getPropertyValue('--text').trim() || '#e7ecf4';
-        ctx.fillStyle = textColor;
+        ctx.fillStyle = palette.text;
         ctx.font = '600 14px "Inter"';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -865,10 +867,10 @@
     }
 
     const charts = {
-      cpu: buildLineChart(document.getElementById('cpuChart'), '#31c4ff', 'CPU'),
-      ram: buildLineChart(document.getElementById('ramChart'), '#7cffc3', 'RAM'),
-      containers: buildPieChart(document.getElementById('containersChart'), ['#7cffc3', '#ffd54f', '#ff8a7a'], ''),
-      images: buildPieChart(document.getElementById('imagesChart'), ['#31c4ff', '#1b2131'], '')
+      cpu: buildLineChart(document.getElementById('cpuChart'), palette.accent, 'CPU'),
+      ram: buildLineChart(document.getElementById('ramChart'), palette.accent2, 'RAM'),
+      containers: buildPieChart(document.getElementById('containersChart'), [palette.accent2, palette.warn, palette.error], ''),
+      images: buildPieChart(document.getElementById('imagesChart'), [palette.accent, palette.panel], '')
     };
 
     const stackCharts = {};
@@ -880,8 +882,8 @@
       const netCanvas = document.getElementById(`stack-${slug}-net`);
       if (!cpuCanvas || !memCanvas || !netCanvas) return;
       stackCharts[slug] = {
-        cpu: buildLineChart(cpuCanvas, '#31c4ff', 'CPU'),
-        mem: buildLineChart(memCanvas, '#7cffc3', 'RAM'),
+        cpu: buildLineChart(cpuCanvas, palette.accent, 'CPU'),
+        mem: buildLineChart(memCanvas, palette.accent2, 'RAM'),
         net: buildNetChart(netCanvas),
       };
     });
