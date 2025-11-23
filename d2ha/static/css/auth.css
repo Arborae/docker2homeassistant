@@ -233,25 +233,25 @@ body.theme-light {
 }
 
 .password-input-wrapper input {
-  padding-right: 40px;
+  padding-right: 46px;
 }
 
 .password-toggle {
   position: absolute;
   top: 50%;
-  right: 10px;
+  right: 12px;
   transform: translateY(-50%);
   background: transparent;
   border: none;
   color: var(--muted);
   cursor: pointer;
   opacity: 0.8;
-  transition: opacity 0.15s ease;
-  font-size: 0.85rem;
+  transition: opacity 0.15s ease, color 0.15s ease;
+  font-size: 0.95rem;
   line-height: 1;
-  padding: 4px;
-  height: 28px;
-  width: 28px;
+  padding: 8px;
+  height: 36px;
+  width: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -259,6 +259,18 @@ body.theme-light {
 
 .password-toggle:hover {
   opacity: 1;
+  color: var(--text);
+}
+
+.auth-card .password-toggle {
+  transform: translateY(-50%);
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.auth-card .password-toggle:hover,
+.auth-card .password-toggle:active {
+  transform: translateY(-50%);
+  filter: none;
 }
 
 .btn,
