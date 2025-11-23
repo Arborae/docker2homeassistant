@@ -1,211 +1,26 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Autodiscovery MQTT</title>
-  <style>
-                :root {
-      --bg: #0f1116;
-      --panel: #151924;
-      --panel-2: #1b2131;
-      --accent: #31c4ff;
-      --accent-2: #7cffc3;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
-      --text: #e7ecf4;
-      --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
-      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-      --control-surface: #0f141f;
-    }
+{% extends "layouts/auth_base.html" %}
+{% block title %}D2HA – Autodiscovery MQTT{% endblock %}
 
-    body.theme-light {
-      --bg: #fff7ed;
-      --panel: #ffffff;
-      --panel-2: #fff3df;
-      --accent: #f97316;
-      --accent-2: #fb923c;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.3);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
-      --text: #1f2937;
-      --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
-      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
-      --control-surface: #fffaf3;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at 15% 15%, rgba(0,255,255,0.05), transparent 25%),
-                  radial-gradient(circle at 80% 10%, rgba(124,255,195,0.06), transparent 22%),
-                  var(--bg);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-    }
-    .card {
-      width: min(520px, 100%);
-      background: linear-gradient(180deg, var(--accent-surface), rgba(124,255,195,0.04)), var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 22px;
-      box-shadow: var(--shadow);
-    }
-    .onboarding-toolbar {
-      position: fixed;
-      top: 12px;
-      right: 12px;
-      z-index: 20;
-      display: flex;
-      justify-content: flex-end;
-      width: 100%;
-      pointer-events: none;
-      padding: 0 8px;
-    }
-    .onboarding-toggle {
-      pointer-events: auto;
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-      font-size: 1rem;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-    }
-    .onboarding-menu {
-      position: absolute;
-      top: 52px;
-      right: 14px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      padding: 12px;
-      min-width: 240px;
-      display: none;
-      pointer-events: auto;
-    }
-    .onboarding-menu.open { display: block; }
-    .onboarding-menu h2 {
-      margin: 0 0 10px;
-      font-size: 0.95rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-    .onboarding-menu form {
-      margin: 0 0 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .onboarding-menu label { font-weight: 700; font-size: 0.85rem; color: var(--muted); }
-    .onboarding-menu select {
-      width: 100%;
-      padding: 8px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      font-size: 0.95rem;
-    }
-    h1 { margin: 0 0 6px; letter-spacing: 0.08em; text-transform: uppercase; font-size: 1.1rem; }
-    p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
-    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: var(--accent-surface); color: var(--accent); border:1px solid var(--accent-border-soft); font-weight: 800; letter-spacing: 0.05em; }
-    form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
-    label { font-weight: 700; color: var(--text); font-size: 0.95rem; display:block; }
-    input[type="radio"] { width: 18px; height: 18px; accent-color: var(--accent); }
-    button { margin-top: 10px; padding: 12px; border: none; border-radius: 12px; background: var(--accent-gradient); color: #0c121e; font-weight: 800; cursor: pointer; box-shadow: var(--shadow); }
-    button:hover { filter: brightness(1.05); }
-    .hint { font-size: 0.85rem; opacity: 0.8; }
-  </style>
-</head>
-<body class="theme-{{ get_current_theme() }}">
-  <div class="onboarding-toolbar">
-    <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false" aria-controls="onboardingMenu" title="{{ t('settings.title') }}">🌐</button>
-    <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">
-      <h2>{{ t('settings.title') }}</h2>
-      <form method="post" action="{{ url_for('set_language') }}">
-        <input type="hidden" name="next" value="{{ request.path }}">
-        <label for="onboarding-lang">{{ t('language.label') }}</label>
-        <select id="onboarding-lang" name="lang" onchange="this.form.submit()">
-          {% for lang_code in SUPPORTED_LANGS %}
-          <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
-            {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
-          </option>
-          {% endfor %}
-        </select>
-      </form>
-      <form method="post" action="{{ url_for('set_theme') }}">
-        <input type="hidden" name="next" value="{{ request.path }}">
-        <label for="onboarding-theme">{{ t('theme.label') }}</label>
-        <select id="onboarding-theme" name="theme" onchange="this.form.submit()">
-          {% for theme in SUPPORTED_THEMES %}
-          <option value="{{ theme }}" {% if get_current_theme() == theme %}selected{% endif %}>{{ t('theme.' + theme) }}</option>
-          {% endfor %}
-        </select>
-      </form>
-    </div>
-  </div>
-  <div class="card">
-    <h1>{{ t('setup_autodiscovery.heading') }}</h1>
-    <p>{{ t('setup_autodiscovery.intro') }}</p>
-    <p>{{ t('setup_autodiscovery.hint') }}</p>
+{% block auth_content %}
+  <h1>{{ t('setup_autodiscovery.heading') }}</h1>
+  <p>{{ t('setup_autodiscovery.intro') }}</p>
+  <p>{{ t('setup_autodiscovery.hint') }}</p>
 
-    {% include 'partials/flash_messages.html' %}
+  {% include 'partials/flash_messages.html' %}
 
-    <form method="post">
-      <label style="margin-bottom:8px;">
-        <input type="radio" name="autodiscovery_choice" value="enable_all" {% if mqtt_default_entities_enabled %}checked{% endif %}>
-        <strong>{{ t('setup_autodiscovery.enable_all_long') }}</strong><br>
-        <span class="hint">{{ t('setup_autodiscovery.enable_all_hint') }}</span>
-      </label>
+  <form method="post">
+    <label class="auth-choice">
+      <input type="radio" name="autodiscovery_choice" value="enable_all" {% if mqtt_default_entities_enabled %}checked{% endif %}>
+      <strong>{{ t('setup_autodiscovery.enable_all_long') }}</strong>
+      <span class="hint">{{ t('setup_autodiscovery.enable_all_hint') }}</span>
+    </label>
 
-      <label style="margin-top:8px;">
-        <input type="radio" name="autodiscovery_choice" value="disable_all" {% if not mqtt_default_entities_enabled %}checked{% endif %}>
-        <strong>{{ t('setup_autodiscovery.disable_all_long') }}</strong><br>
-        <span class="hint">{{ t('setup_autodiscovery.disable_all_hint') }}</span>
-      </label>
+    <label class="auth-choice">
+      <input type="radio" name="autodiscovery_choice" value="disable_all" {% if not mqtt_default_entities_enabled %}checked{% endif %}>
+      <strong>{{ t('setup_autodiscovery.disable_all_long') }}</strong>
+      <span class="hint">{{ t('setup_autodiscovery.disable_all_hint') }}</span>
+    </label>
 
-      <button type="submit" style="margin-top:16px;">{{ t('setup_autodiscovery.submit') }}</button>
-    </form>
-
-  </div>
-  <script>
-    const onboardingToggle = document.getElementById('onboardingToggle');
-    const onboardingMenu = document.getElementById('onboardingMenu');
-
-    onboardingToggle.addEventListener('click', (event) => {
-      event.stopPropagation();
-      onboardingMenu.classList.toggle('open');
-      onboardingToggle.setAttribute('aria-expanded', onboardingMenu.classList.contains('open'));
-    });
-
-    document.addEventListener('click', (event) => {
-      if (!onboardingMenu.contains(event.target) && event.target !== onboardingToggle) {
-        onboardingMenu.classList.remove('open');
-        onboardingToggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-  </script>
-</body>
-</html>
+    <button type="submit" style="margin-top:16px;">{{ t('setup_autodiscovery.submit') }}</button>
+  </form>
+{% endblock %}
