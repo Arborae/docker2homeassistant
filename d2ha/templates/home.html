@@ -372,23 +372,6 @@
       border-radius: 50%;
       display: inline-block;
     }
-    .flash-container {
-      margin: 12px 18px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .flash {
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      box-shadow: var(--shadow);
-    }
-    .flash.success { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); }
-    .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
-    .flash.info { border-color: var(--accent-border); background: var(--accent-surface); }
     @media (max-width: 960px) {
       .layout { grid-template-columns: 1fr; }
     }
@@ -413,15 +396,7 @@
     </nav>
   </header>
 
-  {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-      <div class="flash-container">
-        {% for category, msg in messages %}
-          <div class="flash {{ category }}">{{ msg }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  {% endwith %}
+  {% include 'partials/flash_messages.html' %}
 
   <div class="layout">
     <aside>
