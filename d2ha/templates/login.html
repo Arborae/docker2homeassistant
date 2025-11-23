@@ -106,7 +106,7 @@
   <div class="card">
     <h1>{{ t("login.heading") }}</h1>
     {% if show_onboarding_hint %}
-    <p>Accedi con le credenziali amministrative. Al primo login con <strong>admin / admin</strong> ti guideremo in un rapido setup sicuro.</p>
+    <p>{{ t("login.onboarding_hint")|safe }}</p>
     {% endif %}
 
     {% with messages = get_flashed_messages(with_categories=True) %}
@@ -144,7 +144,7 @@
         <select id="login-lang" name="lang" onchange="this.form.submit()">
           {% for lang_code in SUPPORTED_LANGS %}
             <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
-              {{ 'Italiano' if lang_code == 'it' else 'English' }}
+              {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
             </option>
           {% endfor %}
         </select>
