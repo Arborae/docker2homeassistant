@@ -317,7 +317,7 @@ def setup_account():
             config["password_hash"] = generate_password_hash(new_password)
             save_auth_config(config)
             session["user"] = config["username"]
-            flash("Account updated. Let's finish setting up security.", "success")
+            flash("Account aggiornato. Completiamo la configurazione della sicurezza.", "success")
             return redirect(url_for("setup_2fa"))
 
     return render_template(
@@ -349,7 +349,7 @@ def setup_2fa():
             save_auth_config(config)
             session.pop("pending_totp_secret", None)
             flash(
-                "2FA is currently disabled. You can enable it later in Security Settings.",
+                "L'autenticazione a due fattori è disattivata. Potrai abilitarla più tardi nelle Impostazioni di sicurezza.",
                 "info",
             )
             return redirect(url_for("setup_modes"))
