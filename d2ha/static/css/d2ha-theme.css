@@ -18,6 +18,7 @@
   --color-text: #e5ecf8;
   --color-muted: #9eb0c9;
   --color-disabled: rgba(158, 176, 201, 0.42);
+  --color-on-accent: #0c121e;
 
   /* State tokens */
   --color-success: #35c48d;
@@ -28,6 +29,10 @@
   --color-warn-surface: rgba(244, 178, 46, 0.14);
   --color-error-surface: rgba(239, 71, 111, 0.14);
   --color-info-surface: rgba(78, 168, 255, 0.12);
+  --color-accent-surface: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  --color-accent-surface-strong: color-mix(in srgb, var(--color-accent) 26%, transparent);
+  --color-accent-glow: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  --color-accent-glow-soft: color-mix(in srgb, var(--color-accent) 25%, transparent);
 
   /* Glow / overlays */
   --gradient-accent: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));

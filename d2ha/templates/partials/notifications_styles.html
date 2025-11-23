@@ -18,14 +18,14 @@
     margin-right: 0.75rem;
     cursor: pointer;
     transition: color 0.2s ease, opacity 0.2s ease;
-    color: #4caf50;
+    color: var(--color-success);
   }
   .backend-status:hover { opacity: 0.9; }
-  .backend-status-ok { color: #4caf50; }
-  .backend-status-degraded { color: #ff9800; }
-  .backend-status-down { color: #f44336; }
+  .backend-status-ok { color: var(--color-success); }
+  .backend-status-degraded { color: var(--color-warn); }
+  .backend-status-down { color: var(--color-error); }
   .backend-status-updating {
-    color: #31c4ff;
+    color: var(--color-accent);
     animation: backend-status-pulse 1s ease-in-out infinite;
   }
   .backend-status-icon {
@@ -75,7 +75,7 @@
     box-shadow: var(--shadow);
   }
   .notif-toggle:hover,
-  .settings-toggle:hover { border-color: rgba(49,196,255,0.5); }
+  .settings-toggle:hover { border-color: var(--accent-border); }
   .notif-icon,
   .settings-icon {
     width: 18px;
@@ -90,15 +90,15 @@
     min-width: 20px;
     height: 20px;
     border-radius: 999px;
-    background: linear-gradient(135deg, #ff8a7a, #ff5f6d);
-    color: #0c121e;
+    background: linear-gradient(135deg, var(--color-error), color-mix(in srgb, var(--color-error) 80%, white 20%));
+    color: var(--color-on-accent);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
     font-size: 0.8rem;
     padding: 0 6px;
-    box-shadow: 0 4px 12px rgba(255,99,71,0.35);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-error) 35%, transparent);
   }
   .backend-modal-backdrop {
     position: fixed;
@@ -151,7 +151,7 @@
   }
   .backend-modal-btn.primary {
     background: var(--accent-gradient);
-    color: #0c121e;
+    color: var(--color-on-accent);
     border-color: var(--accent-border-strong);
     box-shadow: 0 6px 18px var(--accent-glow);
   }
@@ -210,8 +210,8 @@
   }
   .notif-dismiss:hover {
     color: var(--text);
-    background: rgba(255,99,71,0.18);
-    border: 1px solid rgba(255,99,71,0.35);
+    background: color-mix(in srgb, var(--color-error) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-error) 35%, transparent);
   }
   .notif-empty { padding: 14px; color: var(--muted); text-align: center; }
 
@@ -296,7 +296,7 @@
     width: 18px;
     left: 4px;
     bottom: 3px;
-    background-color: white;
+    background-color: var(--color-text);
     border-radius: 50%;
     transition: transform 0.2s ease;
     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
@@ -366,20 +366,16 @@
   }
 
   .btn-secondary {
-    background: rgba(255,255,255,0.06);
+    background: color-mix(in srgb, var(--color-text) 8%, transparent);
     border: 1px solid var(--border);
     color: var(--text);
   }
 
   .btn-secondary:hover { border-color: var(--accent-border); }
 
-  body.theme-light .btn-secondary {
-    background: rgba(0, 0, 0, 0.04);
-  }
-
   body.theme-light .safe-confirm-actions .btn[data-safe-confirm] {
     background: var(--accent-gradient);
-    color: #0c121e;
+    color: var(--color-on-accent);
     box-shadow: 0 6px 18px var(--accent-glow);
   }
 </style>
