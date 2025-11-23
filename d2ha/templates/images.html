@@ -6,145 +6,167 @@
   <title>D2HA – Immagini</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
   <style>
-                :root {
-      --bg: #0f1116;
-      --panel: #151924;
-      --panel-2: #1b2131;
-      --accent: #31c4ff;
-      --accent-2: #7cffc3;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
-      --text: #e7ecf4;
-      --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
-      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-      --control-surface: #0f141f;
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-base, "Inter", system-ui, -apple-system, "Segoe UI", sans-serif);
+      background: var(--gradient-overlay, transparent), var(--color-bg, #0f1629);
+      color: var(--color-text, #e5ecf8);
     }
 
-    body.theme-light {
-      --bg: #fff7ed;
-      --panel: #ffffff;
-      --panel-2: #fff3df;
-      --accent: #f97316;
-      --accent-2: #fb923c;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.3);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
-      --text: #1f2937;
-      --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
-      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
-      --control-surface: #fffaf3;
-    }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); }
     a { color: inherit; text-decoration: none; }
-    header { background: var(--header-bg); border-bottom:1px solid var(--border); padding:16px 22px 12px; box-shadow: var(--shadow); position:sticky; top:0; z-index:10; }
-    .brand-line { position: relative; display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; }
-    .brand-line h1 { margin:0; font-size:1.35rem; letter-spacing:0.12em; text-transform:uppercase; text-align:center; }
-    .brand-pill { padding:4px 10px; border-radius:999px; border:1px solid var(--border); background: var(--accent-surface); color: var(--accent); font-size:0.8rem; letter-spacing:0.04em; }
-    nav { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
-    .tab { padding:8px 14px; border-radius:8px; background: rgba(255,255,255,0.04); color: var(--muted); font-weight:600; border:1px solid transparent; transition: all 0.15s ease; }
-    .tab:hover { color: var(--text); border-color: var(--border); }
-    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow); }
-    .logout-link { margin-left:auto; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow-soft); }
-    main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
-    .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
-    .table { table-layout: fixed; }
-    .pill { padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; text-transform: uppercase; display:inline-block; }
-    .pill-used { background: rgba(124,255,195,0.15); color: #7cffc3; }
-    .pill-unused { background: rgba(255,99,71,0.15); color: #ff8a7a; }
-    .meta { color: var(--muted); font-size:0.85rem; }
-    .btn { border:none; border-radius:999px; padding:6px 12px; font-size:0.8rem; cursor:pointer; background:#262c3c; color: var(--text); transition: background 0.15s ease, transform 0.05s ease; }
-    .btn:hover { background:#31394e; transform: translateY(-1px); }
-    .btn-danger { background:#b71c1c; }
-    .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
-    @media(max-width: 960px) {
-      .table, .table thead, .table tbody, .table th, .table td, .table tr { display:block; }
-      .table thead { display:none; }
-      .table tr { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-      .table td { display:flex; justify-content: space-between; border-bottom:1px solid var(--border); }
-      .table td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
+
+    .page-shell {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-12, 24px);
+      padding: var(--space-12, 24px);
+    }
+
+    header {
+      background: var(--color-surface, #151d32);
+      border: 1px solid var(--color-border, rgba(255,255,255,0.1));
+      border-radius: var(--radius-card, 18px);
+      padding: var(--space-10, 20px);
+      box-shadow: var(--shadow-md, 0 12px 32px rgba(0,0,0,0.42));
+    }
+
+    .brand-line {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-6, 12px);
+      flex-wrap: wrap;
+    }
+
+    .brand-line h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    nav {
+      margin-top: var(--space-6, 12px);
+      display: flex;
+      gap: var(--space-4, 8px);
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: var(--space-4, 8px) var(--space-8, 16px);
+      border-radius: var(--radius-control, 12px);
+      background: var(--color-surface-muted, #1b243b);
+      color: var(--color-muted, #9eb0c9);
+      font-weight: 700;
+      border: 1px solid transparent;
+      transition: all 160ms ease;
+    }
+
+    .tab:hover { color: var(--color-text); border-color: var(--color-border); }
+    .tab.active { background: var(--gradient-accent); color: #0c121e; box-shadow: 0 6px 18px rgba(49,196,255,0.25); }
+    .logout-link { margin-left: auto; }
+
+    main { display: flex; flex-direction: column; gap: var(--space-10, 20px); }
+
+    .card-body { display: flex; flex-direction: column; gap: var(--space-6, 12px); }
+
+    .card-meta { color: var(--color-muted, #9eb0c9); font-size: var(--font-size-sm, 0.875rem); }
+
+    .table-wrapper { overflow-x: auto; }
+
+    .table td strong { font-size: var(--font-size-md, 1rem); }
+
+    .actions { text-align: right; }
+
+    @media (max-width: 900px) {
+      header { position: sticky; top: 0; z-index: 10; }
+      .table, .table thead, .table tbody, .table th, .table td, .table tr { display: block; }
+      .table thead { display: none; }
+      .table tr { margin-bottom: var(--space-4, 8px); border: 1px solid var(--color-border); border-radius: var(--radius-control, 12px); overflow: hidden; }
+      .table td { display: flex; justify-content: space-between; align-items: center; gap: var(--space-4, 8px); }
+      .table td::before { content: attr(data-label); font-weight: 700; color: var(--color-muted); }
+      .actions { text-align: left; }
     }
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
 <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
-  <header>
-    <div class="brand-line">
-      <h1>D2HA</h1>
-      {% include 'partials/notifications_panel.html' %}
-    </div>
-    <nav>
-      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
-  </header>
+  <div class="page-shell">
+    <header>
+      <div class="brand-line">
+        <h1>D2HA</h1>
+        {% include 'partials/notifications_panel.html' %}
+      </div>
+      <nav>
+        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+      </nav>
+    </header>
 
-  {% include 'partials/flash_messages.html' %}
+    {% include 'partials/flash_messages.html' %}
 
-  <main>
-    <div class="card">
-      <div class="meta">Totale immagini: {{ images|length }} · Container attivi: {{ summary.running }}</div>
-    </div>
-    <section class="card">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Tag</th>
-            <th>ID</th>
-            <th>Dimensione</th>
-            <th>Utilizzo</th>
-            <th>Azioni</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for img in images %}
-            {% set is_used = img.used_by|length > 0 %}
-            <tr>
-              <td data-label="Tag">
-                <div><strong>{{ img.tags|join(', ') }}</strong></div>
-                <div class="meta">Creata: {{ img.created }}</div>
-              </td>
-              <td data-label="ID">{{ img.short_id }}</td>
-              <td data-label="Dimensione">{{ human_bytes(img.size) }}</td>
-              <td data-label="Utilizzo">
-                {% if is_used %}
-                  <span class="pill pill-used">In uso</span>
-                  <div class="meta">{{ img.used_by|join(', ') }}</div>
-                {% else %}
-                  <span class="pill pill-unused">Non utilizzata</span>
-                {% endif %}
-              </td>
-              <td data-label="Azioni">
-                <form method="post" action="{{ url_for('delete_image', image_id=img.id) }}" data-safe-confirm="Eliminare l'immagine {{ img.short_id }}?">
-                  <button class="btn btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
-                </form>
-              </td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </section>
-  </main>
+    <main>
+      <section class="card">
+        <div class="card-body">
+          <div class="card-meta">Totale immagini: {{ images|length }} · Container attivi: {{ summary.running }}</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2>Immagini installate</h2>
+          <span class="status-pill info">{{ images|length }} immagini trovate</span>
+        </div>
+        <div class="card-body table-wrapper">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Tag</th>
+                <th>ID</th>
+                <th>Dimensione</th>
+                <th>Utilizzo</th>
+                <th class="actions">Azioni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for img in images %}
+                {% set is_used = img.used_by|length > 0 %}
+                <tr>
+                  <td data-label="Tag">
+                    <div><strong>{{ img.tags|join(', ') }}</strong></div>
+                    <div class="card-meta">Creata: {{ img.created }}</div>
+                  </td>
+                  <td data-label="ID">{{ img.short_id }}</td>
+                  <td data-label="Dimensione">{{ human_bytes(img.size) }}</td>
+                  <td data-label="Utilizzo">
+                    {% if is_used %}
+                      <span class="status-pill info">In uso</span>
+                      <div class="card-meta">{{ img.used_by|join(', ') }}</div>
+                    {% else %}
+                      <span class="status-pill warn">Non utilizzata</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Azioni" class="actions">
+                    <form method="post" action="{{ url_for('delete_image', image_id=img.id) }}" data-safe-confirm="Eliminare l'immagine {{ img.short_id }}?">
+                      <button class="btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
   {% include 'partials/notifications_script.html' %}
 </body>
 </html>
