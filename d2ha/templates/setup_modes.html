@@ -170,8 +170,8 @@
     </div>
   </div>
   <div class="card">
-    <h1>Modalità del sistema</h1>
-    <p>Queste opzioni ti aiutano a bilanciare sicurezza e prestazioni. Puoi sempre modificarle in seguito dal pulsante con l'icona dell'ingranaggio in alto a destra.</p>
+    <h1>{{ t('setup_modes.heading') }}</h1>
+    <p>{{ t('setup_modes.description') }}</p>
 
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
@@ -186,17 +186,17 @@
     <form method="post">
       <label style="display:flex;align-items:center;gap:8px;">
         <input type="checkbox" name="safe_mode_enabled" {% if safe_mode_enabled %}checked{% endif %}>
-        <span><strong>Modalità sicura</strong> (consigliata, attiva di default)</span>
+        <span><strong>{{ t('setup_modes.safe') }}</strong> ({{ t('setup_modes.safe_note') }})</span>
       </label>
-      <p class="hint">Quando attiva, alcune modifiche critiche richiederanno conferma o verranno bloccate.</p>
+      <p class="hint">{{ t('setup_modes.safe_hint') }}</p>
 
       <label style="display:flex;align-items:center;gap:8px;margin-top:12px;">
         <input type="checkbox" name="performance_mode_enabled" {% if performance_mode_enabled %}checked{% endif %}>
-        <span><strong>Modalità prestazioni</strong></span>
+        <span><strong>{{ t('setup_modes.performance') }}</strong></span>
       </label>
-      <p class="hint">Riduce il carico sul server e il polling automatico. Utile su hardware poco potente o connessioni lente.</p>
+      <p class="hint">{{ t('setup_modes.performance_hint') }}</p>
 
-      <button type="submit">Continua</button>
+      <button type="submit">{{ t('setup_modes.submit') }}</button>
     </form>
   </div>
   <script>

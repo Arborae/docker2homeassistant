@@ -425,12 +425,12 @@
 
   <div class="layout">
     <aside>
-      <p class="aside-title">Stack e container</p>
+      <p class="aside-title">{{ t('home.aside_title') }}</p>
       {% for stack in stacks %}
         <details open>
           <summary>
-            <span>{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</span>
-            <span class="stack-chip">{{ stack.containers|length }} container</span>
+            <span>{{ t('home.no_stack') if stack.name == '_no_stack' else stack.name }}</span>
+            <span class="stack-chip">{{ stack.containers|length }} {{ t('home.stack_container_label') }}</span>
           </summary>
           <ul class="container-list">
             {% for c in stack.containers %}
@@ -447,8 +447,8 @@
                     data-open-home-logs
                     data-container-id="{{ c.id }}"
                     data-container-name="{{ c.name }}"
-                    title="Apri log di {{ c.name }}"
-                    aria-label="Apri log di {{ c.name }}"
+                    title="{{ t('home.log.open').format(name=c.name) }}"
+                    aria-label="{{ t('home.log.open').format(name=c.name) }}"
                   >
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                       <path d="M7 4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h10a2 2 0 0 0 2-2V8.5L13.5 4H7zm6 5V5.5L17.5 9H13z"/>
@@ -467,21 +467,21 @@
       <div class="card">
         <div class="flex-between">
           <div>
-            <h2 style="margin:6px 0 0;">Stato del server</h2>
+            <h2 style="margin:6px 0 0;">{{ t('home.server_status') }}</h2>
           </div>
-          <span class="brand-pill">{{ summary.stacks }} stack</span>
+          <span class="brand-pill">{{ summary.stacks }} {{ t('home.stacks_title')|lower }}</span>
         </div>
         <div class="metrics-grid" style="margin-top:12px;">
           <div class="metric">
             <div class="label">CPU</div>
-            <div class="value" id="cpuValue">{{ summary.total_cpu }}% totale</div>
+            <div class="value" id="cpuValue">{{ summary.total_cpu }}% {{ t('home.total_label') }}</div>
             <div class="muted" id="cpuCores">{{ summary.cpu_count }} core</div>
             <div class="chart-box">
               <canvas id="cpuChart"></canvas>
             </div>
             <div class="chart-caption">
               <span class="dot" style="background:#31c4ff;"></span>
-              <span>Carico medio degli ultimi campioni</span>
+              <span>{{ t('home.cpu_caption') }}</span>
             </div>
           </div>
           <div class="metric">
@@ -494,20 +494,20 @@
             </div>
             <div class="chart-caption">
               <span class="dot" style="background:#7cffc3;"></span>
-              <span>Andamento utilizzo memoria</span>
+              <span>{{ t('home.ram_caption') }}</span>
             </div>
           </div>
           <div class="metric">
             <div class="label">{{ t("nav.containers") }}</div>
             <div class="value" id="containerValue">{{ summary.running }}/{{ summary.total_containers }}</div>
-            <div class="muted" id="containerStatus">{{ summary.paused }} in pausa · {{ summary.stopped }} fermi</div>
+            <div class="muted" id="containerStatus">{{ summary.paused }} {{ t('home.paused') }} · {{ summary.stopped }} {{ t('home.stopped') }}</div>
             <div class="chart-box">
               <canvas id="containersChart"></canvas>
             </div>
             <div class="chart-caption">
-              <span class="dot" style="background:#7cffc3;"></span>Running
-              <span class="dot" style="background:#ffd54f;"></span>In pausa
-              <span class="dot" style="background:#ff8a7a;"></span>Fermi
+              <span class="dot" style="background:#7cffc3;"></span>{{ t('home.legend.running') }}
+              <span class="dot" style="background:#ffd54f;"></span>{{ t('home.legend.paused') }}
+              <span class="dot" style="background:#ff8a7a;"></span>{{ t('home.legend.stopped') }}
             </div>
           </div>
           <div class="metric">
@@ -518,8 +518,8 @@
               <canvas id="imagesChart"></canvas>
             </div>
             <div class="chart-caption">
-              <span class="dot" style="background:#31c4ff;"></span>In uso
-              <span class="dot" style="background:#1b2131;"></span>Non in uso
+              <span class="dot" style="background:#31c4ff;"></span>{{ t('home.legend.in_use') }}
+              <span class="dot" style="background:#1b2131;"></span>{{ t('home.legend.not_in_use') }}
             </div>
           </div>
         </div>
@@ -527,7 +527,7 @@
 
       <div class="card">
         <div class="flex-between">
-          <h2 style="margin:0;">Stack</h2>
+          <h2 style="margin:0;">{{ t('home.stacks_title') }}</h2>
         </div>
         <div class="stack-tiles" style="margin-top:12px;">
           {% for stack in stacks %}
@@ -535,14 +535,14 @@
             {% set mem = stack.containers|sum(attribute='mem_usage_bytes') %}
             <div class="tile">
               <div class="flex-between">
-                <h3>{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</h3>
-                <span class="stack-chip">{{ stack.containers|length }} container</span>
+                <h3>{{ t('home.no_stack') if stack.name == '_no_stack' else stack.name }}</h3>
+                <span class="stack-chip">{{ stack.containers|length }} {{ t('home.stack_container_label') }}</span>
               </div>
               <div class="muted">CPU: {{ '%.1f' % cpu }}% · RAM: {{ human_bytes(mem) }}</div>
               {% set cpu_bar = [cpu, 100]|min %}
               <div class="bar"><span style="width: {{ cpu_bar }}%"></span></div>
               {% set stack_slug = (stack.name | lower | replace(' ', '-') | replace('.', '-') | replace('_', '-')) %}
-              <div class="muted" id="stack-{{ stack_slug }}-net-text">Rete: {{ stack.total_net_rx_h }} ↓ · {{ stack.total_net_tx_h }} ↑</div>
+              <div class="muted" id="stack-{{ stack_slug }}-net-text">{{ t('home.network') }}: {{ stack.total_net_rx_h }} ↓ · {{ stack.total_net_tx_h }} ↑</div>
               <div class="chart-row">
                 <canvas id="stack-{{ stack_slug }}-cpu"></canvas>
                 <canvas id="stack-{{ stack_slug }}-mem"></canvas>
@@ -558,35 +558,35 @@
   <div class="modal-backdrop" id="home-log-modal" aria-hidden="true">
     <div class="modal log-only-modal">
       <div class="modal-header">
-        <div class="modal-title" id="home-log-title">Log container</div>
-        <button class="modal-close" id="home-log-close" aria-label="Chiudi log">✕</button>
+        <div class="modal-title" id="home-log-title">{{ t('home.log.title') }}</div>
+        <button class="modal-close" id="home-log-close" aria-label="{{ t('home.log.close') }}">✕</button>
       </div>
       <div class="modal-body">
         <div class="inline-controls">
-          <label class="muted"><input type="checkbox" id="home-log-auto" checked> Auto-refresh</label>
-          <label class="muted">Linee
+          <label class="muted"><input type="checkbox" id="home-log-auto" checked> {{ t('home.log.auto') }}</label>
+          <label class="muted">{{ t('home.log.lines') }}
             <select id="home-log-tail" class="select">
               <option value="10">10</option>
               <option value="50">50</option>
               <option value="100" selected>100</option>
               <option value="150">150</option>
               <option value="500">500</option>
-              <option value="all">Senza limiti</option>
+              <option value="all">{{ t('home.log.unlimited') }}</option>
             </select>
           </label>
-          <label class="muted">Severità
+          <label class="muted">{{ t('home.log.severity') }}
             <select id="home-log-severity" class="select">
-              <option value="all" selected>Tutte</option>
-              <option value="error">Errori</option>
-              <option value="warn">Warning</option>
-              <option value="info">Info</option>
-              <option value="debug">Debug</option>
-              <option value="other">Altro</option>
+              <option value="all" selected>{{ t('home.log.all') }}</option>
+              <option value="error">{{ t('home.log.errors') }}</option>
+              <option value="warn">{{ t('home.log.warnings') }}</option>
+              <option value="info">{{ t('home.log.info') }}</option>
+              <option value="debug">{{ t('home.log.debug') }}</option>
+              <option value="other">{{ t('home.log.other') }}</option>
             </select>
           </label>
-          <button class="inline-btn" id="home-log-refresh">Aggiorna ora</button>
+          <button class="inline-btn" id="home-log-refresh">{{ t('home.log.refresh') }}</button>
         </div>
-        <pre class="logs-area" id="home-log-output">Seleziona un container...</pre>
+        <pre class="logs-area" id="home-log-output">{{ t('home.log.placeholder') }}</pre>
       </div>
     </div>
   </div>
@@ -595,6 +595,18 @@
 
   <script>
     const initialData = {{ {"summary": summary, "stacks": stacks}|tojson }};
+    const homeText = {
+      totalLabel: "{{ t('home.total_label') }}",
+      paused: "{{ t('home.paused') }}",
+      stopped: "{{ t('home.stopped') }}",
+      noLogs: "{{ t('home.log.no_logs') }}",
+      legendRunning: "{{ t('home.legend.running') }}",
+      legendPaused: "{{ t('home.legend.paused') }}",
+      legendStopped: "{{ t('home.legend.stopped') }}",
+      legendInUse: "{{ t('home.legend.in_use') }}",
+      legendNotInUse: "{{ t('home.legend.not_in_use') }}",
+      logPlaceholder: "{{ t('home.log.placeholder') }}",
+    };
 
     const homeLogModal = document.getElementById('home-log-modal');
     const homeLogTitle = document.getElementById('home-log-title');
@@ -670,7 +682,7 @@
         })
         .join('');
 
-      homeLogOutput.innerHTML = html || '<div class="muted">Nessun log per la severità selezionata</div>';
+      homeLogOutput.innerHTML = html || `<div class="muted">${homeText.noLogs}</div>`;
     };
 
     const updateHomeLogs = async () => {
@@ -931,7 +943,7 @@
     }
 
     function applySummary(summary) {
-      document.getElementById('cpuValue').textContent = `${summary.total_cpu}% totale`;
+      document.getElementById('cpuValue').textContent = `${summary.total_cpu}% ${homeText.totalLabel}`;
       document.getElementById('cpuCores').textContent = `${summary.cpu_count} core`;
 
       document.getElementById('ramValue').textContent = `${summary.mem_percent}%`;
@@ -939,7 +951,7 @@
       document.getElementById('ramBar').style.width = `${summary.mem_percent}%`;
 
       document.getElementById('containerValue').textContent = `${summary.running}/${summary.total_containers}`;
-      document.getElementById('containerStatus').textContent = `${summary.paused} in pausa · ${summary.stopped} fermi`;
+      document.getElementById('containerStatus').textContent = `${summary.paused} ${homeText.paused} · ${summary.stopped} ${homeText.stopped}`;
 
       document.getElementById('imagesValue').textContent = `${summary.images}`;
       document.getElementById('imagesDetail').textContent = `Disk layers: ${summary.disk_layers_h}`;
@@ -950,17 +962,17 @@
       const runningPercent = Math.round((summary.running / totalContainers) * 100);
       updatePie(
         charts.containers,
-        ['Running', 'In pausa', 'Fermi'],
+        [homeText.legendRunning, homeText.legendPaused, homeText.legendStopped],
         [summary.running, summary.paused, summary.stopped],
-        `${runningPercent}% attivi`
+        `${runningPercent}% ${homeText.legendRunning.toLowerCase()}`
       );
       const totalImages = summary.images_used + summary.images_unused || 1;
       const usedPercent = Math.round((summary.images_used / totalImages) * 100);
       updatePie(
         charts.images,
-        ['In uso', 'Non in uso'],
+        [homeText.legendInUse, homeText.legendNotInUse],
         [summary.images_used, summary.images_unused],
-        `${usedPercent}% in uso`
+        `${usedPercent}% ${homeText.legendInUse.toLowerCase()}`
       );
     }
 

@@ -13,6 +13,10 @@
     const backendStatusLastUpdateEl = document.getElementById('backend-status-last-update');
     const backendRefreshBtn = document.getElementById('backend-status-refresh-btn');
     const backendCloseBtn = document.getElementById('backend-status-close-btn');
+    const backendText = {
+      lastUpdate: "{{ t('backend_status.last_update') }}",
+      noRecent: "{{ t('backend_status.no_recent_update') }}",
+    };
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
     const safeConfirmState = {
@@ -160,9 +164,9 @@
     function updateBackendModalText() {
       if (!backendStatusLastUpdateEl) return;
       if (lastSuccessfulPing) {
-        backendStatusLastUpdateEl.textContent = `Ultimo aggiornamento dati: ${formatClock(new Date(lastSuccessfulPing))}`;
+        backendStatusLastUpdateEl.textContent = backendText.lastUpdate.replace('{timestamp}', formatClock(new Date(lastSuccessfulPing)));
       } else {
-        backendStatusLastUpdateEl.textContent = 'Nessun aggiornamento riuscito di recente';
+        backendStatusLastUpdateEl.textContent = backendText.noRecent;
       }
     }
 

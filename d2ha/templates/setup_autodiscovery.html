@@ -171,9 +171,9 @@
     </div>
   </div>
   <div class="card">
-    <h1>Autodiscovery MQTT e Home Assistant</h1>
-    <p>Docker2HomeAssistant può esporre automaticamente entità MQTT verso Home Assistant tramite autodiscovery.</p>
-    <p>Dalla pagina autodiscovery potrai sempre selezionare con precisione quali entità pubblicare. Qui puoi scegliere il comportamento iniziale per le entità di default.</p>
+    <h1>{{ t('setup_autodiscovery.heading') }}</h1>
+    <p>{{ t('setup_autodiscovery.intro') }}</p>
+    <p>{{ t('setup_autodiscovery.hint') }}</p>
 
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
@@ -188,17 +188,17 @@
     <form method="post">
       <label style="margin-bottom:8px;">
         <input type="radio" name="autodiscovery_choice" value="enable_all" {% if mqtt_default_entities_enabled %}checked{% endif %}>
-        <strong>Abilita tutte le entità MQTT di default</strong><br>
-        <span class="hint">Consigliato se vuoi vedere subito tutti i dati in Home Assistant. Potrai disattivare le entità che non ti servono dalla pagina autodiscovery.</span>
+        <strong>{{ t('setup_autodiscovery.enable_all_long') }}</strong><br>
+        <span class="hint">{{ t('setup_autodiscovery.enable_all_hint') }}</span>
       </label>
 
       <label style="margin-top:8px;">
         <input type="radio" name="autodiscovery_choice" value="disable_all" {% if not mqtt_default_entities_enabled %}checked{% endif %}>
-        <strong>Non abilitare nessuna entità per ora</strong><br>
-        <span class="hint">Consigliato se preferisci mantenere Home Assistant pulito e abilitare manualmente solo le entità che ti interessano, dalla pagina autodiscovery.</span>
+        <strong>{{ t('setup_autodiscovery.disable_all_long') }}</strong><br>
+        <span class="hint">{{ t('setup_autodiscovery.disable_all_hint') }}</span>
       </label>
 
-      <button type="submit" style="margin-top:16px;">Completa configurazione</button>
+      <button type="submit" style="margin-top:16px;">{{ t('setup_autodiscovery.submit') }}</button>
     </form>
 
   </div>
