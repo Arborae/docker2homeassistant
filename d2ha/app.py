@@ -388,13 +388,15 @@ def apply_autodiscovery_default_choice(enable_all: bool) -> None:
     containers_info = docker_service.collect_containers_info_for_updates()
     containers_info = [c for c in containers_info if not mqtt_manager.is_self_container(c)]
     stable_ids = []
+    actions_pref = {
+        action: enable_all for action in AutodiscoveryPreferences.AVAILABLE_ACTIONS
+    }
     for container in containers_info:
         stable_id = container.get("stable_id")
         if not stable_id:
             continue
-        pref = autodiscovery_preferences.get_with_defaults(stable_id)
         autodiscovery_preferences.set_preferences(
-            stable_id, enable_all, pref.get("actions", {})
+            stable_id, enable_all, actions_pref
         )
         stable_ids.append(stable_id)
 
