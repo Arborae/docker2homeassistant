@@ -30,14 +30,7 @@
     .stack-toggle-btn:hover { border-color: var(--color-border-strong); color: var(--color-accent); }
     .stack-toggle-btn .chevron { display:inline-block; width:10px; text-align:center; }
     .stack-content.collapsed { display:none; }
-    table { width:100%; border-collapse: collapse; background: var(--color-surface); border:1px solid var(--color-border); border-radius:12px; overflow:hidden; table-layout: fixed; }
-    th, td { padding:10px 12px; font-size:0.85rem; text-align:left; border-bottom:1px solid var(--color-border); vertical-align: middle; }
-    th { background: var(--color-surface-muted); color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: var(--color-surface-muted); }
-    .status-pill.running { color: var(--color-success); background: var(--color-success-surface); border-color: rgba(53, 196, 141, 0.28); }
-    .status-pill.stopped { color: var(--color-warn); background: var(--color-warn-surface); border-color: rgba(244, 178, 46, 0.28); }
-    .status-pill.error { color: var(--color-error); background: var(--color-error-surface); border-color: rgba(239, 71, 111, 0.32); }
+    .table { table-layout: fixed; }
     .actions { display:flex; flex-wrap: wrap; gap:6px; justify-content:flex-end; }
     .actions .btn-primary, .actions .btn-secondary, .actions .btn-ghost { white-space:nowrap; }
     .actions-cell { text-align:right; }
@@ -59,6 +52,7 @@
     .bulk-bar.visible { display:flex; }
     .bulk-summary { color: var(--color-muted); font-weight:700; letter-spacing:0.02em; }
     .bulk-actions { display:flex; gap:8px; flex-wrap:wrap; }
+    .btn-icon { display:inline-flex; align-items:center; justify-content:center; }
     .modal-backdrop { position: fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index: 50; padding:20px; }
     .modal-backdrop.visible { display:flex; }
     .modal { background: var(--color-surface-muted); border:1px solid var(--color-border); border-radius:16px; width:min(1100px, 100%); height:82vh; max-height:82vh; overflow:hidden; box-shadow: var(--shadow-md); display:flex; flex-direction:column; }
@@ -163,7 +157,7 @@
           <div class="stack-chip">{{ stack.containers|length }} container</div>
         </div>
         <div class="card-body stack-content">
-          <table>
+          <table class="table">
             <colgroup>
               <col class="col-select">
               <col class="col-name">
@@ -208,11 +202,11 @@
                     {% set status = c.status.lower() %}
                     {% set css = "status-pill " %}
                     {% if status == "running" %}
-                      {% set css = css + "running" %}
+                      {% set css = css + "success" %}
                     {% elif status in ["restarting", "dead", "removing"] %}
                       {% set css = css + "error" %}
                     {% else %}
-                      {% set css = css + "stopped" %}
+                      {% set css = css + "warn" %}
                     {% endif %}
                     <span class="{{ css }}">{{ c.status }}</span>
                   </td>
@@ -262,10 +256,22 @@
   <div class="bulk-bar" id="bulk-bar" aria-hidden="true">
     <div class="bulk-summary"><span id="bulk-count">0</span> container selezionati</div>
     <div class="bulk-actions">
-      <button class="btn-primary" type="button" data-bulk-action="start">Avvia</button>
-      <button class="btn-secondary" type="button" data-bulk-action="stop">Ferma</button>
-      <button class="btn-secondary" type="button" data-bulk-action="restart">Riavvia</button>
-      <button class="btn-ghost" type="button" data-bulk-action="delete">Elimina</button>
+      <button class="btn-primary" type="button" data-bulk-action="start">
+        <span class="btn-icon" aria-hidden="true">▶</span>
+        <span>Avvia</span>
+      </button>
+      <button class="btn-secondary" type="button" data-bulk-action="stop">
+        <span class="btn-icon" aria-hidden="true">■</span>
+        <span>Ferma</span>
+      </button>
+      <button class="btn-secondary" type="button" data-bulk-action="restart">
+        <span class="btn-icon" aria-hidden="true">↻</span>
+        <span>Riavvia</span>
+      </button>
+      <button class="btn-danger" type="button" data-bulk-action="delete">
+        <span class="btn-icon" aria-hidden="true">🗑</span>
+        <span>Elimina</span>
+      </button>
     </div>
   </div>
 
