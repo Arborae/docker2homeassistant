@@ -23,7 +23,8 @@
       pendingForm: null,
     };
     let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
-    window.d2haSettings = window.d2haSettings || { performanceMode: false };
+    const initialPerformanceMode = (document.body?.dataset?.performanceMode || '0') === '1';
+    window.d2haSettings = window.d2haSettings || { performanceMode: initialPerformanceMode };
     window.d2haRuntime = window.d2haRuntime || { performanceHandlers: [] };
     const performanceState = window.d2haSettings;
     let currentNotifications = initialNotifications;
@@ -57,32 +58,52 @@
       }
     }
 
-    function initPerformanceMode() {
-      let storedPreference = null;
-      try {
-        storedPreference = localStorage.getItem('d2ha.performanceMode');
-      } catch (err) {
-        storedPreference = null;
-      }
+    function updatePerformanceMode(enabled) {
+      performanceState.performanceMode = !!enabled;
+      syncPerformanceToggle(performanceState.performanceMode);
+      applyPerformanceMode(performanceState.performanceMode);
+    }
 
-      const enabled = storedPreference === 'true';
-      performanceState.performanceMode = enabled;
-      syncPerformanceToggle(enabled);
+    async function loadPerformanceMode() {
+      try {
+        const res = await fetch('/api/performance_mode');
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        updatePerformanceMode(!!data.enabled);
+      } catch (err) {
+        console.warn('Unable to load performance mode from backend', err);
+      }
+    }
+
+    async function persistPerformanceMode(enabled) {
+      try {
+        const res = await fetch('/api/performance_mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled }),
+        });
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        updatePerformanceMode(!!data.enabled);
+      } catch (err) {
+        console.error('Impossibile aggiornare la modalità prestazioni', err);
+        if (performanceModeToggleEl) {
+          performanceModeToggleEl.checked = performanceState.performanceMode;
+        }
+        alert('Impossibile aggiornare la modalità prestazioni');
+      }
+    }
+
+    function initPerformanceMode() {
+      updatePerformanceMode(initialPerformanceMode);
 
       if (performanceModeToggleEl) {
         performanceModeToggleEl.addEventListener('change', () => {
-          const nextValue = performanceModeToggleEl.checked;
-          performanceState.performanceMode = nextValue;
-          try {
-            localStorage.setItem('d2ha.performanceMode', nextValue ? 'true' : 'false');
-          } catch (err) {
-            console.error('Unable to persist performance mode', err);
-          }
-          applyPerformanceMode(nextValue);
+          persistPerformanceMode(performanceModeToggleEl.checked);
         });
       }
 
-      applyPerformanceMode(enabled);
+      loadPerformanceMode();
     }
 
     function updateSafeModeState(enabled) {
