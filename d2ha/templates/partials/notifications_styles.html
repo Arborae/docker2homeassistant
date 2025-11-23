@@ -318,6 +318,10 @@
     backdrop-filter: blur(2px);
   }
 
+  body.theme-light .safe-confirm-backdrop {
+    background: rgba(255, 247, 237, 0.75);
+  }
+
   .safe-confirm-backdrop.visible { display: flex; }
 
   .safe-confirm-modal {
@@ -332,6 +336,13 @@
     gap: 12px;
   }
 
+  body.theme-light .safe-confirm-modal {
+    background: var(--panel);
+    border-color: var(--border);
+    box-shadow: var(--shadow);
+    color: var(--text);
+  }
+
   .safe-confirm-title {
     margin: 0;
     font-size: 1.05rem;
@@ -342,6 +353,10 @@
     margin: 0;
     color: var(--muted);
     line-height: 1.5;
+  }
+
+  body.theme-light .safe-confirm-message {
+    color: var(--muted);
   }
 
   .safe-confirm-actions {
@@ -357,4 +372,14 @@
   }
 
   .btn-secondary:hover { border-color: var(--accent-border); }
+
+  body.theme-light .btn-secondary {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  body.theme-light .safe-confirm-actions .btn[data-safe-confirm] {
+    background: var(--accent-gradient);
+    color: #0c121e;
+    box-shadow: 0 6px 18px var(--accent-glow);
+  }
 </style>
