@@ -106,6 +106,18 @@ def login_required(view):
         if not current_user or current_user != config.get("username"):
             session.clear()
             return redirect(url_for("login", next=request.url))
+
+        timeout_minutes = int(config.get("session_timeout_minutes", 0) or 0)
+        last_activity = session.get("last_activity_ts") or session.get("logged_at")
+        now_ts = int(time.time())
+
+        if timeout_minutes > 0 and last_activity:
+            if now_ts - int(last_activity) > timeout_minutes * 60:
+                session.clear()
+                flash(t("flash.session_expired"), "info")
+                return redirect(url_for("login", next=request.url))
+
+        session["last_activity_ts"] = now_ts
         return view(*args, **kwargs)
 
     return wrapped
@@ -251,6 +263,7 @@ def login():
                 session.clear()
                 session["user"] = config.get("username")
                 session["logged_at"] = int(time.time())
+                session["last_activity_ts"] = session["logged_at"]
 
                 if not config.get("onboarding_done"):
                     return redirect(url_for("setup_account"))
@@ -517,9 +530,11 @@ def security_settings():
                 new_username = (request.form.get("new_username") or "").strip()
                 new_password = request.form.get("new_password") or ""
                 new_password_confirm = request.form.get("new_password_confirm") or ""
+                session_timeout_raw = (request.form.get("session_timeout_minutes") or "").strip()
 
                 username_change = new_username if new_username else None
                 password_hash = None
+                session_timeout_minutes = None
                 has_errors = False
                 changes_made = False
 
@@ -541,6 +556,23 @@ def security_settings():
                         changes_made = True
                         flash(t("flash.security_password_updated"), "success")
 
+                if session_timeout_raw:
+                    try:
+                        parsed_timeout = int(session_timeout_raw)
+                        if parsed_timeout < 1 or parsed_timeout > 1440:
+                            flash(t("flash.security_timeout_invalid"), "error")
+                            has_errors = True
+                        else:
+                            session_timeout_minutes = parsed_timeout
+                            if (
+                                session_timeout_minutes
+                                != config.get("session_timeout_minutes")
+                            ):
+                                changes_made = True
+                    except ValueError:
+                        flash(t("flash.security_timeout_invalid"), "error")
+                        has_errors = True
+
                 if not changes_made:
                     flash(t("flash.security_no_changes"), "info")
                 elif has_errors:
@@ -551,6 +583,8 @@ def security_settings():
                         session["user"] = username_change
                     if password_hash:
                         config["password_hash"] = password_hash
+                    if session_timeout_minutes is not None:
+                        config["session_timeout_minutes"] = session_timeout_minutes
                     save_auth_config(config)
                     flash(t("flash.security_credentials_updated"), "success")
 
@@ -626,6 +660,7 @@ def security_settings():
         active_page="security",
         current_username=config.get("username", "admin"),
         totp_secret=config.get("totp_secret"),
+        session_timeout_minutes=int(config.get("session_timeout_minutes", 30) or 30),
     )
 
 
