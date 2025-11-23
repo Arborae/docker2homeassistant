@@ -424,15 +424,32 @@ def setup_autodiscovery():
             config["mqtt_default_entities_enabled"] = enable_all
             save_auth_config(config)
 
-            apply_autodiscovery_default_choice(enable_all)
+            autodiscovery_applied = True
+            try:
+                apply_autodiscovery_default_choice(enable_all)
+            except Exception:
+                autodiscovery_applied = False
+                app.logger.exception(
+                    "Failed to apply autodiscovery defaults during onboarding"
+                )
+                flash(
+                    "Impossibile applicare automaticamente l'autodiscovery MQTT. Puoi riprovare dalla pagina Autodiscovery.",
+                    "error",
+                )
 
             config["onboarding_done"] = True
             save_auth_config(config)
 
-            flash(
-                "Configurazione iniziale completata. Potrai modificare queste impostazioni in qualsiasi momento.",
-                "success",
-            )
+            if autodiscovery_applied:
+                flash(
+                    "Configurazione iniziale completata. Potrai modificare queste impostazioni in qualsiasi momento.",
+                    "success",
+                )
+            else:
+                flash(
+                    "Configurazione iniziale completata, ma alcune impostazioni MQTT potrebbero richiedere un nuovo tentativo dalla pagina Autodiscovery.",
+                    "info",
+                )
             return redirect(url_for("home"))
 
     return render_template(
