@@ -213,6 +213,32 @@
     </div>
 
     <div class="card">
+      <h2>Timeout di sessione</h2>
+      <p class="muted">Configura il logout automatico per inattività.</p>
+      <form method="POST">
+        <input type="hidden" name="action" value="update_session_timeout" />
+        <label>
+          Password attuale
+          <input type="password" name="current_password" autocomplete="current-password" required />
+        </label>
+        {% if two_factor_enabled %}
+        <label>
+          Codice 2FA corrente
+          <input type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" />
+        </label>
+        {% endif %}
+        <label>
+          {{ t('security.session_timeout_label') }}
+          <div class="muted" style="font-weight: 400;">{{ t('security.session_timeout_hint') }}</div>
+          <input type="number" name="session_timeout_minutes" min="1" max="1440" value="{{ session_timeout_minutes }}" required />
+        </label>
+        <div class="actions">
+          <button type="submit">Salva timeout</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
       <h2>Cambia credenziali</h2>
       <p class="muted">Aggiorna username e/o password. Richiede la password attuale e, se attiva, anche un codice 2FA.</p>
       <form method="POST">
@@ -238,11 +264,6 @@
         <label>
           Conferma nuova password
           <input type="password" name="new_password_confirm" autocomplete="new-password" />
-        </label>
-        <label>
-          {{ t('security.session_timeout_label') }}
-          <div class="muted" style="font-weight: 400;">{{ t('security.session_timeout_hint') }}</div>
-          <input type="number" name="session_timeout_minutes" min="1" max="1440" value="{{ session_timeout_minutes }}" />
         </label>
         <div class="actions">
           <button type="submit">Aggiorna credenziali</button>
