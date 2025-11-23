@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}D2HA{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
+  <div class="d2ha-app">
+    <header class="d2ha-topbar">
+      {% block topbar %}{% endblock %}
+    </header>
+
+    <main class="d2ha-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}{% endblock %}
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
