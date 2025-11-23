@@ -51,6 +51,12 @@
     .flash { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
     .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
     .flash.success { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); }
+    .layout { display: grid; grid-template-columns: 1fr 1.4fr; gap: 18px; align-items: flex-start; margin: 14px 0; }
+    .qr-box { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; box-shadow: var(--shadow); }
+    .qr-title { margin: 0 0 8px; font-weight: 800; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; font-size: 0.85rem; }
+    .qr-image { width: 100%; max-width: 210px; height: auto; image-rendering: crisp-edges; border-radius: 10px; background: white; padding: 10px; }
+    .section-title { font-weight: 800; margin: 0 0 6px; letter-spacing: 0.04em; }
+    @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } .qr-box { justify-self: center; width: 100%; max-width: 320px; } }
   </style>
 </head>
 <body>
@@ -72,12 +78,21 @@
 
     <div class="note">
       <p>1. Apri Google Authenticator, Aegis o app simile.</p>
-      <p>2. Aggiungi un nuovo account scansionando il QR o inserendo il codice segreto.</p>
+      <p>2. Scansiona il QR code oppure inserisci manualmente il codice segreto.</p>
       <p>3. Inserisci un codice a 6 cifre per confermare.</p>
     </div>
 
-    <div class="secret-box">{{ secret }}</div>
-    <p class="muted" style="color: var(--muted); word-break: break-all;">URI: {{ provisioning_uri }}</p>
+    <div class="layout">
+      <div class="qr-box">
+        <p class="qr-title">QR CODE</p>
+        <img class="qr-image" src="{{ qr_code_data_uri }}" alt="QR code per configurare l'autenticazione a due fattori" loading="lazy" />
+      </div>
+      <div>
+        <p class="section-title">Codice segreto</p>
+        <div class="secret-box">{{ secret }}</div>
+        <p class="muted" style="color: var(--muted); word-break: break-all;">URI: {{ provisioning_uri }}</p>
+      </div>
+    </div>
 
     <form method="post" autocomplete="off" style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
       <label for="token">Codice 2FA</label>
