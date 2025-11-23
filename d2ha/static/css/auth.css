@@ -247,11 +247,11 @@ body.theme-light {
   cursor: pointer;
   opacity: 0.8;
   transition: opacity 0.15s ease, color 0.15s ease;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1;
-  padding: 8px;
-  height: 36px;
-  width: 36px;
+  padding: 6px;
+  height: 32px;
+  width: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -265,12 +265,19 @@ body.theme-light {
 .auth-card .password-toggle {
   transform: translateY(-50%);
   transition: opacity 0.15s ease, color 0.15s ease;
+  background: transparent;
+  box-shadow: none;
+  margin-top: 0;
+  padding: 6px;
+  height: 32px;
+  width: 32px;
 }
 
 .auth-card .password-toggle:hover,
 .auth-card .password-toggle:active {
   transform: translateY(-50%);
   filter: none;
+  background: transparent;
 }
 
 .btn,
