@@ -33,7 +33,9 @@ app = Flask(__name__)
 app.config.update(
     SECRET_KEY=os.environ.get("D2HA_SECRET_KEY") or secrets.token_hex(32),
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=not app.debug,
+    SESSION_COOKIE_SECURE=(
+        os.environ.get("D2HA_SESSION_COOKIE_SECURE", "false").lower() == "true"
+    ),
     SESSION_COOKIE_SAMESITE="Lax",
 )
 app.jinja_env.globals["human_bytes"] = human_bytes
