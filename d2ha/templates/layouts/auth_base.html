@@ -16,6 +16,8 @@
     </div>
 
     <div class="auth-overlay">
+      {% include 'partials/flash_messages.html' %}
+
       <div class="onboarding-toolbar">
         <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false" aria-controls="onboardingMenu" title="{{ t('settings.title') }}">🌐</button>
         <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">

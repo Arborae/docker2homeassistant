@@ -5,8 +5,6 @@
   <h1>{{ t('setup_modes.heading') }}</h1>
   <p>{{ t('setup_modes.description') }}</p>
 
-  {% include 'partials/flash_messages.html' %}
-
   <form method="post">
     <label class="auth-choice" style="display:flex;align-items:flex-start;gap:10px;">
       <input type="checkbox" name="safe_mode_enabled" {% if safe_mode_enabled %}checked{% endif %}>

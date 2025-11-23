@@ -11,8 +11,6 @@
     <li>{{ t('setup_account.tip_username').format(current_username=current_username) }}</li>
   </ul>
 
-  {% include 'partials/flash_messages.html' %}
-
   <form method="post" autocomplete="off">
     <div>
       <label for="new_username">{{ t('setup_account.new_username') }}</label>
