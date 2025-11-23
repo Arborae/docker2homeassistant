@@ -284,28 +284,40 @@ body.theme-light {
 .auth-card button,
 .auth-card .btn-primary {
   margin-top: 6px;
-  padding: 12px;
-  border: none;
-  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid transparent;
+  border-radius: var(--auth-radius-button);
   background: var(--accent-gradient);
   color: #0c121e;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 10px 22px var(--accent-glow);
-  transition: transform 0.15s ease, filter 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 18px var(--accent-glow);
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, opacity 140ms ease,
+    transform 140ms ease;
 }
 
 .btn:hover,
 .auth-card button:hover,
 .auth-card .btn-primary:hover {
-  filter: brightness(1.05);
+  opacity: 0.92;
   transform: translateY(-1px);
+}
+
+.btn:focus-visible,
+.auth-card button:focus-visible,
+.auth-card .btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-border-soft), 0 8px 18px var(--accent-glow);
 }
 
 .btn:active,
 .auth-card button:active,
 .auth-card .btn-primary:active {
   transform: translateY(0);
+  box-shadow: none;
 }
 
 .hint,
