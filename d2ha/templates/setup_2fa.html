@@ -177,9 +177,9 @@
     </div>
   </div>
   <div class="card">
-    <h1>Autenticazione a due fattori</h1>
-    <p>Aggiungi un secondo fattore di sicurezza: ad ogni login, oltre a username e password, ti verrà chiesto un codice temporaneo generato sul tuo smartphone.</p>
-    <p>Consigliato se l'interfaccia è accessibile da internet o da utenti non fidati.</p>
+    <h1>{{ t('setup_2fa.title') }}</h1>
+    <p>{{ t('setup_2fa.intro') }}</p>
+    <p>{{ t('setup_2fa.hint') }}</p>
 
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
@@ -192,29 +192,29 @@
     {% endwith %}
 
     <div class="note">
-      <p>1. Apri Google Authenticator, Aegis o app simile.</p>
-      <p>2. Scansiona il QR code oppure inserisci manualmente il codice segreto.</p>
-      <p>3. Inserisci un codice a 6 cifre per confermare.</p>
+      <p>{{ t('setup_2fa.step1') }}</p>
+      <p>{{ t('setup_2fa.step2') }}</p>
+      <p>{{ t('setup_2fa.step3') }}</p>
     </div>
 
     <div class="layout">
       <div class="qr-box">
-        <p class="qr-title">QR CODE</p>
-        <img class="qr-image" src="{{ qr_code_data_uri }}" alt="QR code per configurare l'autenticazione a due fattori" loading="lazy" />
+        <p class="qr-title">{{ t('setup_2fa.qr_title') }}</p>
+        <img class="qr-image" src="{{ qr_code_data_uri }}" alt="QR code" loading="lazy" />
       </div>
       <div>
-        <p class="section-title">Codice segreto</p>
+        <p class="section-title">{{ t('setup_2fa.secret') }}</p>
         <div class="secret-box">{{ secret }}</div>
-        <p class="muted" style="color: var(--muted); word-break: break-all;">URI: {{ provisioning_uri }}</p>
+        <p class="muted" style="color: var(--muted); word-break: break-all;">{{ t('setup_2fa.uri').format(uri=provisioning_uri) }}</p>
       </div>
     </div>
 
     <form method="post" autocomplete="off" style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
-      <label for="token">Codice 2FA</label>
+      <label for="token">{{ t('setup_2fa.token_label') }}</label>
       <input type="text" id="token" name="token" pattern="\d{6}" inputmode="numeric" autocomplete="one-time-code" />
       <div class="actions">
-        <button class="btn btn-primary" type="submit" name="choice" value="enable">Abilita 2FA</button>
-        <button class="btn btn-secondary" type="submit" name="choice" value="skip">Salta per ora</button>
+        <button class="btn btn-primary" type="submit" name="choice" value="enable">{{ t('setup_2fa.enable') }}</button>
+        <button class="btn btn-secondary" type="submit" name="choice" value="skip">{{ t('setup_2fa.skip') }}</button>
       </div>
     </form>
   </div>

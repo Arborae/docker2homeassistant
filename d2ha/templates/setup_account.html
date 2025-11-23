@@ -171,13 +171,13 @@
     </div>
   </div>
   <div class="card">
-    <h1>Proteggi il tuo accesso</h1>
-    <p>Stai accedendo con le credenziali predefinite <strong>admin / admin</strong>. Per sicurezza devi scegliere una nuova password (e, se vuoi, anche un nuovo username). La vecchia password smetterà di funzionare.</p>
-    <p>Consigli rapidi:</p>
+    <h1>{{ t('setup_account.heading') }}</h1>
+    <p>{{ t('setup_account.intro')|safe }}</p>
+    <p>{{ t('setup_account.tips_title') }}</p>
     <ul>
-      <li>Usa almeno 10 caratteri con lettere, numeri e simboli.</li>
-      <li>Evita parole comuni o password già usate altrove.</li>
-      <li>L'username può restare "{{ current_username }}" oppure puoi personalizzarlo.</li>
+      <li>{{ t('setup_account.tip_length') }}</li>
+      <li>{{ t('setup_account.tip_unique') }}</li>
+      <li>{{ t('setup_account.tip_username').format(current_username=current_username) }}</li>
     </ul>
 
     {% with messages = get_flashed_messages(with_categories=True) %}
@@ -192,18 +192,18 @@
 
     <form method="post" autocomplete="off">
       <div>
-        <label for="new_username">Nuovo username (facoltativo)</label>
+        <label for="new_username">{{ t('setup_account.new_username') }}</label>
         <input type="text" id="new_username" name="new_username" placeholder="{{ current_username }}" />
       </div>
       <div>
-        <label for="new_password">Nuova password</label>
+        <label for="new_password">{{ t('setup_account.new_password') }}</label>
         <input type="password" id="new_password" name="new_password" required />
       </div>
       <div>
-        <label for="new_password_confirm">Conferma password</label>
+        <label for="new_password_confirm">{{ t('setup_account.confirm_password') }}</label>
         <input type="password" id="new_password_confirm" name="new_password_confirm" required />
       </div>
-      <button type="submit" class="btn">Continua</button>
+      <button type="submit" class="btn">{{ t('setup_account.submit') }}</button>
     </form>
   </div>
   <script>
