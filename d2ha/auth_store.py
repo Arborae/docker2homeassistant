@@ -8,6 +8,18 @@ from werkzeug.security import generate_password_hash
 AUTH_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "auth_config.json")
 
 
+_DEFAULT_CONFIG = {
+    "username": "admin",
+    "password_hash": generate_password_hash("admin"),
+    "onboarding_done": False,
+    "two_factor_enabled": False,
+    "totp_secret": None,
+    "safe_mode_enabled": True,
+    "performance_mode_enabled": False,
+    "mqtt_default_entities_enabled": True,
+}
+
+
 def _now_ts() -> str:
     return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
@@ -17,11 +29,8 @@ def ensure_default_auth_config() -> Dict[str, Any]:
         username = os.environ.get("D2HA_ADMIN_USERNAME", "admin")
         timestamp = _now_ts()
         default_config: Dict[str, Any] = {
+            **_DEFAULT_CONFIG,
             "username": username,
-            "password_hash": generate_password_hash("admin"),
-            "onboarding_done": False,
-            "two_factor_enabled": False,
-            "totp_secret": None,
             "created_at": timestamp,
             "updated_at": timestamp,
         }
@@ -39,10 +48,31 @@ def ensure_default_auth_config() -> Dict[str, Any]:
     return load_auth_config()
 
 
+def _apply_defaults(config: Dict[str, Any]) -> Dict[str, Any]:
+    changed = False
+    for key, value in _DEFAULT_CONFIG.items():
+        if key not in config:
+            config[key] = value
+            changed = True
+    if changed:
+        # avoid circular import by writing directly
+        try:
+            with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
+                config.setdefault("created_at", _now_ts())
+                config["updated_at"] = _now_ts()
+                json.dump(config, fp, indent=2)
+        except Exception:
+            pass
+    return config
+
+
 def load_auth_config() -> Dict[str, Any]:
     try:
         with open(AUTH_CONFIG_PATH, "r", encoding="utf-8") as fp:
-            return json.load(fp)
+            raw = json.load(fp)
+            if isinstance(raw, dict):
+                return _apply_defaults(raw)
+            return _apply_defaults({})
     except FileNotFoundError:
         return ensure_default_auth_config()
     except Exception:

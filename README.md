@@ -153,9 +153,15 @@ Popup di dettaglio con:
 ## 🔐 Autenticazione e onboarding
 
 - **Credenziali iniziali:** `admin / admin`.
-- Al **primo login** viene avviata una procedura guidata:
-  - scelta di una nuova password (obbligatoria) e, se vuoi, di un nuovo username;
-  - scelta se abilitare subito la **2FA TOTP** (Google Authenticator, Aegis, ecc.) o rimandare.
+- Al **primo login** viene avviata una procedura guidata che copre quattro passi:
+  1. scelta di una nuova password (obbligatoria) e, se vuoi, di un nuovo username;
+  2. abilita o salta la **2FA TOTP** (Google Authenticator, Aegis, ecc.);
+  3. configurazione iniziale di **Modalità sicura** (on di default) e **Modalità prestazioni** (off di default);
+  4. scelta del comportamento iniziale per l'autodiscovery MQTT: esporre o meno tutte le entità di default.
+- Tutte le scelte restano modificabili dopo il primo avvio:
+  - credenziali e 2FA dalla pagina Sicurezza;
+  - Modalità sicura / prestazioni tramite l'icona a forma di ingranaggio nell'header;
+  - entità MQTT dalla pagina Autodiscovery.
 - La configurazione di sicurezza viene salvata nel file JSON `d2ha/auth_config.json` (creato automaticamente con permessi ristretti al primo avvio).
 - Variabili utili:
   - `D2HA_SECRET_KEY` per impostare la chiave di sessione Flask (obbligatorio in produzione);

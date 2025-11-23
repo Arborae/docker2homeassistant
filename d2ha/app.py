@@ -89,8 +89,6 @@ mqtt_manager.start_periodic_publisher()
 
 
 _notifications_cache = {"ts": 0.0, "data": {}}
-_safe_mode_state = {"enabled": True}
-_safe_mode_file = os.path.join(os.path.dirname(__file__), "safe_mode_state.json")
 
 
 def login_required(view):
@@ -121,34 +119,28 @@ def onboarding_required(view):
     return wrapped
 
 
-def _load_safe_mode_state():
-    global _safe_mode_state
-    try:
-        with open(_safe_mode_file, "r", encoding="utf-8") as fp:
-            data = json.load(fp)
-            _safe_mode_state["enabled"] = bool(data.get("enabled", True))
-    except FileNotFoundError:
-        _safe_mode_state["enabled"] = True
-    except Exception:
-        _safe_mode_state["enabled"] = True
-
-
-def _save_safe_mode_state():
-    try:
-        with open(_safe_mode_file, "w", encoding="utf-8") as fp:
-            json.dump({"enabled": _safe_mode_state.get("enabled", False)}, fp)
-    except Exception:
-        pass
-
-
 def is_safe_mode_enabled() -> bool:
-    return bool(_safe_mode_state.get("enabled", False))
+    config = get_auth_config()
+    return bool(config.get("safe_mode_enabled", True))
 
 
 def set_safe_mode(enabled: bool) -> bool:
-    _safe_mode_state["enabled"] = bool(enabled)
-    _save_safe_mode_state()
+    config = get_auth_config()
+    config["safe_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
     return is_safe_mode_enabled()
+
+
+def is_performance_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("performance_mode_enabled", False))
+
+
+def set_performance_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["performance_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    return is_performance_mode_enabled()
 
 
 def is_onboarding_done():
@@ -331,14 +323,13 @@ def setup_2fa():
         if choice == "skip":
             config["two_factor_enabled"] = False
             config["totp_secret"] = None
-            config["onboarding_done"] = True
             save_auth_config(config)
             session.pop("pending_totp_secret", None)
             flash(
                 "2FA is currently disabled. You can enable it later in Security Settings.",
                 "info",
             )
-            return redirect(url_for("index"))
+            return redirect(url_for("setup_modes"))
 
         if choice == "enable":
             token = (request.form.get("token") or "").strip()
@@ -346,11 +337,10 @@ def setup_2fa():
             if totp.verify(token, valid_window=1):
                 config["two_factor_enabled"] = True
                 config["totp_secret"] = secret
-                config["onboarding_done"] = True
                 save_auth_config(config)
                 session.pop("pending_totp_secret", None)
                 flash("Two-factor authentication enabled.", "success")
-                return redirect(url_for("index"))
+                return redirect(url_for("setup_modes"))
 
             flash("Invalid verification code. Please try again.", "error")
 
@@ -360,6 +350,94 @@ def setup_2fa():
         provisioning_uri=provisioning_uri,
         qr_code_data_uri=qr_code_data_uri,
         username=config.get("username", "admin"),
+    )
+
+
+@app.route("/setup-modes", methods=["GET", "POST"])
+@login_required
+def setup_modes():
+    config = get_auth_config()
+
+    if config.get("onboarding_done"):
+        return redirect(url_for("home"))
+
+    safe_mode_enabled = bool(config.get("safe_mode_enabled", True))
+    performance_mode_enabled = bool(config.get("performance_mode_enabled", False))
+
+    if request.method == "POST":
+        safe_choice = request.form.get("safe_mode_enabled")
+        perf_choice = request.form.get("performance_mode_enabled")
+
+        safe_mode_enabled = bool(safe_choice)
+        performance_mode_enabled = bool(perf_choice)
+
+        config["safe_mode_enabled"] = safe_mode_enabled
+        config["performance_mode_enabled"] = performance_mode_enabled
+        save_auth_config(config)
+
+        return redirect(url_for("setup_autodiscovery"))
+
+    return render_template(
+        "setup_modes.html",
+        safe_mode_enabled=safe_mode_enabled,
+        performance_mode_enabled=performance_mode_enabled,
+    )
+
+
+def apply_autodiscovery_default_choice(enable_all: bool) -> None:
+    containers_info = docker_service.collect_containers_info_for_updates()
+    containers_info = [c for c in containers_info if not mqtt_manager.is_self_container(c)]
+    stable_ids = []
+    for container in containers_info:
+        stable_id = container.get("stable_id")
+        if not stable_id:
+            continue
+        pref = autodiscovery_preferences.get_with_defaults(stable_id)
+        autodiscovery_preferences.set_preferences(
+            stable_id, enable_all, pref.get("actions", {})
+        )
+        stable_ids.append(stable_id)
+
+    if stable_ids:
+        autodiscovery_preferences.prune(stable_ids)
+    _publish_current_state()
+
+
+@app.route("/setup-autodiscovery", methods=["GET", "POST"])
+@login_required
+def setup_autodiscovery():
+    config = get_auth_config()
+
+    if config.get("onboarding_done"):
+        return redirect(url_for("home"))
+
+    mqtt_default_entities_enabled = bool(
+        config.get("mqtt_default_entities_enabled", True)
+    )
+
+    if request.method == "POST":
+        choice = request.form.get("autodiscovery_choice")
+        if choice not in ("enable_all", "disable_all"):
+            flash("Seleziona una opzione valida per l'autodiscovery MQTT.", "error")
+        else:
+            enable_all = choice == "enable_all"
+            config["mqtt_default_entities_enabled"] = enable_all
+            save_auth_config(config)
+
+            apply_autodiscovery_default_choice(enable_all)
+
+            config["onboarding_done"] = True
+            save_auth_config(config)
+
+            flash(
+                "Configurazione iniziale completata. Potrai modificare queste impostazioni in qualsiasi momento.",
+                "success",
+            )
+            return redirect(url_for("home"))
+
+    return render_template(
+        "setup_autodiscovery.html",
+        mqtt_default_entities_enabled=mqtt_default_entities_enabled,
     )
 
 
@@ -588,13 +666,11 @@ def _build_notifications_summary(force: bool = False) -> dict:
     return summary
 
 
-_load_safe_mode_state()
-
-
 @app.context_processor
 def inject_common_context():
     return {
         "safe_mode_enabled": is_safe_mode_enabled(),
+        "performance_mode_enabled": is_performance_mode_enabled(),
         "system_info": _get_system_info(),
     }
 
@@ -860,6 +936,17 @@ def api_safe_mode():
     payload = request.get_json(force=True, silent=True) or {}
     enabled = bool(payload.get("enabled", False))
     return jsonify({"enabled": set_safe_mode(enabled)})
+
+
+@app.route("/api/performance_mode", methods=["GET", "POST"])
+@onboarding_required
+def api_performance_mode():
+    if request.method == "GET":
+        return jsonify({"enabled": is_performance_mode_enabled()})
+
+    payload = request.get_json(force=True, silent=True) or {}
+    enabled = bool(payload.get("enabled", False))
+    return jsonify({"enabled": set_performance_mode(enabled)})
 
 
 @app.route("/containers/<container_id>/<action>", methods=["POST"])

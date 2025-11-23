@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – Modalità del sistema</title>
+  <style>
+    :root {
+      --bg: #0f1116;
+      --panel: #151924;
+      --panel-2: #1b2131;
+      --accent: #31c4ff;
+      --accent-2: #7cffc3;
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 15% 15%, rgba(0,255,255,0.05), transparent 25%),
+                  radial-gradient(circle at 80% 10%, rgba(124,255,195,0.06), transparent 22%),
+                  var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+    .card {
+      width: min(520px, 100%);
+      background: linear-gradient(180deg, rgba(49,196,255,0.08), rgba(124,255,195,0.04)), var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 22px;
+      box-shadow: var(--shadow);
+    }
+    h1 { margin: 0 0 6px; letter-spacing: 0.08em; text-transform: uppercase; font-size: 1.1rem; }
+    p { margin: 0 0 12px; color: var(--muted); line-height: 1.5; }
+    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; background: rgba(49,196,255,0.12); color: var(--accent); border:1px solid rgba(49,196,255,0.3); font-weight: 800; letter-spacing: 0.05em; }
+    form { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+    label { font-weight: 700; color: var(--text); font-size: 0.95rem; }
+    input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+    button { margin-top: 10px; padding: 12px; border: none; border-radius: 12px; background: linear-gradient(135deg, #1b87f1, #31c4ff); color: #0c121e; font-weight: 800; cursor: pointer; box-shadow: var(--shadow); }
+    button:hover { filter: brightness(1.05); }
+    .flash-container { margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .flash { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); box-shadow: var(--shadow); }
+    .flash.error { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); }
+    .hint { font-size: 0.85rem; opacity: 0.8; margin-top: -6px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="pill">Primo avvio</div>
+    <h1>Modalità del sistema</h1>
+    <p>Queste opzioni ti aiutano a bilanciare sicurezza e prestazioni. Puoi sempre modificarle in seguito dal pulsante con l'icona dell'ingranaggio in alto a destra.</p>
+
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, msg in messages %}
+            <div class="flash {{ category }}">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <label style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" name="safe_mode_enabled" {% if safe_mode_enabled %}checked{% endif %}>
+        <span><strong>Modalità sicura</strong> (consigliata, attiva di default)</span>
+      </label>
+      <p class="hint">Quando attiva, alcune modifiche critiche richiederanno conferma o verranno bloccate.</p>
+
+      <label style="display:flex;align-items:center;gap:8px;margin-top:12px;">
+        <input type="checkbox" name="performance_mode_enabled" {% if performance_mode_enabled %}checked{% endif %}>
+        <span><strong>Modalità prestazioni</strong></span>
+      </label>
+      <p class="hint">Riduce il carico sul server e il polling automatico. Utile su hardware poco potente o connessioni lente.</p>
+
+      <button type="submit">Continua</button>
+    </form>
+  </div>
+</body>
+</html>
