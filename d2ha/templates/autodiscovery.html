@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Autodiscovery</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
   <style>
                 :root {
       --bg: #0f1116;
@@ -76,11 +77,11 @@
     .stack-content { border-top:1px solid var(--border); }
     .stack-content.collapsed { display:none; }
     .stack-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    table { width:100%; border-collapse: collapse; table-layout: fixed; }
-    th, td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:left; }
-    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing:0.04em; font-size:0.78rem; }
-    tr:last-child td { border-bottom:none; }
-    tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
+    .table { width:100%; border-collapse: collapse; table-layout: fixed; }
+    .table th, .table td { padding:10px 12px; border-bottom:1px solid var(--border); font-size:0.85rem; text-align:left; }
+    .table thead th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing:0.04em; font-size:0.78rem; }
+    .table tr:last-child td { border-bottom:none; }
+    .table tbody tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
     .checkbox { display:flex; justify-content:center; align-items:center; }
     .checkbox-row { display:flex; align-items:center; justify-content:flex-start; gap:10px; flex-wrap:wrap; }
     .checkbox-item { display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background: rgba(255,255,255,0.03); }
@@ -103,8 +104,8 @@
     .col-status { width: 140px; }
     .col-pref { width: 260px; }
     @media(max-width: 960px) {
-      table { min-width: 720px; }
-      th, td { font-size:0.82rem; }
+      .table { min-width: 720px; }
+      .table th, .table td { font-size:0.82rem; }
     }
   </style>
   {% include 'partials/notifications_styles.html' %}
@@ -155,7 +156,7 @@
             </div>
           </div>
           <div class="stack-content" style="overflow-x:auto;">
-            <table>
+            <table class="table">
               <colgroup>
                 <col class="col-name">
                 <col class="col-image">

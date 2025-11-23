@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Immagini</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
   <style>
                 :root {
       --bg: #0f1116;
@@ -62,11 +63,7 @@
     .logout-link { margin-left:auto; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow-soft); }
     main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
-    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; }
-    th, td { padding:10px 12px; font-size:0.85rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; }
-    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: rgba(255,255,255,0.03); }
+    .table { table-layout: fixed; }
     .pill { padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; text-transform: uppercase; display:inline-block; }
     .pill-used { background: rgba(124,255,195,0.15); color: #7cffc3; }
     .pill-unused { background: rgba(255,99,71,0.15); color: #ff8a7a; }
@@ -76,11 +73,11 @@
     .btn-danger { background:#b71c1c; }
     .btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
     @media(max-width: 960px) {
-      table, thead, tbody, th, td, tr { display:block; }
-      thead { display:none; }
-      tr { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-      td { display:flex; justify-content: space-between; border-bottom:1px solid var(--border); }
-      td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
+      .table, .table thead, .table tbody, .table th, .table td, .table tr { display:block; }
+      .table thead { display:none; }
+      .table tr { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+      .table td { display:flex; justify-content: space-between; border-bottom:1px solid var(--border); }
+      .table td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
     }
   </style>
   {% include 'partials/notifications_styles.html' %}
@@ -109,7 +106,7 @@
       <div class="meta">Totale immagini: {{ images|length }} · Container attivi: {{ summary.running }}</div>
     </div>
     <section class="card">
-      <table>
+      <table class="table">
         <thead>
           <tr>
             <th>Tag</th>

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Aggiornamenti</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/d2ha-theme.css') }}">
   <style>
                 :root {
       --bg: #0f1116;
@@ -62,11 +63,11 @@
     .logout-link { margin-left:auto; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow-soft); }
     main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
     .card { background: var(--panel); border:1px solid var(--border); border-radius:14px; padding:14px 16px; box-shadow: var(--shadow); }
-    table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; table-layout: fixed; }
-    th, td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
-    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: rgba(255,255,255,0.03); }
+    .table { width:100%; border-collapse: collapse; background: var(--panel-2); border-radius:12px; overflow:hidden; table-layout: fixed; }
+    .table th, .table td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
+    .table thead th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
+    .table tbody tr:last-child td { border-bottom: none; }
+    .table tbody tr:hover { background: rgba(255,255,255,0.03); }
     .stack-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background: rgba(156, 204, 101, 0.12); color: #c5e1a5; font-size: 0.78rem; }
     .stack-tag.nostack { background: rgba(158, 158, 158, 0.12); color: #e0e0e0; }
     .status-pill { display:inline-flex; align-items:center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
@@ -115,12 +116,12 @@
     .confirm-actions { display:flex; justify-content:flex-end; gap:8px; }
     .btn-ghost { background: var(--control-surface); color: var(--text); border-color: var(--border); }
     @media(max-width: 1100px) {
-      table, thead, tbody, th, td, tr { display:block; }
-      thead { display:none; }
-      table { border-radius: 0; }
-      tr { margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
-      td { border-bottom:1px solid var(--border); display:flex; justify-content: space-between; }
-      td::before { content: attr(data-label); font-weight: 700; color: var(--muted); margin-right: 10px; }
+      .table, .table thead, .table tbody, .table th, .table td, .table tr { display:block; }
+      .table thead { display:none; }
+      .table { border-radius: 0; }
+      .table tr { margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+      .table td { border-bottom:1px solid var(--border); display:flex; justify-content: space-between; }
+      .table td::before { content: attr(data-label); font-weight: 700; color: var(--muted); margin-right: 10px; }
     }
   </style>
   {% include 'partials/notifications_styles.html' %}
@@ -171,7 +172,7 @@
           <div class="stack-chip">{{ stack.containers|length }} container</div>
         </div>
         <div class="stack-body">
-          <table>
+          <table class="table">
             <colgroup>
               <col class="col-name">
               <col class="col-status">
