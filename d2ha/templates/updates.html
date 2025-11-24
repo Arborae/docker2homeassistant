@@ -221,6 +221,7 @@
     main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
     .card { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:14px 16px; box-shadow: var(--shadow); }
     table { width:100%; border-collapse: collapse; background: var(--bg-card-alt); border-radius:14px; overflow:hidden; table-layout: fixed; }
+    body.theme-dark .section-card-body > table { background: transparent; border-radius: 0; overflow: visible; }
     th, td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
     th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
     tr:last-child td { border-bottom: none; }
