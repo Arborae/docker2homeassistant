@@ -32,7 +32,12 @@
     </div>
   </div>
 
-  <script>window.d2haSplashConfig = { targetUrl: "{{ target_url }}", healthUrl: "{{ url_for('api_health') }}" };</script>
+  <script>
+    window.d2haSplashConfig = {
+      targetUrl: {{ target_url | tojson }},
+      healthUrl: {{ url_for('api_health') | tojson }}
+    };
+  </script>
   <script src="{{ url_for('static', filename='js/auth_background.js') }}"></script>
   <script src="{{ url_for('static', filename='js/splash.js') }}"></script>
 </body>

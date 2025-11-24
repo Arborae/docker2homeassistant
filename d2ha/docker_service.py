@@ -2,6 +2,7 @@ import json
 import os
 import threading
 import time
+import logging
 from collections import deque
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional
@@ -144,6 +145,7 @@ class AutodiscoveryPreferences:
 
 class DockerService:
     def __init__(self, remote_cache_ttl: int = 300, stats_cache_ttl: int = 2):
+        self.logger = logging.getLogger(__name__)
         self.docker_client = docker.from_env()
         self.docker_api = self.docker_client.api
         self.remote_cache: Dict[str, Dict[str, Any]] = {}
@@ -574,12 +576,11 @@ class DockerService:
             return
 
         def _run():
-            self.refresh_overview_cache()
             while True:
                 try:
                     self.refresh_overview_cache()
                 except Exception:
-                    pass
+                    self.logger.exception("Failed to refresh overview cache")
                 time.sleep(interval)
 
         thread = threading.Thread(target=_run, name="overview_refresher", daemon=True)
