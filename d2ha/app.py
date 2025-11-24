@@ -4,6 +4,7 @@ import json
 import os
 import secrets
 import time
+from urllib.parse import urlparse
 from collections import defaultdict
 from functools import wraps
 
@@ -96,6 +97,7 @@ mqtt_manager.start_periodic_publisher()
 
 
 _notifications_cache = {"ts": 0.0, "data": {}}
+_app_started_ts = time.time()
 
 
 def login_required(view):
@@ -225,6 +227,77 @@ def _get_system_info():
         or "-",
         "uptime": format_timedelta(uptime_seconds) if uptime_seconds >= 0 else "-",
     }
+
+
+@app.route("/api/health", methods=["GET"])
+def api_health():
+    ready = _is_backend_ready()
+    uptime_seconds = max(time.time() - _app_started_ts, 0)
+    status = "ready" if ready else "starting"
+    return jsonify({"status": status, "ready": ready, "uptime_seconds": int(uptime_seconds)})
+
+
+@app.route("/splash", methods=["GET"])
+def splash():
+    if _is_backend_ready():
+        return redirect(_default_redirect_after_ready())
+
+    requested_next = _sanitize_next_param(request.args.get("next") or "")
+    return render_template("splash.html", target_url=requested_next)
+
+
+def _is_backend_ready() -> bool:
+    try:
+        docker_ready = docker_service.is_engine_running()
+    except Exception:
+        docker_ready = False
+
+    overview_ready = False
+    try:
+        overview_ready = bool(docker_service.overview_cache_ts)
+    except Exception:
+        overview_ready = False
+
+    return docker_ready and overview_ready
+
+
+def _default_redirect_after_ready() -> str:
+    config = get_auth_config()
+    current_user = session.get("user")
+    if current_user and current_user == config.get("username"):
+        if not config.get("onboarding_done"):
+            return url_for("setup_account")
+        return url_for("index")
+    return url_for("login")
+
+
+def _sanitize_next_param(raw_next: str) -> str:
+    if not raw_next:
+        return _default_redirect_after_ready()
+
+    parsed = urlparse(raw_next)
+    if parsed.scheme or parsed.netloc:
+        return _default_redirect_after_ready()
+    if not raw_next.startswith("/"):
+        return _default_redirect_after_ready()
+    return raw_next
+
+
+@app.before_request
+def _enforce_splashscreen():
+    if request.path.startswith("/static/"):
+        return None
+    if request.endpoint in {"api_health", "splash"}:
+        return None
+    if request.path.startswith("/api/"):
+        return None
+    if _is_backend_ready():
+        return None
+
+    requested_path = request.full_path
+    if requested_path.endswith("?"):
+        requested_path = requested_path[:-1]
+    return redirect(url_for("splash", next=requested_path or url_for("login")))
 
 
 @app.route("/login", methods=["GET", "POST"])
