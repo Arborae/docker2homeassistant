@@ -648,14 +648,16 @@
   <script>
     const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
     stackToggles.forEach((header) => {
-      const btn = header.querySelector('.stack-toggle-btn');
+      const btn = header.querySelector('.section-toggle-btn, .stack-toggle-btn');
       const content = header.nextElementSibling;
+      const card = header.closest('.section-card');
       const chevron = btn ? btn.querySelector('.chevron') : null;
       if (!btn || !content) return;
 
       const setExpanded = (expanded) => {
         content.classList.toggle('collapsed', !expanded);
-        btn.setAttribute('aria-expanded', expanded);
+        if (card) card.classList.toggle('collapsed', !expanded);
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
         if (chevron) chevron.textContent = expanded ? '▾' : '▸';
       };
 
