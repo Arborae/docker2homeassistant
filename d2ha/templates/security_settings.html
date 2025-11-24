@@ -80,40 +80,53 @@
     header {
       background: var(--bg-primary);
       border-bottom: 1px solid var(--border);
-      padding: 16px 22px 12px;
+      padding: 16px 18px;
       position: sticky;
       top: 0;
       z-index: 10;
       box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+    .header-shell {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 12px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     nav {
-      margin-top: 10px;
       display: flex;
-      gap: 8px;
       flex-wrap: wrap;
+      gap: 8px;
       padding: 4px 2px 0;
       align-items: center;
     }
     .tab {
-      padding: 8px 14px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.04);
+      padding: 9px 14px;
+      border-radius: 10px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
       color: var(--muted);
-      font-weight: 600;
-      border: 1px solid transparent;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.08);
       transition: all 0.15s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.28);
     }
-    .tab:hover { color: var(--text); border-color: var(--border); }
+    .tab:hover { color: var(--text); border-color: var(--accent-border-soft); background: rgba(255,255,255,0.06); }
     .tab.active {
       background: var(--accent-gradient);
       color: #0c121e;
-      box-shadow: 0 6px 18px var(--accent-glow);
+      box-shadow: 0 10px 26px var(--accent-glow);
+      border-color: var(--accent-border);
     }
     .logout-link {
       margin-left: auto;
-      background: var(--accent-gradient);
-      color: #0c121e;
-      box-shadow: 0 6px 18px var(--accent-glow-soft);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.35);
+      border-color: var(--border);
     }
     .container {
       max-width: 1100px;
@@ -194,16 +207,18 @@
 </head>
 <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
   <header>
-    {% include 'partials/notifications_panel.html' %}
-    <nav>
-      <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-      <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-      <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
+    <div class="header-shell">
+      {% include 'partials/notifications_panel.html' %}
+      <nav>
+        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+      </nav>
+    </div>
   </header>
 
   <div class="container">
