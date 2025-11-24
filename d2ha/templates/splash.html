@@ -12,21 +12,19 @@
     <div class="auth-title" aria-hidden="true">D2HA</div>
 
     <div class="auth-overlay splash-overlay">
-      <div class="splash-card">
-        <div class="splash-header">
-          <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="D2HA Logo" class="splash-logo-img">
-          <p class="splash-subtitle">Preparing your dashboard...</p>
-        </div>
+      <div class="splash-header">
+        <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="D2HA Logo" class="splash-logo-img">
+        <p class="splash-subtitle">Preparing your dashboard...</p>
+      </div>
 
-        <div class="splash-progress" role="status" aria-live="polite">
-          <div class="progress-track">
-            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-            <div class="progress-shimmer"></div>
-          </div>
-          <div class="progress-info">
-            <span id="progressLabel" class="progress-label">0%</span>
-            <span class="progress-hint">Checking services & caching data</span>
-          </div>
+      <div class="splash-progress" role="status" aria-live="polite">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          <div class="progress-shimmer"></div>
+        </div>
+        <div class="progress-info">
+          <span id="progressLabel" class="progress-label">0%</span>
+          <span class="progress-hint">Checking services & caching data</span>
         </div>
       </div>
     </div>
