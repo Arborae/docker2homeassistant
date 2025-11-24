@@ -5,11 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Home</title>
   <style>
-                :root {
-      --bg: #0f1116;
-      --panel: #151924;
-      --panel-2: #1b2131;
-      --accent: #31c4ff;
+    :root {
+      --bg-base: #0b1020;
+      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0,255,255,0.05), transparent 26%),
+                    radial-gradient(circle at 84% 18%, rgba(124,255,195,0.06), transparent 24%),
+                    linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
+      --bg-card: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
+                  linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+                  rgba(17, 22, 36, 0.92);
+      --bg-card-alt: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)),
+                     rgba(26, 34, 52, 0.86);
+      --accent-primary: #31c4ff;
+      --accent: var(--accent-primary);
       --accent-2: #7cffc3;
       --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
       --accent-glow: rgba(49,196,255,0.35);
@@ -25,18 +32,26 @@
       --header-bg: linear-gradient(90deg, #0d111c, #12182a);
       --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
       --control-surface: #0f141f;
-      --auth-bg-1: #0a1024;
-      --auth-bg-2: #0f1b3f;
+      --bg: var(--bg-base);
+      --panel: var(--bg-card);
+      --panel-2: var(--bg-card-alt);
     }
 
     body.theme-light {
-      --bg: #fff7ed;
-      --panel: #ffffff;
-      --panel-2: #fff3df;
-      --accent: #f97316;
+      --bg-base: linear-gradient(135deg, #fff3e0, #ffe0c2);
+      --bg-primary: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
+                    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
+                    var(--bg-base);
+      --bg-card: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.78)),
+                  linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
+                  #ffffff;
+      --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.84)),
+                     #fff7ed;
+      --accent-primary: #f97316;
+      --accent: var(--accent-primary);
       --accent-2: #fb923c;
       --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.3);
+      --accent-glow: rgba(249,115,22,0.28);
       --accent-glow-soft: rgba(249,115,22,0.18);
       --accent-border-strong: rgba(249,115,22,0.55);
       --accent-border: rgba(249,115,22,0.42);
@@ -46,26 +61,23 @@
       --muted: #4b5563;
       --border: rgba(0,0,0,0.08);
       --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff3df, #ffe8d5);
-      --stack-header-bg: linear-gradient(135deg, #fff3df, #ffe0c2);
+      --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
+      --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
       --control-surface: #fffaf3;
-      --auth-bg-1: #ffe9d6;
-      --auth-bg-2: #ffd0a1;
+      --bg: #fff7ed;
+      --panel: var(--bg-card);
+      --panel-2: var(--bg-card-alt);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
       font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at 10% 20%, rgba(0,255,255,0.05), transparent 25%),
-                  radial-gradient(circle at 90% 10%, rgba(124,255,195,0.05), transparent 20%),
-                  var(--bg);
+      background: var(--bg-primary);
       color: var(--text);
     }
     a { color: inherit; text-decoration: none; }
     header {
-      background: radial-gradient(circle at 12% 18%, rgba(142, 232, 255, 0.06), transparent 26%),
-                  radial-gradient(circle at 84% 18%, rgba(124, 255, 195, 0.05), transparent 24%),
-                  linear-gradient(135deg, var(--auth-bg-1), var(--auth-bg-2));
+      background: var(--bg-primary);
       border-bottom: 1px solid var(--border);
       padding: 16px 18px;
       position: sticky;
@@ -75,9 +87,7 @@
       backdrop-filter: blur(6px);
     }
     .header-shell {
-      background: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
-                  linear-gradient(120deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
-                  linear-gradient(135deg, var(--auth-bg-1), var(--auth-bg-2));
+      background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 18px;
       box-shadow: var(--shadow);
@@ -125,9 +135,9 @@
       min-height: calc(100vh - 110px);
     }
     aside {
-      background: var(--panel);
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 18px;
       padding: 14px;
       box-shadow: var(--shadow);
     }
@@ -139,9 +149,9 @@
       color: var(--muted);
     }
     details {
-      background: var(--panel-2);
+      background: var(--bg-card-alt);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       margin-bottom: 10px;
       padding: 10px 12px;
       transition: border-color 0.15s ease;
@@ -180,7 +190,7 @@
       gap: 12px;
       padding: 10px 12px;
       border-radius: 10px;
-      background: rgba(255,255,255,0.03);
+      background: var(--bg-card-alt);
       border: 1px solid var(--border);
       font-size: 0.92rem;
       min-height: 56px;
@@ -201,7 +211,7 @@
       justify-content: center;
       border-radius: 8px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
+      background: var(--bg-card-alt);
       color: var(--muted);
       transition: all 0.15s ease;
     }
@@ -269,9 +279,9 @@
       gap: 16px;
     }
     .card {
-      background: var(--panel);
+      background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 18px;
       padding: 14px 16px;
       box-shadow: var(--shadow);
     }
@@ -281,9 +291,9 @@
       gap: 12px;
     }
     .metric {
-      background: var(--panel-2);
+      background: var(--bg-card-alt);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 14px;
       display: flex;
       flex-direction: column;
@@ -313,9 +323,9 @@
       gap: 12px;
     }
     .tile {
-      background: var(--panel-2);
+      background: var(--bg-card-alt);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 12px;
     }
     .tile h3 { margin: 0 0 8px; font-size: 1rem; }
