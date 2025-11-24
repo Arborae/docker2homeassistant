@@ -104,12 +104,12 @@ body.theme-light {
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.38em;
   text-transform: uppercase;
   color: #eaf6ff;
   font-weight: 800;
   text-shadow: 0 0 16px rgba(78, 201, 255, 0.48), 0 0 32px rgba(124, 255, 195, 0.32);
-  font-size: clamp(1.3rem, 2.2vw + 0.8rem, 1.9rem);
+  font-size: clamp(2rem, 3vw + 1.4rem, 3.2rem);
   opacity: 0.92;
   pointer-events: none;
 }
@@ -551,20 +551,17 @@ body.theme-light {
   position: relative;
   z-index: 1;
   text-align: center;
-  padding: 10px 10px 22px;
+  padding: 14px 10px 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
 
 .splash-logo-img {
-  width: 120px;
+  width: clamp(150px, 20vw, 190px);
   height: auto;
   filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.4));
-}
-
-.splash-title {
-  margin: 10px 0 6px;
-  letter-spacing: 0.16em;
-  font-size: clamp(1.4rem, 2vw + 1rem, 2rem);
-  text-transform: uppercase;
 }
 
 .splash-subtitle {
