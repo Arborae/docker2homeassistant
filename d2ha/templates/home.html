@@ -67,30 +67,6 @@
       z-index: 10;
       box-shadow: var(--shadow);
     }
-    .brand-line {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .brand-line h1 {
-      margin: 0;
-      font-size: 1.35rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      text-align: center;
-    }
-    .brand-pill {
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: var(--accent-surface);
-      color: var(--accent);
-      font-size: 0.8rem;
-      letter-spacing: 0.04em;
-    }
     nav {
       margin-top: 10px;
       display: flex;
@@ -381,20 +357,17 @@
 </head>
   <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
     <header>
-      <div class="brand-line">
-        <h1>D2HA</h1>
-        {% include 'partials/notifications_panel.html' %}
-      </div>
+      {% include 'partials/notifications_panel.html' %}
       <nav>
         <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
         <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
         <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-      <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-      <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-      <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-      <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-    </nav>
-  </header>
+        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+      </nav>
+    </header>
 
   {% include 'partials/flash_messages.html' %}
 
