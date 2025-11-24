@@ -456,13 +456,37 @@
     let refreshTimer = null;
     let autoScanEnabled = !(window.d2haSettings?.performanceMode);
 
-    function toggleStack(card) {
-      card.classList.toggle('collapsed');
-    }
+    const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
+    stackToggles.forEach((header) => {
+      const btn = header.querySelector('.section-toggle-btn, .stack-toggle-btn');
+      const content = header.nextElementSibling;
+      const card = header.closest('.section-card');
+      const chevron = btn ? btn.querySelector('.chevron') : null;
+      if (!btn || !content) return;
 
-    document.querySelectorAll('.stack-card').forEach(card => {
-      const header = card.querySelector('.stack-header');
-      header.addEventListener('click', () => toggleStack(card));
+      const setExpanded = (expanded) => {
+        content.classList.toggle('collapsed', !expanded);
+        if (card) card.classList.toggle('collapsed', !expanded);
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        if (chevron) chevron.textContent = expanded ? '▾' : '▸';
+      };
+
+      setExpanded(true);
+
+      const toggle = () => {
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        setExpanded(!isExpanded);
+      };
+
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggle();
+      });
+
+      header.addEventListener('click', (event) => {
+        if (event.target === btn || btn.contains(event.target)) return;
+        toggle();
+      });
     });
 
     function applyStatus(row, state) {
