@@ -73,6 +73,120 @@
     * { box-sizing: border-box; }
     body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-primary); color: var(--text); }
     a { color: inherit; text-decoration: none; }
+    :root {
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --shadow-strong: 0 16px 40px rgba(0,0,0,0.45);
+      --shadow-soft: 0 10px 28px rgba(0,0,0,0.32);
+    }
+
+    .section-summary-bar {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        linear-gradient(120deg, var(--accent-surface), rgba(124, 255, 195, 0.06)),
+        var(--panel);
+      border: 1px solid var(--accent-border-soft);
+      box-shadow: var(--shadow-strong);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .section-summary-bar h3 { margin: 0; text-transform: uppercase; letter-spacing: 0.08em; font-size: 1rem; }
+    .section-summary-bar .meta { color: var(--muted); font-weight: 700; letter-spacing: 0.01em; }
+
+    .section-card {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+        linear-gradient(140deg, var(--accent-surface), rgba(124, 255, 195, 0.04)),
+        var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-strong);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .section-card + .section-card { margin-top: 12px; }
+
+    .section-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--stack-header-bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-card-header .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-card-body { padding: 12px 14px 16px; background: var(--panel-2); }
+    .section-card-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    .section-card-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-surface);
+      color: var(--accent);
+      border: 1px solid var(--accent-border);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .section-toggle { cursor: pointer; }
+    .section-toggle-btn {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .section-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .section-toggle-btn .chevron { display: inline-block; width: 10px; text-align: center; }
+    .section-card-body.collapsed { display: none; }
+
+    .btn-primary-glow {
+      background: var(--accent-gradient);
+      border: 1px solid var(--accent-border-strong);
+      color: #0b111c;
+      border-radius: 14px;
+      padding: 10px 16px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 10px 26px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.18);
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary-glow:hover { transform: translateY(-1px); box-shadow: 0 12px 30px var(--accent-glow); }
+
+    .btn-chip {
+      border: 1px solid var(--accent-border);
+      background: rgba(255,255,255,0.04);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px var(--accent-glow-soft);
+      transition: all 0.15s ease;
+    }
+    .btn-chip:hover { background: var(--accent-surface); color: var(--text); }
     header {
       background: var(--bg-primary);
       border-bottom:1px solid var(--border);
@@ -188,32 +302,36 @@
   {% include 'partials/flash_messages.html' %}
 
   <main>
-    <div class="card">
-      {% set total = stacks | map(attribute='containers') | map('length') | sum %}
-      <div class="muted">{{ total }} container analizzati · {{ summary.images }} immagini installate</div>
-      <div class="performance-hint" id="updates-performance-hint">
-        <div>
-          <span class="hint-title">Modalità prestazioni attiva</span>
-          <p class="small">Per ridurre il carico, la scansione automatica è disattivata. Avvia manualmente quando serve.</p>
-        </div>
-        <button class="btn btn-ghost" type="button" id="updates-scan-btn">Scansiona aggiornamenti</button>
+    {% set total = stacks | map(attribute='containers') | map('length') | sum %}
+    <section class="section-summary-bar">
+      <div>
+        <h3>Controllo aggiornamenti</h3>
+        <div class="meta">{{ total }} container analizzati · {{ summary.images }} immagini installate</div>
       </div>
-    </div>
+      <div class="section-card-actions">
+        <div class="performance-hint" id="updates-performance-hint">
+          <div>
+            <span class="hint-title">Modalità prestazioni attiva</span>
+            <p class="small">Per ridurre il carico, la scansione automatica è disattivata. Avvia manualmente quando serve.</p>
+          </div>
+          <button class="btn-chip" type="button" id="updates-scan-btn">Scansiona aggiornamenti</button>
+        </div>
+      </div>
+    </section>
     {% for stack in stacks %}
-      <section class="card stack-card" data-stack="{{ stack.name }}">
-        <div class="stack-header stack-toggle" data-stack-toggle>
-          <div class="stack-left">
-            <button class="stack-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
+      <section class="section-card" data-stack="{{ stack.name }}">
+        <div class="section-card-header section-toggle" data-stack-toggle>
+          <div class="title">
+            <button class="section-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
               <span class="chevron">▾</span>
             </button>
-            <div class="stack-heading">
-              <div class="stack-title">{{ ('Senza stack' if stack.name == '_no_stack' else stack.name) | upper }}</div>
-              <div class="small">{{ stack.containers|length }} container</div>
-            </div>
+            <span class="stack-title">{{ ('Senza stack' if stack.name == '_no_stack' else stack.name) | upper }}</span>
           </div>
-          <div class="stack-chip">{{ stack.containers|length }} container</div>
+          <div class="section-card-actions">
+            <div class="section-card-badge">{{ stack.containers|length }} container</div>
+          </div>
         </div>
-        <div class="stack-body">
+        <div class="section-card-body stack-body">
           <table>
             <colgroup>
               <col class="col-name">
@@ -298,7 +416,7 @@
                   <td class="actions-cell" data-label="Azioni">
                     <div class="actions">
                       <form class="full-update-form" data-container-name="{{ c.name }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
-                        <button class="btn btn-full-update" type="submit">Aggiorna immagine</button>
+                        <button class="btn-primary-glow" type="submit">Aggiorna immagine</button>
                       </form>
                       <div class="small">ID: <code>{{ c.id }}</code></div>
                     </div>

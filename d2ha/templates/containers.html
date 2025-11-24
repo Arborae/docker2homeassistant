@@ -73,6 +73,133 @@
     * { box-sizing: border-box; }
     body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-primary); color: var(--text); }
     a { color: inherit; text-decoration: none; }
+    :root {
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --shadow-strong: 0 16px 40px rgba(0,0,0,0.45);
+      --shadow-soft: 0 10px 28px rgba(0,0,0,0.32);
+    }
+
+    .section-summary-bar {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        linear-gradient(120deg, var(--accent-surface), rgba(124, 255, 195, 0.06)),
+        var(--panel);
+      border: 1px solid var(--accent-border-soft);
+      box-shadow: var(--shadow-strong);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-summary-bar h3 {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 1rem;
+    }
+
+    .section-summary-bar .meta { color: var(--muted); font-weight: 700; letter-spacing: 0.01em; }
+
+    .section-card {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
+        linear-gradient(140deg, var(--accent-surface), rgba(124, 255, 195, 0.04)),
+        var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-strong);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .section-card + .section-card { margin-top: 12px; }
+
+    .section-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--stack-header-bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-card-header .title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-card-body { padding: 12px 14px 16px; background: var(--panel-2); }
+
+    .section-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .section-card-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-surface);
+      color: var(--accent);
+      border: 1px solid var(--accent-border);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .section-toggle { cursor: pointer; }
+    .section-toggle-btn {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .section-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .section-toggle-btn .chevron { display: inline-block; width: 10px; text-align: center; }
+    .section-card-body.collapsed { display: none; }
+
+    .btn-primary-glow {
+      background: var(--accent-gradient);
+      border: 1px solid var(--accent-border-strong);
+      color: #0b111c;
+      border-radius: 14px;
+      padding: 10px 16px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      cursor: pointer;
+      box-shadow: 0 10px 26px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.18);
+      transition: transform 0.1s ease, box-shadow 0.2s ease;
+    }
+    .btn-primary-glow:hover { transform: translateY(-1px); box-shadow: 0 12px 30px var(--accent-glow); }
+
+    .btn-chip {
+      border: 1px solid var(--accent-border);
+      background: rgba(255,255,255,0.04);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px var(--accent-glow-soft);
+      transition: all 0.15s ease;
+    }
+    .btn-chip:hover { background: var(--accent-surface); color: var(--text); }
     header {
       background: var(--bg-primary);
       border-bottom:1px solid var(--border);
@@ -239,22 +366,27 @@
   {% include 'partials/flash_messages.html' %}
 
   <main>
-    <div class="card">
-      <div class="meta">{{ summary.running }} container attivi · {{ summary.total_containers }} totali · {{ summary.images }} immagini installate</div>
-    </div>
+    <section class="section-summary-bar">
+      <div>
+        <h3>Stato container</h3>
+        <div class="meta">{{ summary.running }} container attivi · {{ summary.total_containers }} totali · {{ summary.images }} immagini installate</div>
+      </div>
+    </section>
 
     {% for stack in stacks %}
-      <section class="card stack-card">
-        <div class="stack-header stack-toggle" data-stack-toggle>
-          <div class="stack-title">
-            <button class="stack-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
+      <section class="section-card">
+        <div class="section-card-header section-toggle" data-stack-toggle>
+          <div class="title">
+            <button class="section-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
               <span class="chevron">▾</span>
             </button>
             <span class="stack-name">{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</span>
           </div>
-          <div class="stack-chip">{{ stack.containers|length }} container</div>
+          <div class="section-card-actions">
+            <div class="section-card-badge">{{ stack.containers|length }} container</div>
+          </div>
         </div>
-        <div class="stack-content">
+        <div class="section-card-body stack-content">
           <table>
             <colgroup>
               <col class="col-select">
@@ -342,8 +474,8 @@
                   </td>
                   <td class="actions-cell" data-label="Azioni">
                     <div class="actions">
-                      <button class="btn btn-strong" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
-                      <button class="btn btn-ghost" type="button" data-open-modal data-tab="logs" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
+                      <button class="btn-primary-glow" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
+                      <button class="btn-primary-glow" type="button" data-open-modal data-tab="logs" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
                     </div>
                   </td>
                 </tr>
@@ -358,10 +490,10 @@
   <div class="bulk-bar" id="bulk-bar" aria-hidden="true">
     <div class="bulk-summary"><span id="bulk-count">0</span> container selezionati</div>
     <div class="bulk-actions">
-      <button class="btn btn-play" type="button" data-bulk-action="start">Avvia</button>
-      <button class="btn btn-stop" type="button" data-bulk-action="stop">Ferma</button>
-      <button class="btn btn-restart" type="button" data-bulk-action="restart">Riavvia</button>
-      <button class="btn btn-delete" type="button" data-bulk-action="delete">Elimina</button>
+      <button class="btn-chip" type="button" data-bulk-action="start">Avvia</button>
+      <button class="btn-chip" type="button" data-bulk-action="stop">Ferma</button>
+      <button class="btn-chip" type="button" data-bulk-action="restart">Riavvia</button>
+      <button class="btn-chip" type="button" data-bulk-action="delete">Elimina</button>
     </div>
   </div>
 
