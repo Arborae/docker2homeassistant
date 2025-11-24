@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA • Loading</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+</head>
+<body class="theme-{{ get_current_theme() }}">
+  <div class="auth-page splash-page">
+    <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
+    <div class="auth-title" aria-hidden="true">D2HA</div>
+    <div class="auth-logo" aria-hidden="true">
+      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="D2HA Logo">
+    </div>
+
+    <div class="auth-overlay splash-overlay">
+      <div class="splash-card">
+        <div class="splash-header">
+          <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="D2HA Logo" class="splash-logo-img">
+          <h1 class="splash-title">D2HA</h1>
+          <p class="splash-subtitle">Preparing your dashboard...</p>
+        </div>
+
+        <div class="splash-progress" role="status" aria-live="polite">
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            <div class="progress-shimmer"></div>
+          </div>
+          <div class="progress-info">
+            <span id="progressLabel" class="progress-label">0%</span>
+            <span class="progress-hint">Checking services & caching data</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>window.d2haSplashConfig = { targetUrl: "{{ target_url }}", healthUrl: "{{ url_for('api_health') }}" };</script>
+  <script src="{{ url_for('static', filename='js/auth_background.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/splash.js') }}"></script>
+</body>
+</html>
