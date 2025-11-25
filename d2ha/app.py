@@ -1100,6 +1100,7 @@ def container_action(container_id, action):
     elif action == "delete":
         docker_service.remove_container(container_id)
 
+    docker_service.refresh_overview_cache()
     _publish_current_state()
 
     return redirect(url_for("containers_view"))
@@ -1109,6 +1110,7 @@ def container_action(container_id, action):
 @onboarding_required
 def container_full_update(container_id):
     docker_service.recreate_container_with_latest_image(container_id)
+    docker_service.refresh_overview_cache()
     _publish_current_state()
     return redirect(url_for("updates"))
 
