@@ -1159,6 +1159,19 @@ class MqttManager:
             self.mqtt_client = None
             self.logger.exception("MQTT connection failed")
 
+    def is_connected(self) -> bool:
+        if self.mqtt_client is None:
+            return False
+
+        checker = getattr(self.mqtt_client, "is_connected", None)
+        if callable(checker):
+            try:
+                return bool(checker())
+            except Exception:
+                return True
+
+        return True
+
     def _clear_state_topics(self, slug: str):
         state_topic = f"{self.base_topic}/{slug}/state"
         attr_topic = f"{self.base_topic}/{slug}/attributes"

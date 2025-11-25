@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Autodiscovery</title>
+  <title>D2HA – MQTT</title>
   <style>
     :root {
       --bg-base: #0b1020;
@@ -79,6 +79,73 @@
       --shadow-strong: 0 16px 40px rgba(0,0,0,0.45);
       --shadow-soft: 0 10px 28px rgba(0,0,0,0.32);
     }
+
+    .mqtt-status-bar {
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)),
+        linear-gradient(120deg, var(--accent-surface), rgba(124, 255, 195, 0.08)),
+        var(--panel);
+      border: 1px solid var(--accent-border-soft);
+      box-shadow: var(--shadow-strong);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mqtt-status-bar .meta {
+      color: var(--muted);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .mqtt-status-bar .title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .mqtt-status-bar h3 {
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 1rem;
+    }
+
+    .status-chips {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-chip {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--accent-border-soft);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .status-chip .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 12px rgba(0,0,0,0.4);
+    }
+
+    .status-chip.success .dot { background: #22c55e; box-shadow: 0 0 16px rgba(34,197,94,0.65); }
+    .status-chip.danger .dot { background: #ef4444; box-shadow: 0 0 16px rgba(239,68,68,0.65); }
 
     .section-summary-bar {
       background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
@@ -308,6 +375,29 @@
   {% include 'partials/flash_messages.html' %}
 
   <main>
+    <section class="mqtt-status-bar">
+      <div class="title">
+        <h3>MQTT</h3>
+        <div class="meta">
+          {% if mqtt_status.broker %}
+            Broker {{ mqtt_status.broker }}{% if mqtt_status.port %}:{{ mqtt_status.port }}{% endif %}
+          {% else %}
+            Nessun broker configurato
+          {% endif %}
+        </div>
+      </div>
+      <div class="status-chips">
+        <div class="status-chip {{ 'success' if mqtt_status.connected else 'danger' }}">
+          <span class="dot" aria-hidden="true"></span>
+          <span>{{ 'Connesso' if mqtt_status.connected else 'Non connesso' }}</span>
+        </div>
+        <div class="status-chip">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Sensori condivisi: {{ mqtt_status.shared_entities }} / {{ mqtt_status.total_entities }}</span>
+        </div>
+      </div>
+    </section>
+
     <section class="section-summary-bar">
       <div>
         <h3>Entità MQTT esposte</h3>
