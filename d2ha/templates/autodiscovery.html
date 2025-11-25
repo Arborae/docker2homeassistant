@@ -471,7 +471,7 @@
               </thead>
               <tbody>
                 {% for c in containers %}
-                  {% set pref = preferences.get(c.stable_id, {'state': True, 'actions': {}, 'sensors': {}}) %}
+                  {% set pref = preferences.get(c.stable_id, {'state': True, 'actions': {}}) %}
                   <tr>
                     <td data-label="Container">
                       <div class="name">{{ c.name }}</div>
@@ -485,14 +485,6 @@
                           <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
                           <span class="checkbox-label">Stato</span>
                         </label>
-                        {% for sensor_key, sensor_meta in sensors.items() %}
-                          <label class="checkbox-item" title="{{ sensor_meta.label }} per {{ c.name }}">
-                            <input type="checkbox" name="{{ c.stable_id }}_{{ sensor_key }}" aria-label="{{ sensor_meta.label }} per {{ c.name }}" {% if pref.sensors.get(sensor_key, True) %}checked{% endif %} />
-                            <span class="checkbox-label">{{ sensor_meta.label }}</span>
-                          </label>
-                        {% endfor %}
-                      </div>
-                      <div class="checkbox-row">
                         {% for action in actions %}
                           <label class="checkbox-item" title="{{ action.replace('_', ' ')|title }} per {{ c.name }}">
                             <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
