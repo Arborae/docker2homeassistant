@@ -514,12 +514,16 @@ def apply_autodiscovery_default_choice(enable_all: bool) -> None:
     actions_pref = {
         action: enable_all for action in AutodiscoveryPreferences.AVAILABLE_ACTIONS
     }
+    sensors_pref = {
+        key: enable_all
+        for key in AutodiscoveryPreferences.AVAILABLE_SENSORS.keys()
+    }
     for container in containers_info:
         stable_id = container.get("stable_id")
         if not stable_id:
             continue
         autodiscovery_preferences.set_preferences(
-            stable_id, enable_all, actions_pref
+            stable_id, enable_all, actions_pref, sensors_pref
         )
         stable_ids.append(stable_id)
 
@@ -1036,7 +1040,13 @@ def autodiscovery_view():
                 action: request.form.get(f"{stable_id}_{action}") == "on"
                 for action in AutodiscoveryPreferences.AVAILABLE_ACTIONS
             }
-            autodiscovery_preferences.set_preferences(stable_id, state_enabled, actions)
+            sensors = {
+                key: request.form.get(f"{stable_id}_{key}") == "on"
+                for key in AutodiscoveryPreferences.AVAILABLE_SENSORS.keys()
+            }
+            autodiscovery_preferences.set_preferences(
+                stable_id, state_enabled, actions, sensors
+            )
 
         autodiscovery_preferences.prune(stable_ids)
         _publish_current_state()
@@ -1051,13 +1061,21 @@ def autodiscovery_view():
     stacks, summary = _build_home_context()
     notifications = _build_notifications_summary()
 
-    shared_entities = sum(1 for pref in pref_map.values() if pref.get("state", True))
+    available_sensors = tuple(AutodiscoveryPreferences.AVAILABLE_SENSORS.keys())
+    shared_entities = 0
+    for pref in pref_map.values():
+        sensors_pref = pref.get("sensors", {})
+        shared_entities += int(pref.get("state", True))
+        shared_entities += sum(
+            1 for key in available_sensors if sensors_pref.get(key, True)
+        )
     mqtt_status = {
         "connected": mqtt_manager.is_connected(),
         "broker": mqtt_manager.broker,
         "port": mqtt_manager.port,
         "shared_entities": shared_entities + 1,
-        "total_entities": len(containers_info) + 1,
+        "total_entities": (len(containers_info) * (1 + len(available_sensors)))
+        + 1,
     }
 
     return render_template(
@@ -1065,6 +1083,7 @@ def autodiscovery_view():
         stack_map=stack_map,
         preferences=pref_map,
         actions=AutodiscoveryPreferences.AVAILABLE_ACTIONS,
+        sensors=AutodiscoveryPreferences.AVAILABLE_SENSORS,
         summary=summary,
         notifications=notifications,
         active_page="autodiscovery",
