@@ -1256,9 +1256,9 @@ class MqttManager:
             f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_status/config"
         )
 
-            self._publish(sensor_config_topic, "", qos=0, retain=True)
-            self._publish(state_topic, "", qos=0, retain=True)
-            self._publish(attr_topic, "", qos=0, retain=True)
+        self._publish(sensor_config_topic, "", qos=0, retain=True)
+        self._publish(state_topic, "", qos=0, retain=True)
+        self._publish(attr_topic, "", qos=0, retain=True)
 
     def _clear_sensor_topics(self, slug: str, key: str):
         state_topic = f"{self.base_topic}/{slug}/{key}"
