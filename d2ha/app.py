@@ -1006,6 +1006,12 @@ def autodiscovery_view():
     stable_ids = [c.get("stable_id", "") for c in containers_info]
 
     if request.method == "POST":
+        intent = request.form.get("intent")
+        if intent == "republish_autodiscovery":
+            _publish_current_state()
+            flash("Autodiscovery e stati MQTT ripubblicati", "success")
+            return redirect(url_for("autodiscovery_view"))
+
         for c in containers_info:
             stable_id = c.get("stable_id")
             if not stable_id:
@@ -1028,6 +1034,21 @@ def autodiscovery_view():
     stack_map = {k: stack_map[k] for k in sorted(stack_map.keys())}
 
     pref_map = autodiscovery_preferences.build_map_for(stable_ids)
+    mqtt_status = mqtt_manager.get_status_snapshot()
+    payloads = mqtt_status.get("payloads") or {}
+    payload_stack_map = {}
+    for entry in payloads.get("containers", []):
+        payload_stack_map.setdefault(entry.get("stack", "_no_stack"), []).append(entry)
+
+    payload_stack_map = {
+        k: sorted(v, key=lambda x: x.get("name", "")) for k, v in payload_stack_map.items()
+    }
+
+    last_publish_ts = mqtt_status.get("last_publish_ts")
+    last_publish_ago = None
+    if last_publish_ts:
+        last_publish_ago = format_timedelta(max(0, time.time() - float(last_publish_ts)))
+
     stacks, summary = _build_home_context()
     notifications = _build_notifications_summary()
 
@@ -1036,6 +1057,10 @@ def autodiscovery_view():
         stack_map=stack_map,
         preferences=pref_map,
         actions=AutodiscoveryPreferences.AVAILABLE_ACTIONS,
+        mqtt_status=mqtt_status,
+        mqtt_payloads=payload_stack_map,
+        docker_payload=payloads.get("docker_status"),
+        last_publish_ago=last_publish_ago,
         summary=summary,
         notifications=notifications,
         active_page="autodiscovery",
