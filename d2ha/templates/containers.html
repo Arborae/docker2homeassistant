@@ -494,12 +494,6 @@
                   </td>
                   <td class="actions-cell" data-label="Azioni">
                     <div class="actions">
-                      <button class="btn btn-play" type="button" data-action-btn data-action="start" aria-label="Avvia {{ c.name }}">▶</button>
-                      <button class="btn btn-stop" type="button" data-action-btn data-action="stop" aria-label="Ferma {{ c.name }}">■</button>
-                      <button class="btn btn-pause" type="button" data-action-btn data-action="pause" aria-label="Metti in pausa {{ c.name }}">⏸</button>
-                      <button class="btn btn-ghost" type="button" data-action-btn data-action="unpause" aria-label="Riprendi {{ c.name }}">⏯</button>
-                      <button class="btn btn-restart" type="button" data-action-btn data-action="restart" aria-label="Riavvia {{ c.name }}">⟲</button>
-                      <button class="btn btn-delete" type="button" data-action-btn data-action="delete" aria-label="Elimina {{ c.name }}">✕</button>
                       <button class="btn-primary-glow" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
                       <button class="btn-primary-glow" type="button" data-open-modal data-tab="logs" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
                     </div>
@@ -518,6 +512,8 @@
     <div class="bulk-actions">
       <button class="btn-chip" type="button" data-bulk-action="start">Avvia</button>
       <button class="btn-chip" type="button" data-bulk-action="stop">Ferma</button>
+      <button class="btn-chip" type="button" data-bulk-action="pause">Pausa</button>
+      <button class="btn-chip" type="button" data-bulk-action="unpause">Riprendi</button>
       <button class="btn-chip" type="button" data-bulk-action="restart">Riavvia</button>
       <button class="btn-chip" type="button" data-bulk-action="delete">Elimina</button>
     </div>
