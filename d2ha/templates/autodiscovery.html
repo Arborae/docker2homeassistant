@@ -480,17 +480,28 @@
                     <td data-label="Immagine">{{ c.image }}</td>
                     <td data-label="Stato">{{ c.status }}</td>
                     <td data-label="Preferenze" class="checkbox align-center">
-                      <div class="checkbox-row">
-                        <label class="checkbox-item" title="Autodiscovery stato per {{ c.name }}">
-                          <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
-                          <span class="checkbox-label">Stato</span>
-                        </label>
-                        {% for action in actions %}
-                          <label class="checkbox-item" title="{{ action.replace('_', ' ')|title }} per {{ c.name }}">
-                            <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
-                            <span class="checkbox-label">{{ action.replace('_', ' ')|title }}</span>
+                      <div class="checkbox-group">
+                        <div class="checkbox-row">
+                          <span class="checkbox-label"><strong>Sensori</strong></span>
+                          {% for sensor in sensors %}
+                            <label class="checkbox-item" title="{{ sensor.replace('_', ' ')|title }} per {{ c.name }}">
+                              <input type="checkbox" name="{{ c.stable_id }}_{{ sensor }}" aria-label="{{ sensor.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.sensors.get(sensor, True) %}checked{% endif %} />
+                              <span class="checkbox-label">{{ sensor.replace('_', ' ')|title }}</span>
+                            </label>
+                          {% endfor %}
+                        </div>
+                        <div class="checkbox-row">
+                          <label class="checkbox-item" title="Autodiscovery stato per {{ c.name }}">
+                            <input type="checkbox" name="{{ c.stable_id }}_state" aria-label="Autodiscovery stato per {{ c.name }}" {% if pref.state %}checked{% endif %} />
+                            <span class="checkbox-label">Stato</span>
                           </label>
-                        {% endfor %}
+                          {% for action in actions %}
+                            <label class="checkbox-item" title="{{ action.replace('_', ' ')|title }} per {{ c.name }}">
+                              <input type="checkbox" name="{{ c.stable_id }}_{{ action }}" aria-label="{{ action.replace('_', ' ')|title }} per {{ c.name }}" {% if pref.actions.get(action, True) %}checked{% endif %} />
+                              <span class="checkbox-label">{{ action.replace('_', ' ')|title }}</span>
+                            </label>
+                          {% endfor %}
+                        </div>
                       </div>
                     </td>
                   </tr>

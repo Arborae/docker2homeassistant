@@ -81,6 +81,15 @@ class AutodiscoveryPreferences:
         "full_update",
     )
 
+    AVAILABLE_SENSORS = (
+        "cpu",
+        "ram",
+        "net_rx",
+        "net_tx",
+        "installed_version",
+        "remote_version",
+    )
+
     def __init__(self, path: str):
         self.path = path
         self._lock = threading.Lock()
@@ -110,7 +119,18 @@ class AutodiscoveryPreferences:
             action: bool(actions_raw.get(action, True))
             for action in self.AVAILABLE_ACTIONS
         }
-        return {"state": bool(entry.get("state", True)), "actions": actions}
+
+        sensors_raw = entry.get("sensors") or {}
+        sensors = {
+            sensor: bool(sensors_raw.get(sensor, True))
+            for sensor in self.AVAILABLE_SENSORS
+        }
+
+        return {
+            "state": bool(entry.get("state", True)),
+            "actions": actions,
+            "sensors": sensors,
+        }
 
     def _save(self) -> None:
         dir_path = os.path.dirname(self.path)
@@ -126,9 +146,15 @@ class AutodiscoveryPreferences:
         return {sid: self.get_with_defaults(sid) for sid in stable_ids}
 
     def set_preferences(
-        self, stable_id: str, state_enabled: bool, actions: Dict[str, Any]
+        self,
+        stable_id: str,
+        state_enabled: bool,
+        actions: Dict[str, Any],
+        sensors: Dict[str, Any],
     ) -> Dict[str, Any]:
-        pref = self._apply_defaults({"state": state_enabled, "actions": actions})
+        pref = self._apply_defaults(
+            {"state": state_enabled, "actions": actions, "sensors": sensors}
+        )
         with self._lock:
             self._data[stable_id] = pref
             self._save()
@@ -350,7 +376,7 @@ class DockerService:
         try:
             stats = self.docker_api.stats(container.id, stream=False)
         except Exception:
-            return 0.0, 0, 0.0
+            return 0.0, 0, 0.0, 0, 0
 
         cpu_percent = self._calc_cpu_percent(stats)
 
@@ -706,6 +732,8 @@ class DockerService:
                 except Exception:
                     pass
 
+            cpu_percent, mem_usage, mem_percent, net_rx, net_tx = self.get_container_stats(c)
+
             stack_name = self._get_stack_name(c)
             installed_info = self._get_installed_image_info(c)
             image_ref = installed_info["image_ref"]
@@ -754,6 +782,11 @@ class DockerService:
                     "changelog": changelog,
                     "breaking_changes": breaking,
                     "ports": ports,
+                    "cpu_percent": round(cpu_percent, 1),
+                    "mem_usage_bytes": mem_usage,
+                    "mem_percent": round(mem_percent, 1),
+                    "net_rx_bytes": net_rx,
+                    "net_tx_bytes": net_tx,
                 }
             )
 
@@ -1223,9 +1256,17 @@ class MqttManager:
             f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_status/config"
         )
 
+            self._publish(sensor_config_topic, "", qos=0, retain=True)
+            self._publish(state_topic, "", qos=0, retain=True)
+            self._publish(attr_topic, "", qos=0, retain=True)
+
+    def _clear_sensor_topics(self, slug: str, key: str):
+        state_topic = f"{self.base_topic}/{slug}/{key}"
+        sensor_config_topic = (
+            f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_{key}/config"
+        )
         self._publish(sensor_config_topic, "", qos=0, retain=True)
         self._publish(state_topic, "", qos=0, retain=True)
-        self._publish(attr_topic, "", qos=0, retain=True)
 
     def _clear_action_button(self, slug: str, action: str):
         btn_config_topic = (
@@ -1279,6 +1320,89 @@ class MqttManager:
             self._publish(attr_topic, json.dumps(attrs), qos=0, retain=True)
         else:
             self._clear_state_topics(slug)
+
+        sensors_pref = preferences.get("sensors", {})
+
+        sensor_definitions = [
+            (
+                "cpu",
+                {
+                    "name": f"{c['name']} CPU",
+                    "unit_of_measurement": "%",
+                    "state_class": "measurement",
+                    "icon": "mdi:cpu-64-bit",
+                    "value": round(c.get("cpu_percent") or 0, 1),
+                },
+            ),
+            (
+                "ram",
+                {
+                    "name": f"{c['name']} RAM",
+                    "unit_of_measurement": "B",
+                    "device_class": "data_size",
+                    "state_class": "measurement",
+                    "icon": "mdi:memory",
+                    "value": int(c.get("mem_usage_bytes") or 0),
+                },
+            ),
+            (
+                "net_rx",
+                {
+                    "name": f"{c['name']} Dati ricevuti",
+                    "unit_of_measurement": "B",
+                    "device_class": "data_size",
+                    "state_class": "total_increasing",
+                    "icon": "mdi:arrow-down-bold-box",
+                    "value": int(c.get("net_rx_bytes") or 0),
+                },
+            ),
+            (
+                "net_tx",
+                {
+                    "name": f"{c['name']} Dati trasmessi",
+                    "unit_of_measurement": "B",
+                    "device_class": "data_size",
+                    "state_class": "total_increasing",
+                    "icon": "mdi:arrow-up-bold-box",
+                    "value": int(c.get("net_tx_bytes") or 0),
+                },
+            ),
+            (
+                "installed_version",
+                {
+                    "name": f"{c['name']} Versione installata",
+                    "icon": "mdi:tag",
+                    "value": c.get("installed_version") or "",
+                },
+            ),
+            (
+                "remote_version",
+                {
+                    "name": f"{c['name']} Ultima versione",
+                    "icon": "mdi:update",
+                    "value": c.get("remote_version") or "",
+                },
+            ),
+        ]
+
+        for key, definition in sensor_definitions:
+            sensor_topic = f"{self.base_topic}/{slug}/{key}"
+            config_topic = (
+                f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_{key}/config"
+            )
+
+            if sensors_pref.get(key, True):
+                payload = {
+                    "name": definition.get("name"),
+                    "state_topic": sensor_topic,
+                    "unique_id": f"d2ha_{stable_id}_{key}",
+                    "device": device_info,
+                    **{k: v for k, v in definition.items() if k != "value"},
+                }
+                self._publish(config_topic, json.dumps(payload), qos=0, retain=True)
+                self._publish(sensor_topic, definition.get("value", ""), qos=0, retain=True)
+            else:
+                self._clear_sensor_topics(slug, key)
 
         actions = [
             ("start", "Start"),
@@ -1350,6 +1474,14 @@ class MqttManager:
                 self.logger.exception(
                     "Failed to clear MQTT config/state for stale slug %s", stale_slug
                 )
+
+            for sensor_key in AutodiscoveryPreferences.AVAILABLE_SENSORS:
+                try:
+                    self._clear_sensor_topics(stale_slug, sensor_key)
+                except Exception:
+                    self.logger.exception(
+                        "Failed to clear MQTT sensor config for stale slug %s", stale_slug
+                    )
 
             for action in (
                 "start",
