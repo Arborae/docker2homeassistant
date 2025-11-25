@@ -1061,6 +1061,18 @@ def autodiscovery_view():
     )
 
 
+@app.route("/api/mqtt/publishes", methods=["GET"])
+@onboarding_required
+def api_mqtt_publishes():
+    try:
+        limit = int(request.args.get("limit", "200"))
+    except (TypeError, ValueError):
+        limit = 200
+
+    limit = max(1, min(limit, 500))
+    return jsonify({"entries": mqtt_manager.get_publish_history(limit)})
+
+
 @app.route("/api/overview", methods=["GET"])
 @onboarding_required
 def api_overview():

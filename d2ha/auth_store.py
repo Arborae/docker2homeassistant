@@ -5,7 +5,10 @@ from typing import Any, Dict
 
 from werkzeug.security import generate_password_hash
 
-AUTH_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "auth_config.json")
+AUTH_CONFIG_PATH = os.environ.get(
+    "D2HA_AUTH_CONFIG_PATH",
+    os.path.join(os.path.dirname(__file__), "auth_config.json"),
+)
 
 
 _DEFAULT_CONFIG = {
@@ -25,6 +28,12 @@ def _now_ts() -> str:
     return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
 
+def _ensure_parent_dir(path: str) -> None:
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+
+
 def ensure_default_auth_config() -> Dict[str, Any]:
     if not os.path.exists(AUTH_CONFIG_PATH):
         username = os.environ.get("D2HA_ADMIN_USERNAME", "admin")
@@ -36,6 +45,7 @@ def ensure_default_auth_config() -> Dict[str, Any]:
             "updated_at": timestamp,
         }
         try:
+            _ensure_parent_dir(AUTH_CONFIG_PATH)
             with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
                 json.dump(default_config, fp, indent=2)
             try:
@@ -58,6 +68,7 @@ def _apply_defaults(config: Dict[str, Any]) -> Dict[str, Any]:
     if changed:
         # avoid circular import by writing directly
         try:
+            _ensure_parent_dir(AUTH_CONFIG_PATH)
             with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
                 config.setdefault("created_at", _now_ts())
                 config["updated_at"] = _now_ts()
@@ -84,6 +95,7 @@ def save_auth_config(config: Dict[str, Any]) -> None:
     config = dict(config)
     config.setdefault("created_at", _now_ts())
     config["updated_at"] = _now_ts()
+    _ensure_parent_dir(AUTH_CONFIG_PATH)
     with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
         json.dump(config, fp, indent=2)
     try:

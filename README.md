@@ -170,7 +170,7 @@ Popup di dettaglio con:
   - credenziali e 2FA dalla pagina Sicurezza;
   - Modalità sicura / prestazioni tramite l'icona a forma di ingranaggio nell'header;
   - entità MQTT dalla pagina Autodiscovery.
-- La configurazione di sicurezza viene salvata nel file JSON `d2ha/auth_config.json` (creato automaticamente con permessi ristretti al primo avvio).
+- La configurazione di sicurezza viene salvata nel file JSON `auth_config.json` (creato automaticamente con permessi ristretti al primo avvio). Per conservarla tra i rebuild puoi puntare il percorso con `D2HA_AUTH_CONFIG_PATH` (default `/app/data/auth_config.json`) e montare il volume `./data:/app/data` nel `docker-compose.yml`.
 - Variabili utili:
   - `D2HA_SECRET_KEY` per impostare la chiave di sessione Flask (obbligatorio in produzione);
   - `D2HA_ADMIN_USERNAME` per personalizzare l'username iniziale prima del primo avvio.
@@ -235,6 +235,12 @@ All’interno della cartella `d2ha/` (sotto `docker2homeassistant/`):
 ```bash
 docker compose up --build -d
 ```
+
+Per conservare credenziali e preferenze MQTT tra i rebuild:
+
+- copia `.env.example` in `.env` e configura `D2HA_AUTH_CONFIG_PATH` (default `/app/data/auth_config.json`) insieme alle variabili MQTT;
+- il `docker-compose.yml` monta `./data:/app/data` così il file `auth_config.json` resta persistente sull'host;
+- avvia con `docker compose --env-file .env up -d` per usare i valori statici.
 
 Questo:
 
