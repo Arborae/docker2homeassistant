@@ -1031,6 +1031,15 @@ def autodiscovery_view():
     stacks, summary = _build_home_context()
     notifications = _build_notifications_summary()
 
+    shared_entities = sum(1 for pref in pref_map.values() if pref.get("state", True))
+    mqtt_status = {
+        "connected": mqtt_manager.is_connected(),
+        "broker": mqtt_manager.broker,
+        "port": mqtt_manager.port,
+        "shared_entities": shared_entities + 1,
+        "total_entities": len(containers_info) + 1,
+    }
+
     return render_template(
         "autodiscovery.html",
         stack_map=stack_map,
@@ -1039,6 +1048,7 @@ def autodiscovery_view():
         summary=summary,
         notifications=notifications,
         active_page="autodiscovery",
+        mqtt_status=mqtt_status,
     )
 
 
