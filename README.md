@@ -171,6 +171,7 @@ Popup di dettaglio con:
   - Modalità sicura / prestazioni tramite l'icona a forma di ingranaggio nell'header;
   - entità MQTT dalla pagina Autodiscovery.
 - La configurazione di sicurezza viene salvata nel file JSON `auth_config.json` (creato automaticamente con permessi ristretti al primo avvio). Per conservarla tra i rebuild puoi puntare il percorso con `D2HA_AUTH_CONFIG_PATH` (default `/app/data/auth_config.json`) e montare il volume `./data:/app/data` nel `docker-compose.yml`.
+- Le preferenze di autodiscovery MQTT vengono salvate in `autodiscovery_preferences.json` nello **stesso percorso** di `auth_config.json` (o nel path indicato da `D2HA_AUTODISCOVERY_PREFS_PATH`) così da restare persistenti quando monti il volume `./data:/app/data`.
 - Variabili utili:
   - `D2HA_SECRET_KEY` per impostare la chiave di sessione Flask (obbligatorio in produzione);
   - `D2HA_ADMIN_USERNAME` per personalizzare l'username iniziale prima del primo avvio.

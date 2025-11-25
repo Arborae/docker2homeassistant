@@ -24,7 +24,12 @@ from flask import (
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from auth_store import ensure_default_auth_config, load_auth_config, save_auth_config
+from auth_store import (
+    AUTH_CONFIG_PATH,
+    ensure_default_auth_config,
+    load_auth_config,
+    save_auth_config,
+)
 from docker_service import (
     AutodiscoveryPreferences,
     DockerService,
@@ -77,7 +82,13 @@ MQTT_STATE_INTERVAL = int(os.getenv("MQTT_STATE_INTERVAL", "5"))
 
 docker_service = DockerService()
 docker_service.start_overview_refresher()
-preferences_path = os.path.join(os.path.dirname(__file__), "autodiscovery_preferences.json")
+preferences_path = os.environ.get(
+    "D2HA_AUTODISCOVERY_PREFS_PATH",
+    os.path.join(
+        os.path.dirname(AUTH_CONFIG_PATH) or os.path.dirname(__file__),
+        "autodiscovery_preferences.json",
+    ),
+)
 autodiscovery_preferences = AutodiscoveryPreferences(preferences_path)
 mqtt_manager = MqttManager(
     docker_service=docker_service,
