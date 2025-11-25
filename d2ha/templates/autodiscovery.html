@@ -510,7 +510,7 @@
     deselectButtons.forEach((button) => {
       button.addEventListener('click', (event) => {
         event.stopPropagation();
-        const stackSection = button.closest('.stack');
+        const stackSection = button.closest('.section-card');
         if (!stackSection) return;
 
         const checkboxes = Array.from(stackSection.querySelectorAll('input[type="checkbox"]'));
