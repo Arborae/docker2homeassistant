@@ -81,15 +81,6 @@ class AutodiscoveryPreferences:
         "full_update",
     )
 
-    AVAILABLE_SENSORS = {
-        "cpu": {"label": "CPU"},
-        "ram": {"label": "RAM"},
-        "net_rx_rate": {"label": "Velocità RX"},
-        "net_tx_rate": {"label": "Velocità TX"},
-        "installed_version": {"label": "Versione installata"},
-        "remote_version": {"label": "Ultima versione"},
-    }
-
     def __init__(self, path: str):
         self.path = path
         self._lock = threading.Lock()
@@ -119,16 +110,7 @@ class AutodiscoveryPreferences:
             action: bool(actions_raw.get(action, True))
             for action in self.AVAILABLE_ACTIONS
         }
-        sensors_raw = entry.get("sensors") or {}
-        sensors = {
-            key: bool(sensors_raw.get(key, True))
-            for key in self.AVAILABLE_SENSORS.keys()
-        }
-        return {
-            "state": bool(entry.get("state", True)),
-            "actions": actions,
-            "sensors": sensors,
-        }
+        return {"state": bool(entry.get("state", True)), "actions": actions}
 
     def _save(self) -> None:
         dir_path = os.path.dirname(self.path)
@@ -144,15 +126,9 @@ class AutodiscoveryPreferences:
         return {sid: self.get_with_defaults(sid) for sid in stable_ids}
 
     def set_preferences(
-        self,
-        stable_id: str,
-        state_enabled: bool,
-        actions: Dict[str, Any],
-        sensors: Optional[Dict[str, Any]] = None,
+        self, stable_id: str, state_enabled: bool, actions: Dict[str, Any]
     ) -> Dict[str, Any]:
-        pref = self._apply_defaults(
-            {"state": state_enabled, "actions": actions, "sensors": sensors or {}}
-        )
+        pref = self._apply_defaults({"state": state_enabled, "actions": actions})
         with self._lock:
             self._data[stable_id] = pref
             self._save()
@@ -359,29 +335,22 @@ class DockerService:
 
     def get_container_stats(self, container: Container):
         now = time.time()
-        cached_data = None
         with self._lock:
             cached_ts = self.stats_cache_ts.get(container.id, 0)
-            cached_data = self.stats_cache.get(container.id)
-            if (
-                now - cached_ts <= self.stats_cache_ttl
-                and cached_data is not None
-                and container.id in self.stats_cache
-            ):
+            if now - cached_ts <= self.stats_cache_ttl and container.id in self.stats_cache:
+                data = self.stats_cache[container.id]
                 return (
-                    cached_data["cpu_percent"],
-                    cached_data["usage"],
-                    cached_data["mem_percent"],
-                    cached_data.get("net_rx", 0),
-                    cached_data.get("net_tx", 0),
-                    cached_data.get("net_rx_rate", 0.0),
-                    cached_data.get("net_tx_rate", 0.0),
+                    data["cpu_percent"],
+                    data["usage"],
+                    data["mem_percent"],
+                    data.get("net_rx", 0),
+                    data.get("net_tx", 0),
                 )
 
         try:
             stats = self.docker_api.stats(container.id, stream=False)
         except Exception:
-            return 0.0, 0, 0.0, 0, 0, 0.0, 0.0
+            return 0.0, 0, 0.0
 
         cpu_percent = self._calc_cpu_percent(stats)
 
@@ -399,23 +368,6 @@ class DockerService:
         net_rx = sum(val.get("rx_bytes", 0) for val in networks.values())
         net_tx = sum(val.get("tx_bytes", 0) for val in networks.values())
 
-        prev_net_rx = 0
-        prev_net_tx = 0
-        prev_ts = 0.0
-        with self._lock:
-            if cached_data:
-                prev_net_rx = cached_data.get("net_rx", 0)
-                prev_net_tx = cached_data.get("net_tx", 0)
-                prev_ts = self.stats_cache_ts.get(container.id, 0.0)
-
-        delta_t = now - prev_ts if prev_ts else 0
-        net_rx_rate = (
-            max(net_rx - prev_net_rx, 0) / delta_t if delta_t > 0 else 0.0
-        )
-        net_tx_rate = (
-            max(net_tx - prev_net_tx, 0) / delta_t if delta_t > 0 else 0.0
-        )
-
         with self._lock:
             self.stats_cache[container.id] = {
                 "cpu_percent": cpu_percent,
@@ -423,20 +375,10 @@ class DockerService:
                 "mem_percent": mem_percent,
                 "net_rx": net_rx,
                 "net_tx": net_tx,
-                "net_rx_rate": net_rx_rate,
-                "net_tx_rate": net_tx_rate,
             }
             self.stats_cache_ts[container.id] = now
 
-        return (
-            cpu_percent,
-            usage,
-            mem_percent,
-            net_rx,
-            net_tx,
-            net_rx_rate,
-            net_tx_rate,
-        )
+        return cpu_percent, usage, mem_percent, net_rx, net_tx
 
     def get_container_live_stats(self, container_id: str) -> Optional[Dict[str, Any]]:
         try:
@@ -496,15 +438,7 @@ class DockerService:
                 except Exception:
                     pass
 
-            (
-                cpu_percent,
-                mem_usage,
-                mem_percent,
-                net_rx,
-                net_tx,
-                _,
-                _,
-            ) = self.get_container_stats(c)
+            cpu_percent, mem_usage, mem_percent, net_rx, net_tx = self.get_container_stats(c)
 
             networks = []
             nets = c.attrs.get("NetworkSettings", {}).get("Networks", {})
@@ -787,16 +721,6 @@ class DockerService:
             remote_id = remote_info["remote_id"]
             remote_version = remote_info["remote_version"]
 
-            (
-                cpu_percent,
-                mem_usage,
-                mem_percent,
-                net_rx,
-                net_tx,
-                net_rx_rate,
-                net_tx_rate,
-            ) = self.get_container_stats(c)
-
             if remote_id is None:
                 update_state = "unknown"
             else:
@@ -830,13 +754,6 @@ class DockerService:
                     "changelog": changelog,
                     "breaking_changes": breaking,
                     "ports": ports,
-                    "cpu_percent": round(cpu_percent, 1),
-                    "mem_usage_bytes": mem_usage,
-                    "mem_percent": round(mem_percent, 1),
-                    "net_rx_bytes": net_rx,
-                    "net_tx_bytes": net_tx,
-                    "net_rx_rate": net_rx_rate,
-                    "net_tx_rate": net_tx_rate,
                 }
             )
 
@@ -1316,14 +1233,6 @@ class MqttManager:
         )
         self._publish(btn_config_topic, "", qos=0, retain=True)
 
-    def _clear_sensor(self, slug: str, sensor_key: str):
-        config_topic = (
-            f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_{sensor_key}/config"
-        )
-        state_topic = f"{self.base_topic}/{slug}/{sensor_key}"
-        self._publish(config_topic, "", qos=0, retain=True)
-        self._publish(state_topic, "", qos=0, retain=True)
-
     def _publish_discovery_for_container(
         self, c: Dict[str, Any], device_info: Dict[str, Any], preferences: Dict[str, Any]
     ):
@@ -1370,93 +1279,6 @@ class MqttManager:
             self._publish(attr_topic, json.dumps(attrs), qos=0, retain=True)
         else:
             self._clear_state_topics(slug)
-
-        sensors_pref = preferences.get("sensors", {})
-        sensors_definitions = [
-            {
-                "key": "cpu",
-                "label": "CPU",
-                "unit": "%",
-                "icon": "mdi:cpu-64-bit",
-                "state_class": "measurement",
-                "value": c.get("cpu_percent", 0.0),
-            },
-            {
-                "key": "ram",
-                "label": "RAM",
-                "unit": "%",
-                "icon": "mdi:memory",
-                "state_class": "measurement",
-                "value": c.get("mem_percent", 0.0),
-            },
-            {
-                "key": "net_rx_rate",
-                "label": "Velocità dati ricevuti",
-                "unit": "B/s",
-                "icon": "mdi:download-network-outline",
-                "state_class": "measurement",
-                "device_class": "data_rate",
-                "value": c.get("net_rx_rate", 0.0),
-            },
-            {
-                "key": "net_tx_rate",
-                "label": "Velocità dati trasmessi",
-                "unit": "B/s",
-                "icon": "mdi:upload-network-outline",
-                "state_class": "measurement",
-                "device_class": "data_rate",
-                "value": c.get("net_tx_rate", 0.0),
-            },
-            {
-                "key": "installed_version",
-                "label": "Versione installata",
-                "icon": "mdi:tag-text",
-                "entity_category": "diagnostic",
-                "value": c.get("installed_version") or "",
-            },
-            {
-                "key": "remote_version",
-                "label": "Ultima versione disponibile",
-                "icon": "mdi:update",
-                "entity_category": "diagnostic",
-                "value": c.get("remote_version") or "",
-            },
-        ]
-
-        for sensor in sensors_definitions:
-            key = sensor["key"]
-            if not sensors_pref.get(key, True):
-                self._clear_sensor(slug, key)
-                continue
-
-            value = sensor.get("value", "")
-            if isinstance(value, float):
-                value = round(value, 2)
-
-            config_topic = (
-                f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_{key}/config"
-            )
-            state_topic = f"{self.base_topic}/{slug}/{key}"
-
-            payload = {
-                "name": f"{c['name']} {sensor['label']}",
-                "state_topic": state_topic,
-                "unique_id": f"d2ha_{stable_id}_{key}",
-                "device": device_info,
-                "icon": sensor.get("icon"),
-            }
-
-            if sensor.get("unit"):
-                payload["unit_of_measurement"] = sensor["unit"]
-            if sensor.get("state_class"):
-                payload["state_class"] = sensor["state_class"]
-            if sensor.get("device_class"):
-                payload["device_class"] = sensor["device_class"]
-            if sensor.get("entity_category"):
-                payload["entity_category"] = sensor["entity_category"]
-
-            self._publish(config_topic, json.dumps(payload), qos=0, retain=True)
-            self._publish(state_topic, value, qos=0, retain=True)
 
         actions = [
             ("start", "Start"),
@@ -1528,16 +1350,6 @@ class MqttManager:
                 self.logger.exception(
                     "Failed to clear MQTT config/state for stale slug %s", stale_slug
                 )
-
-            for sensor_key in AutodiscoveryPreferences.AVAILABLE_SENSORS.keys():
-                try:
-                    self._clear_sensor(stale_slug, sensor_key)
-                except Exception:
-                    self.logger.exception(
-                        "Failed to clear MQTT sensor %s for stale slug %s",
-                        sensor_key,
-                        stale_slug,
-                    )
 
             for action in (
                 "start",
