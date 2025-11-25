@@ -1,8 +1,9 @@
 import json
 import os
 import threading
-import time
 import logging
+import re
+import time
 from collections import deque
 from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, List, Optional
@@ -1125,8 +1126,13 @@ class MqttManager:
             "d2ha_server",
             "d2ha",
         }
+        known_identifiers.discard("")
 
-        return name in known_identifiers
+        if name in known_identifiers:
+            return True
+
+        name_parts = [part for part in re.split(r"[./:_-]+", name) if part]
+        return any(part in known_identifiers for part in name_parts)
 
     def is_self_container(self, container_info: Dict[str, Any]) -> bool:
         """Public wrapper around :meth:`_is_self_container`.
