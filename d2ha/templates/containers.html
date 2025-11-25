@@ -187,6 +187,24 @@
     }
     .btn-primary-glow:hover { transform: translateY(-1px); box-shadow: 0 12px 30px var(--accent-glow); }
 
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--control-surface);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+      min-width: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      box-shadow: var(--shadow-soft);
+    }
+    .btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .btn.loading { opacity: 0.6; cursor: wait; }
+    .btn.hidden { display: none; }
+
     .btn-chip {
       border: 1px solid var(--accent-border);
       background: rgba(255,255,255,0.04);
@@ -254,6 +272,9 @@
     .status-exited, .status-stopped { background: rgba(255,99,71,0.15); color: #ff8a7a; }
     .status-paused { background: rgba(255,193,7,0.15); color: #ffd54f; }
     .status-restarting { background: rgba(49,196,255,0.15); color: #31c4ff; }
+    .status-pending { background: rgba(49,196,255,0.15); color: #31c4ff; display:inline-flex; align-items:center; gap:6px; }
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.18); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     .actions { display:flex; flex-wrap: wrap; gap:6px; justify-content:flex-end; }
     .actions .btn { white-space:nowrap; }
     .actions-cell { text-align:right; }
@@ -263,11 +284,9 @@
     .col-uptime, .col-cpu, .col-ram, .col-restart { width: 110px; }
     .col-networks, .col-ports { width: 170px; }
     .col-actions { width: 200px; }
-    .btn { border:1px solid var(--border); border-radius:999px; padding:8px 14px; font-size:0.82rem; cursor:pointer; background: var(--control-surface); color: var(--text); transition: background 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease, border-color 0.15s ease; letter-spacing:0.01em; box-shadow: 0 6px 18px var(--shadow); }
-    .btn:hover { background: var(--accent-surface); transform: translateY(-1px); border-color: var(--accent-border); box-shadow:0 8px 20px var(--accent-glow-soft); color: var(--accent); }
-    .btn-strong { background: var(--accent-gradient); color:#0b111c; box-shadow:0 8px 18px var(--accent-glow); font-weight:800; }
-    .btn-ghost { background: var(--accent-surface); color: var(--accent); border-color: var(--accent-border); font-weight:800; }
-    .btn-ghost:hover { background: rgba(49,196,255,0.18); }
+      .btn-strong { background: var(--accent-gradient); color:#0b111c; box-shadow:0 8px 18px var(--accent-glow); font-weight:800; }
+      .btn-ghost { background: var(--accent-surface); color: var(--accent); border-color: var(--accent-border); font-weight:800; }
+      .btn-ghost:hover { background: rgba(49,196,255,0.18); }
     .btn-play { background:#2ecc71; color:#07130c; }
     .btn-stop { background:#e74c3c; }
     .btn-delete { background:#b71c1c; }
@@ -417,7 +436,7 @@
             </thead>
             <tbody>
               {% for c in stack.containers %}
-                <tr class="row-clickable" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">
+                <tr class="row-clickable" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}" data-container-status="{{ c.status.lower() }}">
                   <td class="select-col" data-label="Seleziona">
                     <label class="checkbox">
                       <input type="checkbox" class="container-select" value="{{ c.id }}" data-container-name="{{ c.name }}" aria-label="Seleziona {{ c.name }}">
@@ -429,7 +448,7 @@
                     <div class="meta">{{ c.image }}</div>
                     <div class="meta">{{ c.short_id }}</div>
                   </td>
-                  <td data-label="Stato">
+                  <td data-label="Stato" data-field="status">
                     {% set status = c.status.lower() %}
                     {% set css = "status-pill " %}
                     {% if status == "running" %}
@@ -445,11 +464,11 @@
                     {% endif %}
                     <span class="{{ css }}">{{ c.status }}</span>
                   </td>
-                  <td data-label="Uptime">{{ c.uptime }}</td>
-                  <td data-label="CPU">{{ c.cpu_percent }}%</td>
-                  <td data-label="RAM">{{ c.mem_usage }} ({{ c.mem_percent }}%)</td>
-                  <td data-label="Restart">{{ c.restarts }}</td>
-                  <td data-label="Reti">
+                  <td data-label="Uptime" data-field="uptime">{{ c.uptime }}</td>
+                  <td data-label="CPU" data-field="cpu">{{ c.cpu_percent }}%</td>
+                  <td data-label="RAM" data-field="ram">{{ c.mem_usage }} ({{ c.mem_percent }}%)</td>
+                  <td data-label="Restart" data-field="restart">{{ c.restarts }}</td>
+                  <td data-label="Reti" data-field="networks">
                     {% if c.networks %}
                       <div class="meta">
                         {% for net in c.networks %}
@@ -460,7 +479,7 @@
                       <span class="meta">Nessuna rete</span>
                     {% endif %}
                   </td>
-                  <td data-label="Porte">
+                  <td data-label="Porte" data-field="ports">
                     {% if c.ports.mode == 'host' %}
                       <div class="meta">Modalità host</div>
                     {% elif c.ports.bindings %}
@@ -475,6 +494,12 @@
                   </td>
                   <td class="actions-cell" data-label="Azioni">
                     <div class="actions">
+                      <button class="btn btn-play" type="button" data-action-btn data-action="start" aria-label="Avvia {{ c.name }}">▶</button>
+                      <button class="btn btn-stop" type="button" data-action-btn data-action="stop" aria-label="Ferma {{ c.name }}">■</button>
+                      <button class="btn btn-pause" type="button" data-action-btn data-action="pause" aria-label="Metti in pausa {{ c.name }}">⏸</button>
+                      <button class="btn btn-ghost" type="button" data-action-btn data-action="unpause" aria-label="Riprendi {{ c.name }}">⏯</button>
+                      <button class="btn btn-restart" type="button" data-action-btn data-action="restart" aria-label="Riavvia {{ c.name }}">⟲</button>
+                      <button class="btn btn-delete" type="button" data-action-btn data-action="delete" aria-label="Elimina {{ c.name }}">✕</button>
                       <button class="btn-primary-glow" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
                       <button class="btn-primary-glow" type="button" data-open-modal data-tab="logs" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
                     </div>
@@ -699,6 +724,30 @@
     const bulkCount = document.getElementById('bulk-count');
     const bulkButtons = Array.from(document.querySelectorAll('[data-bulk-action]'));
     const selectionInputs = Array.from(document.querySelectorAll('.container-select'));
+    const actionButtons = Array.from(document.querySelectorAll('[data-action-btn]'));
+
+    const rowIndex = new Map();
+    Array.from(document.querySelectorAll('tr[data-container-id]')).forEach((row) => {
+      rowIndex.set(row.dataset.containerId, row);
+    });
+
+    const actionPendingLabels = {
+      start: 'Avvio...',
+      stop: 'Arresto...',
+      restart: 'Riavvio...',
+      pause: 'Pausa...',
+      unpause: 'Ripresa...',
+      delete: 'Eliminazione...'
+    };
+
+    const actionSuccessLabels = {
+      start: 'avviato',
+      stop: 'fermato',
+      restart: 'riavviato',
+      pause: 'messo in pausa',
+      unpause: 'ripreso',
+      delete: 'eliminato'
+    };
 
     let currentContainerId = null;
     let statsInterval = null;
@@ -713,6 +762,165 @@
     let logsIntervalMs = pollingDefaults.logsIntervalMs;
     let statsSampleLimit = pollingDefaults.historyLimit;
     let activeTab = 'info';
+
+    const statusClassFor = (status) => {
+      const s = (status || '').toLowerCase();
+      if (s === 'running') return 'status-running';
+      if (s === 'restarting') return 'status-restarting';
+      if (s === 'paused') return 'status-paused';
+      if (s === 'exited' || s === 'stopped') return 'status-exited';
+      return 'status-paused';
+    };
+
+    const syncActionButtons = (row) => {
+      const status = (row?.dataset.containerStatus || '').toLowerCase();
+      const isRunning = status === 'running' || status === 'restarting';
+      const isPaused = status === 'paused';
+
+      const startBtn = row?.querySelector('[data-action="start"]');
+      const stopBtn = row?.querySelector('[data-action="stop"]');
+      const pauseBtn = row?.querySelector('[data-action="pause"]');
+      const unpauseBtn = row?.querySelector('[data-action="unpause"]');
+
+      if (startBtn) startBtn.classList.toggle('hidden', isRunning || isPaused);
+      if (stopBtn) stopBtn.classList.toggle('hidden', !isRunning && !isPaused);
+      if (pauseBtn) pauseBtn.classList.toggle('hidden', !isRunning || isPaused);
+      if (unpauseBtn) unpauseBtn.classList.toggle('hidden', !isPaused);
+    };
+
+    const renderNetworks = (networks = []) => {
+      if (!networks.length) return '<span class="meta">Nessuna rete</span>';
+      return '<div class="meta">' + networks.map((net) => `<div>${net.name}${net.ip ? ' – ' + net.ip : ''}</div>`).join('') + '</div>';
+    };
+
+    const renderPorts = (ports = {}) => {
+      if (ports.mode === 'host') return '<div class="meta">Modalità host</div>';
+      if (ports.bindings && ports.bindings.length) {
+        return `<div class="meta">${ports.bindings.map((p) => `<div>${p}</div>`).join('')}</div>`;
+      }
+      return '<span class="meta">Nessuna porta esposta</span>';
+    };
+
+    const setRowFromOverview = (row, info) => {
+      if (!row || !info) return;
+
+      clearRowPending(row, false);
+
+      row.dataset.containerStatus = (info.status || '').toLowerCase();
+      const statusCell = row.querySelector('[data-field="status"] .status-pill');
+      if (statusCell) {
+        statusCell.className = `status-pill ${statusClassFor(info.status)}`;
+        statusCell.textContent = info.status;
+      }
+
+      const uptimeCell = row.querySelector('[data-field="uptime"]');
+      if (uptimeCell) uptimeCell.textContent = info.uptime || '-';
+
+      const cpuCell = row.querySelector('[data-field="cpu"]');
+      if (cpuCell) cpuCell.textContent = `${info.cpu_percent ?? '-'}%`;
+
+      const ramCell = row.querySelector('[data-field="ram"]');
+      if (ramCell) ramCell.textContent = `${info.mem_usage || '-'} (${info.mem_percent ?? '-'}%)`;
+
+      const restartCell = row.querySelector('[data-field="restart"]');
+      if (restartCell) restartCell.textContent = info.restarts ?? '-';
+
+      const networksCell = row.querySelector('[data-field="networks"]');
+      if (networksCell) networksCell.innerHTML = renderNetworks(info.networks);
+
+      const portsCell = row.querySelector('[data-field="ports"]');
+      if (portsCell) portsCell.innerHTML = renderPorts(info.ports);
+
+      syncActionButtons(row);
+    };
+
+    const setRowPending = (row, label = 'In corso...') => {
+      if (!row) return;
+      row.dataset.pending = '1';
+      row.querySelectorAll('[data-action-btn]').forEach((btn) => {
+        btn.disabled = true;
+        btn.classList.add('loading');
+      });
+
+      const statusCell = row.querySelector('[data-field="status"] .status-pill');
+      if (!statusCell) return;
+      statusCell.dataset.prevText = statusCell.textContent;
+      statusCell.dataset.prevClass = statusCell.className;
+      statusCell.className = 'status-pill status-pending';
+      statusCell.textContent = label;
+      const spin = document.createElement('span');
+      spin.className = 'spinner';
+      statusCell.prepend(spin);
+    };
+
+    const clearRowPending = (row, restoreStatus = false) => {
+      if (!row) return;
+      row.dataset.pending = '';
+      row.querySelectorAll('[data-action-btn]').forEach((btn) => {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      });
+
+      const statusCell = row.querySelector('[data-field="status"] .status-pill');
+      if (!statusCell) return;
+      const prevText = statusCell.dataset.prevText;
+      const prevClass = statusCell.dataset.prevClass;
+      const spinner = statusCell.querySelector('.spinner');
+      if (spinner) spinner.remove();
+      if (restoreStatus && prevText) {
+        statusCell.textContent = prevText;
+        statusCell.className = prevClass || 'status-pill';
+      }
+      delete statusCell.dataset.prevText;
+      delete statusCell.dataset.prevClass;
+    };
+
+    const removeRow = (row) => {
+      if (!row) return;
+      const id = row.dataset.containerId;
+      selectedContainers.delete(id);
+      rowIndex.delete(id);
+      row.remove();
+      updateBulkBar();
+    };
+
+    const fetchContainerAction = async (id, action) => {
+      const res = await fetch(`/containers/${id}/${action}`, { method: 'POST', headers: { Accept: 'application/json' } });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Request failed');
+      }
+      return res.json();
+    };
+
+    const applyActionResult = (row, data) => {
+      if (!row) return;
+      if (data?.removed) {
+        removeRow(row);
+        return;
+      }
+      if (data?.container) {
+        setRowFromOverview(row, data.container);
+      } else {
+        clearRowPending(row, true);
+      }
+    };
+
+    const handleContainerAction = async (containerId, action) => {
+      const row = rowIndex.get(containerId);
+      setRowPending(row, actionPendingLabels[action] || 'In corso...');
+
+      try {
+        const data = await fetchContainerAction(containerId, action);
+        applyActionResult(row, data);
+        const success = actionSuccessLabels[action] || action;
+        showToast(`Container ${success}`, { type: 'success' });
+      } catch (err) {
+        console.error(err);
+        clearRowPending(row, true);
+        showToast("Errore nell'eseguire l'azione", { type: 'error' });
+      }
+    };
 
     const showToast = (message, { type = 'info', actions = [] } = {}) => {
       const toast = document.createElement('div');
@@ -776,21 +984,33 @@
       const ids = Array.from(selectedContainers.keys());
       if (!ids.length) return;
 
+      const rows = ids.map((id) => rowIndex.get(id)).filter(Boolean);
+      rows.forEach((row) => setRowPending(row, actionPendingLabels[action] || 'In corso...'));
+
       const labelMap = {
         start: 'avvio',
         stop: 'stop',
         restart: 'riavvio',
         delete: 'eliminazione',
+        pause: 'pausa',
+        unpause: 'ripresa',
       };
 
       try {
-        await Promise.all(ids.map((id) => fetch(`/containers/${id}/${action}`, { method: 'POST' })));
-        showToast(`Azione di ${labelMap[action] || action} inviata a ${ids.length} container`, { type: 'success' });
-        setTimeout(() => window.location.reload(), 500);
+        const results = await Promise.all(ids.map((id) => fetchContainerAction(id, action)));
+        results.forEach((data, idx) => applyActionResult(rows[idx], data));
+        showToast(`Azione di ${labelMap[action] || action} completata`, { type: 'success' });
       } catch (err) {
         console.error(err);
+        rows.forEach((row) => clearRowPending(row, true));
         showToast("Errore nell'eseguire l'azione selezionata", { type: 'error' });
       }
+
+      selectedContainers.clear();
+      selectionInputs.forEach((input) => {
+        input.checked = false;
+      });
+      updateBulkBar();
     };
 
     const formatBytes = (bytes) => {
@@ -1132,6 +1352,18 @@
         openModal(btn.dataset.containerId, btn.dataset.containerName, targetTab);
       });
     });
+
+    actionButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const row = btn.closest('tr[data-container-id]');
+        const id = row?.dataset.containerId;
+        if (!id) return;
+        handleContainerAction(id, btn.dataset.action);
+      });
+    });
+
+    rowIndex.forEach((row) => syncActionButtons(row));
 
     bulkButtons.forEach(btn => {
       btn.addEventListener('click', (e) => {
