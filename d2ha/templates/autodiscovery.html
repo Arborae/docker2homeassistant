@@ -92,6 +92,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .section-summary-bar h3 {
@@ -271,6 +272,36 @@
     .name { font-weight:700; }
     .muted { color: var(--muted); font-size:0.85rem; }
     .actions-bar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+    .actions-bar .group { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      font-weight: 700;
+    }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display:inline-block; box-shadow: 0 0 0 4px rgba(255,255,255,0.06); }
+    .status-ok { background: #22c55e; box-shadow: 0 0 0 6px rgba(34,197,94,0.2); }
+    .status-warn { background: #f59e0b; box-shadow: 0 0 0 6px rgba(245,158,11,0.2); }
+    .status-ko { background: #ef4444; box-shadow: 0 0 0 6px rgba(239,68,68,0.18); }
+    .badge-soft { padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.04); border:1px solid var(--border); font-weight:700; color: var(--muted); }
+    .code-block { background: #0b111c; color: #c7e0ff; border-radius: 12px; padding: 10px 12px; border: 1px solid var(--border); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); overflow-x: auto; font-size: 0.82rem; }
+    .payload-table table { width:100%; border-collapse:collapse; }
+    .payload-table th, .payload-table td { padding: 10px 12px; border-bottom:1px solid var(--border); text-align:left; font-size:0.85rem; }
+    .payload-table th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing:0.04em; }
+    .payload-table tr:last-child td { border-bottom:none; }
+    .pill { padding: 4px 10px; border-radius: 999px; border:1px solid var(--border); background: rgba(255,255,255,0.04); font-weight:700; }
+    .pill.success { color: #22c55e; border-color: rgba(34,197,94,0.4); }
+    .pill.error { color: #ef4444; border-color: rgba(239,68,68,0.4); }
+    .pill.info { color: var(--accent); border-color: var(--accent-border); }
+    .filters { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .filters label { font-weight:700; color: var(--muted); }
+    .filters select { background: var(--control-surface); color: var(--text); border:1px solid var(--border); border-radius:10px; padding: 6px 10px; }
+    .muted-small { color: var(--muted); font-size:0.82rem; }
+    .payload-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
     .btn-primary { background: var(--accent-gradient); border:none; color:#0b111c; border-radius:12px; padding:10px 16px; font-weight:800; cursor:pointer; box-shadow:0 6px 18px var(--accent-glow); }
     .btn-secondary { background: rgba(255,255,255,0.06); border:1px solid var(--border); color: var(--text); border-radius:12px; padding:8px 12px; font-weight:700; cursor:pointer; transition: all 0.15s ease; }
     .btn-secondary:hover { border-color: rgba(49,196,255,0.5); color: var(--accent); }
@@ -307,16 +338,145 @@
 
   {% include 'partials/flash_messages.html' %}
 
-  <main>
-    <section class="section-summary-bar">
-      <div>
-        <h3>Entità MQTT esposte</h3>
-        <div class="meta">{{ summary.running }} container attivi · {{ summary.total_containers }} totali · {{ summary.images }} immagini installate</div>
-      </div>
-      <button type="submit" form="autodiscovery-form" class="btn-primary-glow">Salva preferenze</button>
-    </section>
+    <main>
+      <section class="section-summary-bar">
+        <div>
+          <h3>Entità MQTT esposte</h3>
+          <div class="meta">{{ summary.running }} container attivi · {{ summary.total_containers }} totali · {{ summary.images }} immagini installate</div>
+        </div>
+        <div class="payload-actions">
+          <span class="status-pill">
+            {% set connected = mqtt_status.connected %}
+            <span class="status-dot {{ 'status-ok' if connected else 'status-ko' }}" aria-hidden="true"></span>
+            {{ 'Broker connesso' if connected else 'MQTT non connesso' }}
+          </span>
+          <span class="badge-soft">{{ mqtt_status.broker or 'Broker non configurato' }}:{{ mqtt_status.port or '—' }}</span>
+          <span class="badge-soft">Base: {{ mqtt_status.base_topic }}</span>
+          <span class="badge-soft">Discovery: {{ mqtt_status.discovery_prefix }}</span>
+          <span class="badge-soft">Nodo: {{ mqtt_status.node_id }}</span>
+          {% if last_publish_ago %}
+            <span class="badge-soft">Ultima pubblicazione {{ last_publish_ago }} fa</span>
+          {% endif %}
+          {% if mqtt_status.last_error %}
+            <span class="pill error">{{ mqtt_status.last_error }}</span>
+          {% elif mqtt_status.last_publish_success %}
+            <span class="pill success">Ultima pubblicazione riuscita</span>
+          {% else %}
+            <span class="pill info">In attesa di pubblicazione</span>
+          {% endif %}
+        </div>
+      </section>
 
-    <form id="autodiscovery-form" class="stacks" method="POST">
+      <section class="actions-bar">
+        <div class="group">
+          <button type="button" class="btn-secondary pref-toggle" data-pref-toggle="all" data-mode="on">Abilita tutti</button>
+          <button type="button" class="btn-secondary pref-toggle" data-pref-toggle="all" data-mode="off">Disabilita tutti</button>
+          <div class="filters">
+            <label for="payload-stack-filter">Stack</label>
+            <select id="payload-stack-filter">
+              <option value="all">Tutti</option>
+              {% for stack in stack_map.keys() %}
+                <option value="{{ stack }}">{{ 'Senza stack' if stack == '_no_stack' else stack }}</option>
+              {% endfor %}
+            </select>
+            <label for="payload-action-filter">Azione</label>
+            <select id="payload-action-filter">
+              <option value="all">Tutte</option>
+              <option value="state">Stato</option>
+              {% for action in actions %}
+                <option value="{{ action }}">{{ action.replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="group">
+          <form method="POST" class="payload-actions">
+            <input type="hidden" name="intent" value="republish_autodiscovery" />
+            <button type="submit" class="btn-secondary">Ripubblica autodiscovery/stati</button>
+          </form>
+          <button type="submit" form="autodiscovery-form" class="btn-primary-glow">Salva preferenze</button>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-card-header">
+          <div class="title">MQTT autodiscovery &amp; telemetria</div>
+          <div class="section-card-actions">
+            <span class="badge-soft">Intervallo: {{ mqtt_status.state_interval }}s</span>
+          </div>
+        </div>
+        <div class="section-card-body payload-table">
+          {% if docker_payload %}
+            <div class="actions-bar">
+              <div class="group">
+                <strong>Docker</strong>
+                <div class="muted-small">{{ docker_payload.state_topic }}</div>
+              </div>
+              <div class="group">
+                <span class="pill success">Stato</span>
+              </div>
+            </div>
+            <div class="code-block">{{ docker_payload|tojson(indent=2) }}</div>
+          {% endif %}
+
+          {% if mqtt_payloads %}
+            {% for stack, entries in mqtt_payloads.items() %}
+              <h4>{{ 'Senza stack' if stack == '_no_stack' else stack }}</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Container</th>
+                    <th>Tipo</th>
+                    <th>Topic</th>
+                    <th>Payload</th>
+                    <th>Stato</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for entry in entries %}
+                    <tr class="payload-row" data-stack="{{ stack }}" data-action="state">
+                      <td>
+                        <div class="name">{{ entry.name }}</div>
+                        <div class="muted-small">{{ entry.slug }}</div>
+                      </td>
+                      <td>Stato</td>
+                      <td>
+                        <div class="muted-small">{{ entry.state.config_topic }}</div>
+                        <div class="muted-small">{{ entry.state.state_topic }}</div>
+                        <div class="muted-small">{{ entry.state.attributes_topic }}</div>
+                      </td>
+                      <td>
+                        <div class="code-block">{{ entry.state.config_payload|tojson(indent=2) }}</div>
+                        <div class="code-block">{{ entry.state.attributes_payload|tojson(indent=2) }}</div>
+                      </td>
+                      <td><span class="pill {{ 'success' if entry.state.enabled else 'error' }}">{{ 'Abilitato' if entry.state.enabled else 'Disabilitato' }}</span></td>
+                    </tr>
+                    {% for action in entry.actions %}
+                      <tr class="payload-row" data-stack="{{ stack }}" data-action="{{ action.action }}">
+                        <td>
+                          <div class="name">{{ entry.name }}</div>
+                          <div class="muted-small">{{ entry.slug }}</div>
+                        </td>
+                        <td>{{ action.label }}</td>
+                        <td>
+                          <div class="muted-small">{{ action.config_topic }}</div>
+                          <div class="muted-small">{{ action.topic }}</div>
+                        </td>
+                        <td><div class="code-block">{{ action.payload|tojson(indent=2) }}</div></td>
+                        <td><span class="pill {{ 'success' if action.enabled else 'error' }}">{{ 'Abilitato' if action.enabled else 'Disabilitato' }}</span></td>
+                      </tr>
+                    {% endfor %}
+                  {% endfor %}
+                </tbody>
+              </table>
+            {% endfor %}
+          {% else %}
+            <p class="muted">Nessun payload MQTT disponibile: pubblica l'autodiscovery per popolare questa sezione.</p>
+          {% endif %}
+        </div>
+      </section>
+
+      <form id="autodiscovery-form" class="stacks" method="POST">
       {% for stack, containers in stack_map.items() %}
         <section class="section-card">
           <div class="section-card-header section-toggle" data-stack-toggle>
@@ -384,6 +544,10 @@
   <script>
     const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
     const deselectButtons = Array.from(document.querySelectorAll('.deselect-stack'));
+    const prefToggleButtons = Array.from(document.querySelectorAll('.pref-toggle'));
+    const payloadRows = Array.from(document.querySelectorAll('.payload-row'));
+    const stackFilter = document.getElementById('payload-stack-filter');
+    const actionFilter = document.getElementById('payload-action-filter');
     const autodiscoveryForm = document.getElementById('autodiscovery-form');
     stackToggles.forEach((header) => {
       const btn = header.querySelector('.section-toggle-btn, .stack-toggle-btn');
@@ -432,6 +596,34 @@
       });
     });
 
+    prefToggleButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const mode = button.dataset.mode === 'on';
+        const target = button.dataset.prefToggle || 'all';
+        const checkboxes = Array.from(autodiscoveryForm.querySelectorAll('input[type="checkbox"]'));
+        checkboxes.forEach((checkbox) => {
+          if (target === 'all' || checkbox.name.endsWith(`_${target}`)) {
+            checkbox.checked = mode;
+          }
+        });
+      });
+    });
+
+    function applyPayloadFilters() {
+      const stackValue = stackFilter ? stackFilter.value : 'all';
+      const actionValue = actionFilter ? actionFilter.value : 'all';
+
+      payloadRows.forEach((row) => {
+        const matchesStack = stackValue === 'all' || row.dataset.stack === stackValue;
+        const matchesAction = actionValue === 'all' || row.dataset.action === actionValue;
+        row.style.display = matchesStack && matchesAction ? '' : 'none';
+      });
+    }
+
+    if (stackFilter) stackFilter.addEventListener('change', applyPayloadFilters);
+    if (actionFilter) actionFilter.addEventListener('change', applyPayloadFilters);
+    applyPayloadFilters();
+
     function applySafeModeLock(enabled) {
       if (!autodiscoveryForm) return;
       autodiscoveryForm.classList.toggle('safe-locked', enabled);
@@ -439,6 +631,9 @@
         checkbox.disabled = enabled;
       });
       deselectButtons.forEach((button) => {
+        button.disabled = enabled;
+      });
+      prefToggleButtons.forEach((button) => {
         button.disabled = enabled;
       });
     }

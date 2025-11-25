@@ -1009,6 +1009,11 @@ class MqttManager:
         self.logger = logger
         self.mqtt_client = None
         self.container_slug_map: Dict[str, str] = {}
+        self.connected = False
+        self.last_error: Optional[str] = None
+        self.last_payloads: Dict[str, Any] = {}
+        self.last_publish_ts: Optional[float] = None
+        self.last_publish_success: Optional[bool] = None
 
     def _device_info(self) -> Dict[str, Any]:
         return {
@@ -1020,7 +1025,7 @@ class MqttManager:
 
     def _publish_docker_status(
         self, containers_info: List[Dict[str, Any]], device_info: Dict[str, Any]
-    ) -> None:
+    ) -> Dict[str, Any]:
         state_topic = f"{self.base_topic}/docker/state"
         attr_topic = f"{self.base_topic}/docker/attributes"
         config_topic = (
@@ -1065,9 +1070,23 @@ class MqttManager:
             "unused_images": unused_images,
         }
 
-        self.mqtt_client.publish(config_topic, json.dumps(sensor_payload), qos=0, retain=True)
-        self.mqtt_client.publish(state_topic, state, qos=0, retain=True)
-        self.mqtt_client.publish(attr_topic, json.dumps(attributes), qos=0, retain=True)
+        payload = {
+            "config_topic": config_topic,
+            "config_payload": sensor_payload,
+            "state_topic": state_topic,
+            "state_payload": state,
+            "attributes_topic": attr_topic,
+            "attributes_payload": attributes,
+        }
+
+        if self.mqtt_client:
+            self.mqtt_client.publish(
+                config_topic, json.dumps(sensor_payload), qos=0, retain=True
+            )
+            self.mqtt_client.publish(state_topic, state, qos=0, retain=True)
+            self.mqtt_client.publish(attr_topic, json.dumps(attributes), qos=0, retain=True)
+
+        return payload
 
     def _is_self_container(self, container_info: Dict[str, Any]) -> bool:
         """Return True if the container represents the d2ha instance itself.
@@ -1154,12 +1173,18 @@ class MqttManager:
             client.connect(self.broker, self.port, keepalive=60)
             client.loop_start()
             self.mqtt_client = client
+            self.connected = True
+            self.last_error = None
             self.logger.info("MQTT connection established")
         except Exception:
             self.mqtt_client = None
+            self.connected = False
+            self.last_error = "MQTT connection failed"
             self.logger.exception("MQTT connection failed")
 
     def _clear_state_topics(self, slug: str):
+        if self.mqtt_client is None:
+            return
         state_topic = f"{self.base_topic}/{slug}/state"
         attr_topic = f"{self.base_topic}/{slug}/attributes"
 
@@ -1172,6 +1197,8 @@ class MqttManager:
         self.mqtt_client.publish(attr_topic, "", qos=0, retain=True)
 
     def _clear_action_button(self, slug: str, action: str):
+        if self.mqtt_client is None:
+            return
         btn_config_topic = (
             f"{self.discovery_prefix}/button/{self.node_id}/{slug}_{action}/config"
         )
@@ -1179,7 +1206,7 @@ class MqttManager:
 
     def _publish_discovery_for_container(
         self, c: Dict[str, Any], device_info: Dict[str, Any], preferences: Dict[str, Any]
-    ):
+    ) -> Dict[str, Any]:
         slug = slugify_container(c["name"], c["short_id"])
         stable_id = build_stable_id(c)
         self.container_slug_map[slug] = c["id"]
@@ -1191,7 +1218,28 @@ class MqttManager:
             f"{self.discovery_prefix}/sensor/{self.node_id}/{slug}_status/config"
         )
 
-        if preferences.get("state", True):
+        state_enabled = preferences.get("state", True)
+
+        state_payload = {
+            "config_topic": sensor_config_topic,
+            "state_topic": state_topic,
+            "attributes_topic": attr_topic,
+            "enabled": state_enabled,
+        }
+
+        attrs = {
+            "container": c["name"],
+            "stack": c["stack"],
+            "image": c["image_ref"],
+            "installed_version": c["installed_version"],
+            "remote_version": c["remote_version"],
+            "update_state": c["update_state"],
+            "changelog": c["changelog"] or "",
+            "breaking_changes": c["breaking_changes"] or "",
+            "ports": c.get("ports", {}),
+        }
+
+        if state_enabled:
             sensor_payload = {
                 "name": f"{c['name']} Stato",
                 "state_topic": state_topic,
@@ -1203,26 +1251,29 @@ class MqttManager:
                 "icon": "mdi:docker",
             }
 
-            self.mqtt_client.publish(
-                sensor_config_topic, json.dumps(sensor_payload), qos=0, retain=True
+            state_payload.update(
+                {
+                    "config_payload": sensor_payload,
+                    "state_payload": c["status"],
+                    "attributes_payload": attrs,
+                }
             )
 
-            attrs = {
-                "container": c["name"],
-                "stack": c["stack"],
-                "image": c["image_ref"],
-                "installed_version": c["installed_version"],
-                "remote_version": c["remote_version"],
-                "update_state": c["update_state"],
-                "changelog": c["changelog"] or "",
-                "breaking_changes": c["breaking_changes"] or "",
-                "ports": c.get("ports", {}),
-            }
-
-            self.mqtt_client.publish(state_topic, c["status"], qos=0, retain=True)
-            self.mqtt_client.publish(attr_topic, json.dumps(attrs), qos=0, retain=True)
+            if self.mqtt_client:
+                self.mqtt_client.publish(
+                    sensor_config_topic, json.dumps(sensor_payload), qos=0, retain=True
+                )
+                self.mqtt_client.publish(state_topic, c["status"], qos=0, retain=True)
+                self.mqtt_client.publish(attr_topic, json.dumps(attrs), qos=0, retain=True)
         else:
             self._clear_state_topics(slug)
+            state_payload.update(
+                {
+                    "config_payload": {},
+                    "state_payload": "",
+                    "attributes_payload": {},
+                }
+            )
 
         actions = [
             ("start", "Start"),
@@ -1234,12 +1285,13 @@ class MqttManager:
         ]
 
         actions_pref = preferences.get("actions", {})
+        actions_payloads: List[Dict[str, Any]] = []
         for action, label in actions:
+            cmd_topic = f"{self.base_topic}/{slug}/set/{action}"
             if actions_pref.get(action, True):
                 btn_config_topic = (
                     f"{self.discovery_prefix}/button/{self.node_id}/{slug}_{action}/config"
                 )
-                cmd_topic = f"{self.base_topic}/{slug}/set/{action}"
                 btn_payload = {
                     "name": f"{c['name']} {label}",
                     "command_topic": cmd_topic,
@@ -1248,21 +1300,59 @@ class MqttManager:
                     "unique_id": f"d2ha_{stable_id}_{action}",
                     "device": device_info,
                 }
-                self.mqtt_client.publish(
-                    btn_config_topic, json.dumps(btn_payload), qos=0, retain=True
+                actions_payloads.append(
+                    {
+                        "action": action,
+                        "label": label,
+                        "topic": cmd_topic,
+                        "config_topic": btn_config_topic,
+                        "payload": btn_payload,
+                        "enabled": True,
+                    }
                 )
+                if self.mqtt_client:
+                    self.mqtt_client.publish(
+                        btn_config_topic, json.dumps(btn_payload), qos=0, retain=True
+                    )
             else:
                 self._clear_action_button(slug, action)
+                actions_payloads.append(
+                    {
+                        "action": action,
+                        "label": label,
+                        "topic": cmd_topic,
+                        "config_topic": f"{self.discovery_prefix}/button/{self.node_id}/{slug}_{action}/config",
+                        "payload": {},
+                        "enabled": False,
+                    }
+                )
+
+        return {
+            "name": c["name"],
+            "stack": c["stack"],
+            "slug": slug,
+            "stable_id": stable_id,
+            "image": c.get("image_ref") or c.get("image"),
+            "status": c.get("status"),
+            "state": state_payload,
+            "actions": actions_payloads,
+        }
 
     def publish_autodiscovery_and_state(self, containers_info: List[Dict[str, Any]]):
-        if self.mqtt_client is None:
-            return
-
         device_info = self._device_info()
+        snapshot: Dict[str, Any] = {
+            "generated_at": time.time(),
+            "docker_status": None,
+            "containers": [],
+        }
+        publish_success = True
 
         try:
-            self._publish_docker_status(containers_info, device_info)
+            snapshot["docker_status"] = self._publish_docker_status(
+                containers_info, device_info
+            )
         except Exception:
+            publish_success = False
             self.logger.exception("Failed MQTT publish for Docker status")
 
         current_slugs = set()
@@ -1275,9 +1365,16 @@ class MqttManager:
 
             try:
                 preferences = self.preferences.get_with_defaults(c["stable_id"])
-                self._publish_discovery_for_container(c, device_info, preferences)
+                container_payload = self._publish_discovery_for_container(
+                    c, device_info, preferences
+                )
+                snapshot["containers"].append(container_payload)
             except Exception:
+                publish_success = False
                 self.logger.exception("Failed MQTT publish for container %s", c["name"])
+
+        if self.mqtt_client is None:
+            publish_success = False
 
         stale_slugs = set(self.container_slug_map.keys()) - current_slugs
         for stale_slug in stale_slugs:
@@ -1289,10 +1386,14 @@ class MqttManager:
             )
 
             try:
-                self.mqtt_client.publish(sensor_config_topic, "", qos=0, retain=True)
-                self.mqtt_client.publish(state_topic, "", qos=0, retain=True)
-                self.mqtt_client.publish(attr_topic, "", qos=0, retain=True)
+                if self.mqtt_client:
+                    self.mqtt_client.publish(
+                        sensor_config_topic, "", qos=0, retain=True
+                    )
+                    self.mqtt_client.publish(state_topic, "", qos=0, retain=True)
+                    self.mqtt_client.publish(attr_topic, "", qos=0, retain=True)
             except Exception:
+                publish_success = False
                 self.logger.exception(
                     "Failed to clear MQTT config/state for stale slug %s", stale_slug
                 )
@@ -1309,13 +1410,41 @@ class MqttManager:
                     f"{self.discovery_prefix}/button/{self.node_id}/{stale_slug}_{action}/config"
                 )
                 try:
-                    self.mqtt_client.publish(btn_config_topic, "", qos=0, retain=True)
+                    if self.mqtt_client:
+                        self.mqtt_client.publish(
+                            btn_config_topic, "", qos=0, retain=True
+                        )
                 except Exception:
+                    publish_success = False
                     self.logger.exception(
                         "Failed to clear MQTT button config for stale slug %s", stale_slug
                     )
 
             self.container_slug_map.pop(stale_slug, None)
+
+        self.last_payloads = snapshot
+        self.last_publish_ts = time.time()
+        self.last_publish_success = publish_success and self.mqtt_client is not None
+        if self.last_publish_success:
+            self.last_error = None
+        elif not publish_success and self.last_error is None:
+            self.last_error = "One or more MQTT publish operations failed"
+
+    def get_status_snapshot(self) -> Dict[str, Any]:
+        return {
+            "connected": bool(self.connected and self.mqtt_client),
+            "broker": self.broker,
+            "port": self.port,
+            "username": self.username,
+            "base_topic": self.base_topic,
+            "discovery_prefix": self.discovery_prefix,
+            "node_id": self.node_id,
+            "state_interval": self.state_interval,
+            "last_error": self.last_error,
+            "last_publish_ts": self.last_publish_ts,
+            "last_publish_success": self.last_publish_success,
+            "payloads": self.last_payloads,
+        }
 
     def _periodic_publisher(self):
         while True:
