@@ -7,6 +7,7 @@ import time
 from urllib.parse import urlparse
 from collections import defaultdict
 from functools import wraps
+from typing import Any, Dict, Optional
 
 import pyotp
 import qrcode
@@ -198,7 +199,15 @@ def _read_system_uptime_seconds() -> float:
                 return float(content[0])
     except Exception:
         pass
-    return -1.0
+
+
+def _find_container_overview_entry(container_id: str) -> Optional[Dict[str, Any]]:
+    stacks = docker_service.get_cached_overview()
+    for stack in stacks:
+        for container in stack.get("containers", []):
+            if container.get("id") == container_id:
+                return {**container, "stack": stack.get("name")}
+    return None
 
 
 def _build_qr_code_data_uri(data: str) -> str:
@@ -1092,15 +1101,42 @@ def api_performance_mode():
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
 @onboarding_required
 def container_action(container_id, action):
+    wants_json = (
+        request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    )
+
     if action == "play":
         action = "start"
 
-    if action in ("start", "stop", "restart", "pause", "unpause"):
-        docker_service.apply_simple_action(container_id, action)
-    elif action == "delete":
-        docker_service.remove_container(container_id)
+    try:
+        if action in ("start", "stop", "restart", "pause", "unpause"):
+            docker_service.apply_simple_action(container_id, action)
+        elif action == "delete":
+            docker_service.remove_container(container_id)
+        else:
+            if wants_json:
+                return jsonify({"error": "Unsupported action"}), 400
+            return redirect(url_for("containers_view"))
+    except Exception as exc:  # pragma: no cover - defensive logging
+        app.logger.exception("Failed to apply action %s for %s", action, container_id)
+        if wants_json:
+            return jsonify({"error": str(exc) or "Action failed"}), 500
+        return redirect(url_for("containers_view"))
 
+    docker_service.refresh_overview_cache()
     _publish_current_state()
+
+    if wants_json:
+        updated_container = _find_container_overview_entry(container_id)
+        return jsonify(
+            {
+                "status": "ok",
+                "action": action,
+                "container": updated_container,
+                "removed": updated_container is None,
+            }
+        )
 
     return redirect(url_for("containers_view"))
 
@@ -1109,6 +1145,7 @@ def container_action(container_id, action):
 @onboarding_required
 def container_full_update(container_id):
     docker_service.recreate_container_with_latest_image(container_id)
+    docker_service.refresh_overview_cache()
     _publish_current_state()
     return redirect(url_for("updates"))
 
