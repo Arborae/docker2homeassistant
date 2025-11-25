@@ -146,6 +146,20 @@
 
     .status-chip.success .dot { background: #22c55e; box-shadow: 0 0 16px rgba(34,197,94,0.65); }
     .status-chip.danger .dot { background: #ef4444; box-shadow: 0 0 16px rgba(239,68,68,0.65); }
+    .status-chip-button {
+      border-color: var(--accent-border);
+      background: linear-gradient(135deg, rgba(49,196,255,0.12), rgba(32,78,255,0.14));
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+    }
+
+    .status-chip-button .dot {
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(49,196,255,0.7);
+    }
+
+    .status-chip-button:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(49,196,255,0.25); }
+    .status-chip-button:active { transform: translateY(0); }
 
     .section-summary-bar {
       background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
@@ -349,9 +363,23 @@
     .col-image { width: 220px; }
     .col-status { width: 140px; }
     .col-pref { width: 260px; }
+    .modal-backdrop { position: fixed; inset:0; background: rgba(4,6,15,0.78); display:none; align-items:center; justify-content:center; z-index: 60; padding:20px; }
+    .modal-backdrop.visible { display:flex; }
+    .modal { background: var(--panel-2); border:1px solid var(--border); border-radius:16px; width:min(1040px, 100%); max-width:100%; height:75vh; max-height:75vh; overflow:hidden; box-shadow: var(--shadow); display:flex; flex-direction:column; }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); background: var(--stack-header-bg); gap: 12px; }
+    .modal-title { font-weight:800; font-size:1rem; letter-spacing:0.02em; }
+    .modal-subtitle { color: var(--muted); font-size:0.9rem; }
+    .modal-close { background:none; border:1px solid transparent; color:var(--muted); font-size:1.2rem; cursor:pointer; border-radius:10px; padding:6px; }
+    .modal-close:hover { color: var(--text); border-color: var(--border); }
+    .modal-body { padding:16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; min-height:0; }
+    .terminal { background: #05080f; color: #e5e7eb; font-family: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; border-radius:12px; border:1px solid rgba(255,255,255,0.07); padding:12px; flex:1; overflow:auto; min-height:0; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02); }
+    .terminal-line { white-space: pre-wrap; font-size:0.95rem; padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.05); }
+    .terminal-line:last-child { border-bottom:none; }
+    .terminal-empty { color: var(--muted); font-style: italic; text-align:center; padding:14px 0; }
     @media(max-width: 960px) {
       table { min-width: 720px; }
       th, td { font-size:0.82rem; }
+      .modal { height: 82vh; }
     }
   </style>
   {% include 'partials/notifications_styles.html' %}
@@ -395,6 +423,10 @@
           <span class="dot" aria-hidden="true"></span>
           <span>Sensori condivisi: {{ mqtt_status.shared_entities }} / {{ mqtt_status.total_entities }}</span>
         </div>
+        <button type="button" class="status-chip status-chip-button" id="open-mqtt-log">
+          <span class="dot" aria-hidden="true"></span>
+          <span>Log pubblicazioni</span>
+        </button>
       </div>
     </section>
 
@@ -470,11 +502,105 @@
       {% endfor %}
     </form>
   </main>
+  <div class="modal-backdrop" id="mqtt-log-modal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mqtt-log-title">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="mqtt-log-title">Pubblicazioni MQTT</div>
+          <div class="modal-subtitle">Ultimi messaggi inviati verso il broker</div>
+        </div>
+        <button class="modal-close" type="button" id="mqtt-log-close" aria-label="Chiudi">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="mqtt-log-terminal" class="terminal" role="log" aria-live="polite" aria-label="Log pubblicazioni MQTT"></div>
+      </div>
+    </div>
+  </div>
   {% include 'partials/notifications_script.html' %}
   <script>
     const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
     const deselectButtons = Array.from(document.querySelectorAll('.deselect-stack'));
     const autodiscoveryForm = document.getElementById('autodiscovery-form');
+    const mqttLogModal = document.getElementById('mqtt-log-modal');
+    const mqttLogTerminal = document.getElementById('mqtt-log-terminal');
+    const mqttLogOpenBtn = document.getElementById('open-mqtt-log');
+    const mqttLogCloseBtn = document.getElementById('mqtt-log-close');
+    let mqttLogInterval = null;
+
+    function formatMqttEntry(entry) {
+      const timestamp = entry?.timestamp ? new Date(entry.timestamp) : null;
+      const timeStr = timestamp && !Number.isNaN(timestamp.getTime())
+        ? timestamp.toLocaleTimeString([], { hour12: false })
+        : '--:--:--';
+      const qosStr = typeof entry?.qos === 'number' ? ` qos=${entry.qos}` : '';
+      const retainStr = entry?.retain ? ' retain' : '';
+      const topic = entry?.topic || '<topic sconosciuto>';
+      const payload = entry?.payload ?? '';
+      return `[${timeStr}] ${topic} -> ${payload}${qosStr}${retainStr}`;
+    }
+
+    function renderMqttLog(entries) {
+      if (!mqttLogTerminal) return;
+      mqttLogTerminal.innerHTML = '';
+
+      if (!entries || !entries.length) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'terminal-empty';
+        emptyState.textContent = 'Nessuna pubblicazione recente.';
+        mqttLogTerminal.appendChild(emptyState);
+        return;
+      }
+
+      entries.forEach((entry) => {
+        const line = document.createElement('div');
+        line.className = 'terminal-line';
+        line.textContent = formatMqttEntry(entry);
+        mqttLogTerminal.appendChild(line);
+      });
+
+      mqttLogTerminal.scrollTop = mqttLogTerminal.scrollHeight;
+    }
+
+    async function refreshMqttLog() {
+      try {
+        const response = await fetch('/api/mqtt/publishes');
+        if (!response.ok) throw new Error('Richiesta non valida');
+        const data = await response.json();
+        renderMqttLog(data.entries || []);
+      } catch (err) {
+        console.error('Impossibile recuperare il log MQTT', err);
+      }
+    }
+
+    function openMqttLogModal() {
+      if (!mqttLogModal) return;
+      mqttLogModal.classList.add('visible');
+      mqttLogModal.setAttribute('aria-hidden', 'false');
+      refreshMqttLog();
+      mqttLogInterval = setInterval(refreshMqttLog, 3000);
+    }
+
+    function closeMqttLogModal() {
+      if (!mqttLogModal) return;
+      mqttLogModal.classList.remove('visible');
+      mqttLogModal.setAttribute('aria-hidden', 'true');
+      if (mqttLogInterval) {
+        clearInterval(mqttLogInterval);
+        mqttLogInterval = null;
+      }
+    }
+
+    if (mqttLogOpenBtn) {
+      mqttLogOpenBtn.addEventListener('click', openMqttLogModal);
+    }
+    if (mqttLogCloseBtn) {
+      mqttLogCloseBtn.addEventListener('click', closeMqttLogModal);
+    }
+    if (mqttLogModal) {
+      mqttLogModal.addEventListener('click', (event) => {
+        if (event.target === mqttLogModal) closeMqttLogModal();
+      });
+    }
     stackToggles.forEach((header) => {
       const btn = header.querySelector('.section-toggle-btn, .stack-toggle-btn');
       const content = header.nextElementSibling;
