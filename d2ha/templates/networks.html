@@ -149,15 +149,7 @@
 <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <header>
     <div class="header-shell">
-      <div class="title-row" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-        <div class="logo" style="font-weight:900; letter-spacing:0.08em;">D2HA</div>
-        <div class="header-actions" style="display:flex; gap:8px; align-items:center;">
-          <button id="settingsToggle" class="btn btn-ghost" type="button">⚙️</button>
-          <button id="notifToggle" class="btn btn-ghost" type="button">🔔<span id="notifBadge" class="notif-badge">0</span></button>
-          <div class="header-clock" id="header-clock" aria-live="polite">--:--:--</div>
-          <a href="{{ url_for('logout') }}" class="btn logout-link">{{ t('nav.logout') }}</a>
-        </div>
-      </div>
+      {% include 'partials/notifications_panel.html' %}
       <nav>
         <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">{{ t("nav.home") }}</a>
         <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
@@ -171,6 +163,8 @@
       </nav>
     </div>
   </header>
+
+  {% include 'partials/flash_messages.html' %}
 
   <main>
     <section class="card">
@@ -274,7 +268,6 @@
     </div>
   </div>
 
-  {% include 'partials/notifications_panel.html' %}
   {% include 'partials/notifications_script.html' %}
   <script>
     const initialNetworks = {{ networks|default([])|tojson }};
