@@ -358,19 +358,21 @@
       });
     };
 
-    deleteUnusedForm?.addEventListener('submit', (event) => {
-      const confirmed = confirm('Eliminare tutte le immagini non utilizzate?');
-      if (!confirmed) {
-        event.preventDefault();
-        return;
-      }
+    deleteUnusedForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const message = deleteUnusedForm?.dataset?.safeConfirm || 'Eliminare tutte le immagini non utilizzate?';
+      const confirmFn = window.d2haConfirm || ((msg) => Promise.resolve(confirm(msg)));
+      const confirmed = await confirmFn(message);
+      if (!confirmed) return;
 
       if (debugStreamSupported) {
-        event.preventDefault();
         startDeleteUnusedStream().catch(() => {
           deleteUnusedForm.submit();
         });
+        return;
       }
+
+      deleteUnusedForm.submit();
     });
 
     debugClose?.addEventListener('click', closeDebugOverlay);
