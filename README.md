@@ -282,6 +282,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./data:/app/data
     environment:
+      # Tag/versione dell'immagine in uso (passata anche al container)
+      D2HA_VERSION: "latest"
+
       # Chiave segreta Flask (obbligatoria in produzione)
       D2HA_SECRET_KEY: "cambia-questa-chiave"
 
@@ -297,6 +300,13 @@ services:
       # MQTT_DISCOVERY_PREFIX: "homeassistant"
       # MQTT_NODE_ID: "d2ha_server"
       # MQTT_STATE_INTERVAL: "5"
+
+    # Se vuoi buildare localmente invece di usare l'immagine:
+    # build:
+    #   context: ./d2ha
+    #   dockerfile: ./d2ha/Dockerfile
+    #   args:
+    #     D2HA_VERSION: "latest"
 ```
 
 Il volume `./data:/app/data` mantiene persistenti:

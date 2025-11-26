@@ -34,6 +34,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./data:/app/data
     environment:
+      D2HA_VERSION: "latest"
       D2HA_SECRET_KEY: "cambia-questa-chiave"
 
       # MQTT (opzionale)
@@ -42,6 +43,13 @@ services:
       # MQTT_USERNAME: "ha"
       # MQTT_PASSWORD: "password"
       # MQTT_BASE_TOPIC: "d2ha_server"
+
+    # Build locale (in alternativa all'immagine)
+    # build:
+    #   context: ./d2ha
+    #   dockerfile: ./d2ha/Dockerfile
+    #   args:
+    #     D2HA_VERSION: "latest"
 ```
 
 ### 2️⃣ Avvio
