@@ -925,11 +925,13 @@ def _build_notifications_summary(force: bool = False) -> dict:
 
 @app.context_processor
 def inject_common_context():
+    system_info = _get_system_info()
     return {
         "safe_mode_enabled": is_safe_mode_enabled(),
         "performance_mode_enabled": is_performance_mode_enabled(),
         "debug_mode_enabled": is_debug_mode_enabled(),
-        "system_info": _get_system_info(),
+        "system_info": system_info,
+        "d2ha_version": system_info.get("d2ha_version", ""),
     }
 
 
