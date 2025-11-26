@@ -439,6 +439,23 @@
     </section>
 
     <form id="autodiscovery-form" class="stacks" method="POST">
+      <section class="section-card">
+        <div class="section-card-header">
+          <div class="title">
+            <span>Azioni generali</span>
+          </div>
+        </div>
+        <div class="section-card-body">
+          <div class="checkbox-row">
+            <label class="checkbox-item" title="Esponi su MQTT il bottone per cancellare le immagini non in uso">
+              <input type="checkbox" name="delete_unused_images" aria-label="Esponi su MQTT il bottone cancella immagini non in uso" {% if global_preferences.get('delete_unused_images') %}checked{% endif %} />
+              <span class="checkbox-label">Bottone "Cancella immagini non in uso"</span>
+            </label>
+          </div>
+          <div class="muted">Rende disponibile su MQTT il comando per eliminare le immagini Docker non utilizzate.</div>
+        </div>
+      </section>
+
       {% for stack, containers in stack_map.items() %}
         <section class="section-card">
           <div class="section-card-header section-toggle" data-stack-toggle>

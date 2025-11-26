@@ -1139,6 +1139,12 @@ def autodiscovery_view():
     stable_ids = [c.get("stable_id", "") for c in containers_info]
 
     if request.method == "POST":
+        global_preferences = {
+            "delete_unused_images": request.form.get("delete_unused_images")
+            == "on"
+        }
+        autodiscovery_preferences.set_global_preferences(global_preferences)
+
         for c in containers_info:
             stable_id = c.get("stable_id")
             if not stable_id:
@@ -1161,6 +1167,7 @@ def autodiscovery_view():
     stack_map = {k: stack_map[k] for k in sorted(stack_map.keys())}
 
     pref_map = autodiscovery_preferences.build_map_for(stable_ids)
+    global_preferences = autodiscovery_preferences.get_global_preferences()
     stacks, summary = _build_home_context()
     notifications = _build_notifications_summary()
 
@@ -1178,6 +1185,7 @@ def autodiscovery_view():
         stack_map=stack_map,
         preferences=pref_map,
         actions=AutodiscoveryPreferences.AVAILABLE_ACTIONS,
+        global_preferences=global_preferences,
         summary=summary,
         notifications=notifications,
         active_page="autodiscovery",

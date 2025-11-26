@@ -81,28 +81,41 @@ class AutodiscoveryPreferences:
         "full_update",
     )
 
+    DEFAULT_GLOBAL_PREFERENCES = {"delete_unused_images": True}
+
     def __init__(self, path: str):
         self.path = path
         self._lock = threading.Lock()
-        self._data: Dict[str, Dict[str, Any]] = self._load()
+        self._data: Dict[str, Dict[str, Any]] = {}
+        self._global: Dict[str, Any] = dict(self.DEFAULT_GLOBAL_PREFERENCES)
+        self._load()
 
-    def _load(self) -> Dict[str, Dict[str, Any]]:
+    def _load(self) -> None:
         if not os.path.exists(self.path):
-            return {}
+            return
 
         try:
             with open(self.path, "r", encoding="utf-8") as f:
                 raw = json.load(f)
+                containers_raw: Dict[str, Any] = {}
+                global_raw: Dict[str, Any] = {}
+
                 if isinstance(raw, dict):
-                    return {
+                    containers_raw = raw.get("containers") or raw
+                    if isinstance(raw.get("global"), dict):
+                        global_raw = raw.get("global") or {}
+
+                if isinstance(containers_raw, dict):
+                    self._data = {
                         str(k): self._apply_defaults(v)
-                        for k, v in raw.items()
+                        for k, v in containers_raw.items()
                         if isinstance(v, dict)
                     }
-        except Exception:
-            pass
 
-        return {}
+                self._global = self._apply_global_defaults(global_raw)
+        except Exception:
+            self._data = {}
+            self._global = dict(self.DEFAULT_GLOBAL_PREFERENCES)
 
     def _apply_defaults(self, entry: Dict[str, Any]) -> Dict[str, Any]:
         actions_raw = entry.get("actions") or {}
@@ -112,18 +125,35 @@ class AutodiscoveryPreferences:
         }
         return {"state": bool(entry.get("state", True)), "actions": actions}
 
+    def _apply_global_defaults(self, entry: Dict[str, Any]) -> Dict[str, Any]:
+        prefs = dict(self.DEFAULT_GLOBAL_PREFERENCES)
+        for key in prefs:
+            prefs[key] = bool(entry.get(key, prefs[key])) if isinstance(entry, dict) else prefs[key]
+        return prefs
+
     def _save(self) -> None:
         dir_path = os.path.dirname(self.path)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
+        payload = {"containers": self._data, "global": self._global}
         with open(self.path, "w", encoding="utf-8") as f:
-            json.dump(self._data, f, indent=2)
+            json.dump(payload, f, indent=2)
 
     def get_with_defaults(self, stable_id: str) -> Dict[str, Any]:
         return self._apply_defaults(self._data.get(stable_id) or {})
 
     def build_map_for(self, stable_ids: Iterable[str]) -> Dict[str, Dict[str, Any]]:
         return {sid: self.get_with_defaults(sid) for sid in stable_ids}
+
+    def get_global_preferences(self) -> Dict[str, Any]:
+        return self._apply_global_defaults(self._global)
+
+    def set_global_preferences(self, preferences: Dict[str, Any]) -> Dict[str, Any]:
+        prefs = self._apply_global_defaults(preferences)
+        with self._lock:
+            self._global = prefs
+            self._save()
+        return prefs
 
     def set_preferences(
         self, stable_id: str, state_enabled: bool, actions: Dict[str, Any]
@@ -1128,8 +1158,31 @@ class MqttManager:
             "model": "Docker stack monitor",
         }
 
+    def _publish_delete_unused_images_button(
+        self, device_info: Dict[str, Any], enabled: bool
+    ) -> None:
+        btn_config_topic = (
+            f"{self.discovery_prefix}/button/{self.node_id}/docker_delete_unused_images/config"
+        )
+        cmd_topic = f"{self.base_topic}/docker/set/delete_unused_images"
+
+        if enabled:
+            payload = {
+                "name": "Cancella immagini non in uso",
+                "command_topic": cmd_topic,
+                "unique_id": "d2ha_delete_unused_images",
+                "device": device_info,
+                "icon": "mdi:trash-can-outline",
+            }
+            self._publish(btn_config_topic, json.dumps(payload), qos=0, retain=True)
+        else:
+            self._publish(btn_config_topic, "", qos=0, retain=True)
+
     def _publish_docker_status(
-        self, containers_info: List[Dict[str, Any]], device_info: Dict[str, Any]
+        self,
+        containers_info: List[Dict[str, Any]],
+        device_info: Dict[str, Any],
+        global_preferences: Dict[str, Any],
     ) -> None:
         state_topic = f"{self.base_topic}/docker/state"
         attr_topic = f"{self.base_topic}/docker/attributes"
@@ -1178,6 +1231,10 @@ class MqttManager:
         self._publish(config_topic, json.dumps(sensor_payload), qos=0, retain=True)
         self._publish(state_topic, state, qos=0, retain=True)
         self._publish(attr_topic, json.dumps(attributes), qos=0, retain=True)
+
+        self._publish_delete_unused_images_button(
+            device_info, bool(global_preferences.get("delete_unused_images", True))
+        )
 
     def _is_self_container(self, container_info: Dict[str, Any]) -> bool:
         """Return True if the container represents the d2ha instance itself.
@@ -1234,6 +1291,13 @@ class MqttManager:
 
         slug = parts[1]
         action = parts[3].lower()
+
+        if slug == "docker" and action == "delete_unused_images":
+            try:
+                self.docker_service.remove_unused_images()
+            except Exception:
+                self.logger.exception("MQTT action delete_unused_images failed")
+            return
 
         container_id = self.container_slug_map.get(slug)
         if not container_id:
@@ -1387,7 +1451,10 @@ class MqttManager:
         device_info = self._device_info()
 
         try:
-            self._publish_docker_status(containers_info, device_info)
+            global_preferences = self.preferences.get_global_preferences()
+            self._publish_docker_status(
+                containers_info, device_info, global_preferences
+            )
         except Exception:
             self.logger.exception("Failed MQTT publish for Docker status")
 
