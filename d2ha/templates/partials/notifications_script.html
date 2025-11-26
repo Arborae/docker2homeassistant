@@ -26,6 +26,7 @@
       confirmBtn: null,
       cancelBtn: null,
       pendingForm: null,
+      resolver: null,
     };
     let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
     const initialPerformanceMode = (document.body?.dataset?.performanceMode || '0') === '1';
@@ -319,7 +320,12 @@
       `;
 
       backdrop.addEventListener('click', (evt) => {
-        if (evt.target === backdrop) closeSafeConfirmModal();
+        if (evt.target === backdrop) {
+          if (typeof safeConfirmState.resolver === 'function') {
+            safeConfirmState.resolver(false);
+          }
+          closeSafeConfirmModal();
+        }
       });
 
       const message = backdrop.querySelector('[data-safe-confirm-message]');
@@ -330,10 +336,18 @@
         if (safeConfirmState.pendingForm) {
           safeConfirmState.pendingForm.submit();
         }
+        if (typeof safeConfirmState.resolver === 'function') {
+          safeConfirmState.resolver(true);
+        }
         closeSafeConfirmModal();
       });
 
-      cancelBtn?.addEventListener('click', () => closeSafeConfirmModal());
+      cancelBtn?.addEventListener('click', () => {
+        if (typeof safeConfirmState.resolver === 'function') {
+          safeConfirmState.resolver(false);
+        }
+        closeSafeConfirmModal();
+      });
 
       safeConfirmState.modal = backdrop;
       safeConfirmState.message = message;
@@ -343,9 +357,10 @@
       document.body.appendChild(backdrop);
     }
 
-    function openSafeConfirmModal(message, form) {
+    function openSafeConfirmModal(message, form, resolver = null) {
       ensureSafeConfirmModal();
       safeConfirmState.pendingForm = form;
+      safeConfirmState.resolver = resolver;
       if (safeConfirmState.message) {
         safeConfirmState.message.textContent = message;
       }
@@ -355,7 +370,14 @@
 
     function closeSafeConfirmModal() {
       safeConfirmState.pendingForm = null;
+      safeConfirmState.resolver = null;
       safeConfirmState.modal?.classList.remove('visible');
+    }
+
+    function requestConfirmation(message) {
+      return new Promise((resolve) => {
+        openSafeConfirmModal(message, null, resolve);
+      });
     }
 
     startClock();
@@ -600,6 +622,7 @@
 
   window.registerPerformanceHandler = registerPerformanceHandler;
   window.applyPerformanceMode = applyPerformanceMode;
+  window.d2haConfirm = requestConfirmation;
   initPerformanceMode();
   initDebugMode();
   loadDismissedNotifications();
