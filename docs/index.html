@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Docker to Home Assistant (D2HA) – Docker control & MQTT autodiscovery</title>
+
+  <!-- SEO base -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="D2HA (Docker to Home Assistant) is a modern web UI to monitor and control Docker containers with MQTT autodiscovery integration for Home Assistant." />
+  <meta name="keywords" content="docker, home assistant, mqtt, autodiscovery, docker containers, web ui, docker monitoring, d2ha" />
+
+  <!-- Open Graph / Social -->
+  <meta property="og:title" content="Docker to Home Assistant (D2HA)" />
+  <meta property="og:description" content="Monitor and control Docker containers with a modern web UI and MQTT autodiscovery for Home Assistant." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://arborae.github.io/docker2homeassistant/" />
+
+  <!-- CSS per la pagina auth + background -->
+  <link rel="stylesheet" href="./css/auth.css" />
+
+  <!-- Stili extra per la landing -->
+  <style>
+    .landing-card {
+      padding: 2.2rem 2.4rem;
+    }
+
+    .landing-title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .landing-subtitle {
+      font-size: 0.98rem;
+      color: #9ca3af;
+      margin-bottom: 1.6rem;
+      line-height: 1.6;
+    }
+
+    .landing-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.6rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .landing-badge {
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: #e5f7ff;
+      background: radial-gradient(circle at top left, rgba(79, 195, 247, 0.18), rgba(15, 23, 42, 0.9));
+    }
+
+    .landing-badge-primary {
+      border-color: rgba(79, 195, 247, 0.9);
+      color: #4fc3f7;
+    }
+
+    .landing-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-bottom: 1.4rem;
+    }
+
+    .landing-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1.4rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .landing-btn-primary {
+      background: linear-gradient(135deg, #4fc3f7, #22c1c3);
+      color: #020617;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.45);
+    }
+
+    .landing-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 40px rgba(56, 189, 248, 0.6);
+    }
+
+    .landing-btn-ghost {
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5f7ff;
+      border-color: rgba(148, 163, 184, 0.4);
+    }
+
+    .landing-btn-ghost:hover {
+      background: rgba(15, 23, 42, 1);
+      border-color: rgba(148, 163, 184, 0.8);
+      transform: translateY(-1px);
+    }
+
+    .landing-note {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .landing-swipe {
+      margin-top: 1.6rem;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .landing-swipe img {
+      width: 100%;
+      display: block;
+    }
+
+    .landing-swipe-caption {
+      margin-top: 0.6rem;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      padding: 1.5rem 1rem 2rem;
+    }
+
+    footer a {
+      color: #4fc3f7;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body class="theme-dark">
+  <div class="auth-page">
+    <!-- Canvas + animazione di sfondo -->
+    <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
+
+    <!-- Logo e titolo “fluttuanti” in stile login/wizard -->
+    <div class="auth-title" aria-hidden="true">D2HA</div>
+    <div class="auth-logo" aria-hidden="true">
+      <!-- Inserisci qui il tuo logo come logo.svg nella cartella assets -->
+      <img src="./assets/logo.svg" alt="D2HA Logo">
+    </div>
+
+    <!-- Overlay con la card della landing -->
+    <div class="auth-overlay">
+      <div class="auth-card landing-card">
+        <h1 class="landing-title">Docker to Home Assistant (D2HA)</h1>
+        <p class="landing-subtitle">
+          A modern web UI to monitor and control your Docker containers, with MQTT autodiscovery integration tailored for Home Assistant.
+          Self-hosted, Docker-first, and designed for Home Assistant users.
+        </p>
+
+        <div class="landing-badges">
+          <span class="landing-badge landing-badge-primary">Docker ➜ Home Assistant</span>
+          <span class="landing-badge">MQTT autodiscovery</span>
+          <span class="landing-badge">Light & Dark theme</span>
+          <span class="landing-badge">Safe & performance modes</span>
+        </div>
+
+        <div class="landing-actions">
+          <a class="landing-btn landing-btn-primary" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
+            <span>⭐ View on GitHub</span>
+          </a>
+          <a class="landing-btn landing-btn-ghost" href="https://github.com/Arborae/docker2homeassistant#-getting-started" target="_blank" rel="noopener noreferrer">
+            <span>📦 Quick start &amp; docs</span>
+          </a>
+        </div>
+
+        <div class="landing-note">
+          Built to expose Docker metrics, controls and MQTT entities that plug directly into your Home Assistant setup.
+        </div>
+
+        <div class="landing-swipe">
+          <!-- Assicurati che questo file esista in docs/assets/d2ha_home_swipe.gif -->
+          <img src="./assets/d2ha_home_swipe.gif" alt="D2HA light and dark theme preview" />
+        </div>
+        <div class="landing-swipe-caption">
+          Light &amp; dark theme preview of the D2HA dashboard.
+        </div>
+      </div>
+
+      <footer>
+        Docker to Home Assistant (D2HA) ·
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
+          View project on GitHub
+        </a>
+      </footer>
+    </div>
+  </div>
+
+  <!-- JS che disegna lo sfondo animato sul canvas -->
+  <script src="./js/auth_background.js"></script>
+</body>
+</html>
