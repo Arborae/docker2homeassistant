@@ -2,185 +2,339 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Docker 2 Home Assistant – Install guide</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Install Docker 2 Home Assistant (D2HA)</title>
 
-  <!-- Shared auth / background styles -->
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Install guide for Docker 2 Home Assistant (D2HA): Docker Compose, quick test, nightly builds, first login, access URL and MQTT autodiscovery for Home Assistant." />
+
+  <!-- Shared auth/background styles -->
   <link rel="stylesheet" href="../css/auth.css" />
 
   <style>
     :root {
       --tech-gradient: linear-gradient(135deg, #38bdf8, #7c3aed);
+      --tech-glow: 0 18px 48px rgba(56, 189, 248, 0.35);
     }
 
-    body.theme-dark {
-      overflow-x: hidden;
-    }
-
-    .install-overlay {
-      position: relative;
-      z-index: 1;
-      min-height: 100vh;
+    .auth-overlay {
+      width: min(1180px, 100%);
+      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: 4rem 1.2rem 3rem;
-    }
-
-    .install-card {
-      max-width: 1080px;
-      margin: 0 auto;
-      background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(12, 18, 34, 0.9));
-      border-radius: 22px;
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.65);
-      padding: 2.6rem;
-      backdrop-filter: blur(20px);
-    }
-
-    .install-header {
-      display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-      margin-bottom: 1.4rem;
     }
 
-    .install-title {
-      font-size: clamp(1.9rem, 4vw, 2.3rem);
-      font-weight: 800;
-      letter-spacing: 0.06em;
-      background: var(--tech-gradient);
-      -webkit-background-clip: text;
-      color: transparent;
-      text-shadow: 0 10px 32px rgba(56, 189, 248, 0.35);
-      margin: 0;
+    .landing-card {
+      padding: 2.6rem 2.6rem 2.4rem;
+      width: 100%;
+      max-width: 1100px;
+      background:
+        linear-gradient(150deg, rgba(49, 196, 255, 0.08), rgba(124, 255, 195, 0.06)),
+        linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+        rgba(10, 15, 28, 0.58);
+      border-radius: 24px;
+      border: 1px solid rgba(148, 163, 184, 0.32);
+      box-shadow: 0 26px 52px rgba(0, 0, 0, 0.45);
+      backdrop-filter: blur(16px) saturate(112%);
     }
 
-    .install-subtitle {
-      color: #9ca3af;
-      margin-top: 0.4rem;
-      line-height: 1.6;
-      max-width: 620px;
-      font-size: 0.98rem;
-    }
-
-    .install-badges {
+    .landing-header {
+      margin-bottom: 1.8rem;
       display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+      flex-direction: column;
+      gap: 0.7rem;
     }
 
-    .install-badge {
-      padding: 0.35rem 0.75rem;
-      border-radius: 999px;
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(79, 195, 247, 0.35);
-      color: #e5f7ff;
-      letter-spacing: 0.05em;
-      font-size: 0.82rem;
-      text-transform: uppercase;
-    }
-
-    .install-badge-secondary {
-      background: rgba(15, 23, 42, 0.85);
-      border-color: rgba(148, 163, 184, 0.5);
-      color: #cbd5f5;
-    }
-
-    .install-section-label {
-      font-size: 0.78rem;
+    .landing-kicker {
+      font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.16em;
       color: #9ca3af;
-      margin-bottom: 0.6rem;
-    }
-
-    .install-grid {
-      display: grid;
-      gap: 1rem;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      margin-top: 1.2rem;
-    }
-
-    .install-block {
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      border-radius: 16px;
-      padding: 1.2rem 1.2rem 1rem;
-      background: rgba(15, 23, 42, 0.9);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
-      display: grid;
-      gap: 0.6rem;
-    }
-
-    .install-block h3 {
-      margin: 0;
-      font-size: 1.05rem;
-      letter-spacing: 0.04em;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.6rem;
+      flex-wrap: wrap;
     }
 
-    .install-block h3 span {
-      font-size: 0.78rem;
+    .landing-kicker a {
+      color: #9ca3af;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      opacity: 0.9;
+    }
+
+    .landing-kicker a:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    .landing-title {
+      font-size: clamp(1.9rem, 4vw, 2.3rem);
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 0.02em;
+      background: var(--tech-gradient);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 8px 30px rgba(56, 189, 248, 0.3);
+    }
+
+    .landing-subtitle {
+      font-size: 0.98rem;
+      color: #e5e7eb;
+      max-width: 680px;
+      line-height: 1.7;
+    }
+
+    .landing-subtitle span {
+      color: #9ca3af;
+    }
+
+    .landing-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .landing-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.7rem 1.4rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      font-size: 0.88rem;
       font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .landing-btn-primary {
+      background: var(--tech-gradient);
+      color: #020617;
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.45);
+    }
+
+    .landing-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 40px rgba(56, 189, 248, 0.6);
+    }
+
+    .landing-btn-ghost {
+      background: rgba(15, 23, 42, 0.72);
+      border-color: rgba(148, 163, 184, 0.6);
+      color: #e5e7eb;
+    }
+
+    .landing-btn-ghost:hover {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: rgba(148, 163, 184, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .landing-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+
+    .landing-badge {
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border: 1px solid rgba(148, 163, 184, 0.55);
+      color: #cbd5f5;
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .landing-badge-primary {
+      border-color: rgba(56, 189, 248, 0.8);
+      color: #e0faff;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .landing-section-title {
+      font-size: 0.88rem;
       text-transform: uppercase;
       letter-spacing: 0.14em;
       color: #9ca3af;
+      margin-bottom: 0.5rem;
     }
 
-    .install-block code,
-    .install-block pre {
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(79, 195, 247, 0.35);
-      color: #bef2ff;
-      border-radius: 12px;
-      padding: 0.65rem 0.75rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 0.92rem;
-      overflow-x: auto;
-      box-shadow: 0 0 24px rgba(79, 195, 247, 0.1);
+    /* INSTALL LAYOUT */
+
+    .install-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 1.8rem;
+      align-items: flex-start;
     }
 
-    .install-block pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
+    .install-column {
+      display: flex;
+      flex-direction: column;
+      gap: 1.1rem;
     }
 
-    .install-small {
+    .install-panel {
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 55%),
+                  rgba(15, 23, 42, 0.92);
+      padding: 1.2rem 1.25rem 1.1rem;
+      box-shadow: 0 20px 34px rgba(0, 0, 0, 0.4);
+    }
+
+    .install-panel h3 {
+      margin: 0 0 0.25rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .install-panel h3 span {
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
       color: #9ca3af;
-      line-height: 1.6;
-      font-size: 0.94rem;
+      font-weight: 500;
     }
 
-    .install-list {
-      color: #d1d5db;
-      padding-left: 1.1rem;
-      margin: 0.2rem 0 0;
+    .install-panel p {
+      margin: 0.3rem 0 0.5rem;
+      color: #e5e7eb;
+      font-size: 0.9rem;
       line-height: 1.6;
-      font-size: 0.94rem;
+    }
+
+    .install-panel small {
+      display: block;
+      margin-top: 0.3rem;
+      color: #9ca3af;
+      font-size: 0.82rem;
+    }
+
+    .install-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.7rem;
+      margin-top: 0.4rem;
+    }
+
+    .install-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.55rem 0.6rem;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.88);
+    }
+
+    .install-step-number {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: var(--tech-gradient);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #020617;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.5);
+    }
+
+    .install-step-body {
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      line-height: 1.5;
+    }
+
+    .install-step-body span {
+      display: block;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      margin-top: 0.09rem;
+    }
+
+    .install-grid-small {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 0.9rem;
+      margin-top: 0.7rem;
+    }
+
+    .install-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.35rem;
+    }
+
+    .install-chip {
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      font-size: 0.78rem;
+      color: #cbd5f5;
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    pre.install-code {
+      margin: 0.35rem 0 0;
+      background: rgba(15, 23, 42, 0.97);
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      padding: 0.8rem 0.85rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.86rem;
+      color: #e0f2fe;
+      overflow-x: auto;
+      box-shadow: 0 0 26px rgba(56, 189, 248, 0.18);
+      line-height: 1.45;
+      white-space: pre;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.86rem;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 0.05rem 0.25rem;
+      border-radius: 6px;
+      border: 1px solid rgba(31, 41, 55, 0.7);
+      color: #e0f2fe;
     }
 
     .install-callout {
-      margin-top: 1.3rem;
-      padding: 1rem 1.1rem;
-      border-radius: 14px;
-      border: 1px dashed rgba(79, 195, 247, 0.45);
-      background: rgba(56, 189, 248, 0.08);
+      margin-top: 1rem;
+      border-radius: 16px;
+      border: 1px dashed rgba(56, 189, 248, 0.8);
+      background: rgba(15, 23, 42, 0.92);
+      padding: 0.9rem 1rem;
       color: #e5f7ff;
-      font-size: 0.94rem;
+      font-size: 0.9rem;
       line-height: 1.6;
     }
 
     .install-footer {
-      text-align: center;
+      margin-top: 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.6rem;
+      font-size: 0.86rem;
       color: #9ca3af;
-      margin-top: 1.4rem;
-      font-size: 0.95rem;
     }
 
     .install-footer a {
@@ -192,59 +346,197 @@
       text-decoration: underline;
     }
 
-    @media (max-width: 640px) {
-      .install-card {
-        padding: 2rem 1.4rem;
+    footer {
+      margin-top: 1.1rem;
+      font-size: 0.8rem;
+      color: #6b7280;
+      text-align: center;
+    }
+
+    footer a {
+      color: #9ca3af;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 900px) {
+      .landing-card {
+        padding: 2.1rem 1.6rem 2.1rem;
       }
 
-      .install-header {
+      .install-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 640px) {
+      .landing-header {
+        margin-bottom: 1.4rem;
+      }
+
+      .landing-title {
+        font-size: 1.7rem;
+      }
+
+      .landing-subtitle {
+        font-size: 0.94rem;
+      }
+
+      .landing-actions {
         flex-direction: column;
         align-items: flex-start;
-      }
-
-      .install-badges {
-        justify-content: flex-start;
       }
     }
   </style>
 </head>
-<body class="theme-dark landing-ready">
+<body class="theme-dark landing-intro">
   <div class="auth-page">
+    <!-- Animated background -->
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
 
-    <div class="auth-title" aria-hidden="true" style="top: 1.4rem; opacity: 0.9; letter-spacing: 0.12em;">
-      Docker 2 Home Assistant
-    </div>
-
-    <div class="auth-logo" aria-hidden="true" style="top: 52%; left: 50%; width: clamp(320px, 36vw, 420px); height: clamp(320px, 36vw, 420px); transform: translate(-50%, -50%); opacity: 0.08; z-index: 0;">
+    <!-- Floating title + logo (same style as landing) -->
+    <div class="auth-title" aria-hidden="true">Docker 2 Home Assistant</div>
+    <div class="auth-logo" aria-hidden="true">
       <img src="../assets/logo.svg" alt="D2HA Logo" />
     </div>
 
-    <div class="install-overlay">
-      <div class="install-card">
-        <div class="install-header">
-          <div>
-            <h1 class="install-title">Install D2HA in minutes</h1>
-            <div class="install-subtitle">
-              Use this page as a focused install guide for Docker and Docker Compose. Choose the path that best matches your stack and then connect Home Assistant via MQTT if you want autodiscovery.
+    <!-- Main install card -->
+    <div class="auth-overlay">
+      <div class="auth-card landing-card">
+        <header class="landing-header">
+          <div class="landing-kicker">
+            <a href="../">&larr; Back to landing</a>
+            <span>Install guide</span>
+          </div>
+
+          <h1 class="landing-title">Install D2HA on your Docker host</h1>
+
+          <p class="landing-subtitle">
+            Pick the install method that best fits your stack: use <strong>Docker Compose</strong> for
+            a persistent setup, keep a <strong>quick test</strong> with <code>docker run</code>,
+            opt into <strong>nightly builds</strong> when you want the latest commits, and
+            optionally connect <strong>MQTT</strong> so Home Assistant can auto-discover entities.
+            <span>You can always switch method later without losing your data folder.</span>
+          </p>
+
+          <div class="landing-actions">
+            <a class="landing-btn landing-btn-primary" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
+              <span>View on GitHub</span>
+            </a>
+            <a class="landing-btn landing-btn-ghost" href="../">
+              <span>Back to overview</span>
+            </a>
+          </div>
+
+          <div class="landing-badges">
+            <span class="landing-badge landing-badge-primary">Docker native</span>
+            <span class="landing-badge">MQTT for Home Assistant</span>
+            <span class="landing-badge">Safe mode &amp; 2FA</span>
+          </div>
+        </header>
+
+        <div class="install-layout">
+          <!-- LEFT COLUMN: Overview & steps -->
+          <div class="install-column">
+            <div>
+              <div class="landing-section-title">Before you start</div>
+              <div class="install-panel">
+                <p style="margin-top:0;">
+                  Make sure you have:
+                </p>
+                <ul style="margin:0.2rem 0 0.4rem 1.1rem; padding:0; color:#e5e7eb; font-size:0.9rem; line-height:1.5;">
+                  <li>Docker (and optionally Docker Compose) installed on the target host.</li>
+                  <li>Access to the Docker socket <code>/var/run/docker.sock</code> (read-only is enough).</li>
+                  <li>An MQTT broker if you want Home Assistant autodiscovery (optional).</li>
+                </ul>
+                <small>
+                  D2HA can run on the same host as Home Assistant, or on a separate machine
+                  as long as it can reach the Docker daemon and, if used, the MQTT broker.
+                </small>
+              </div>
+            </div>
+
+            <div>
+              <div class="landing-section-title">Quick path</div>
+              <div class="install-steps">
+                <div class="install-step">
+                  <div class="install-step-number">1</div>
+                  <div class="install-step-body">
+                    Choose the <strong>Docker Compose</strong> or <strong>quick test</strong> method.
+                    <span>Compose is recommended for long-running setups; <code>docker run</code> is great to just try it out.</span>
+                  </div>
+                </div>
+                <div class="install-step">
+                  <div class="install-step-number">2</div>
+                  <div class="install-step-body">
+                    Start the container and open <code>http://&lt;host&gt;:12021</code>.
+                    <span>You will see the first-time wizard (admin account, 2FA and Safe mode).</span>
+                  </div>
+                </div>
+                <div class="install-step">
+                  <div class="install-step-number">3</div>
+                  <div class="install-step-body">
+                    Optionally configure <strong>MQTT</strong> in the wizard.
+                    <span>D2HA will publish sensors and switches that Home Assistant can auto-discover.</span>
+                  </div>
+                </div>
+                <div class="install-step">
+                  <div class="install-step-number">4</div>
+                  <div class="install-step-body">
+                    Use the dashboard to monitor and control your containers.
+                    <span>Switch between stable and nightly images when you need new features.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="landing-section-title">First login &amp; access URL</div>
+              <div class="install-grid-small">
+                <div class="install-panel">
+                  <h3>🔑 First login</h3>
+                  <p>
+                    On the very first startup, D2HA creates a default admin account:
+                  </p>
+                  <pre class="install-code">Username: admin
+Password: admin</pre>
+                  <small>
+                    The onboarding wizard will force you to change this password,
+                    optionally enable 2FA, and confirm whether you want Safe mode enabled.
+                  </small>
+                </div>
+                <div class="install-panel">
+                  <h3>🌐 Access URL</h3>
+                  <p>
+                    By default, the web UI listens on port <code>12021</code>:
+                  </p>
+                  <pre class="install-code">http://localhost:12021
+
+# From another device in your LAN:
+http://&lt;server-ip&gt;:12021</pre>
+                  <small>
+                    If you put D2HA behind a reverse proxy, keep it protected with HTTPS and
+                    strong authentication – the UI can start/stop and update containers.
+                  </small>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="install-badges">
-            <span class="install-badge">Docker ready</span>
-            <span class="install-badge install-badge-secondary">MQTT optional</span>
-            <span class="install-badge install-badge-secondary">Home Assistant autodiscovery</span>
-          </div>
-        </div>
 
-        <div class="install-section-label">
-          Recommended setup
-        </div>
-
-        <div class="install-grid">
-          <!-- Docker Compose (recommended) -->
-          <div class="install-block">
-            <h3>📦 Docker Compose <span>Recommended</span></h3>
-            <pre><code>services:
+          <!-- RIGHT COLUMN: concrete install methods -->
+          <div class="install-column">
+            <div>
+              <div class="landing-section-title">Install methods</div>
+              <div class="install-panel">
+                <h3>📦 Docker Compose <span>Recommended</span></h3>
+                <p>
+                  Use this when you want a persistent, versioned setup. The <code>./data</code> folder
+                  holds configuration, auth and preferences.
+                </p>
+                <pre class="install-code">services:
   d2ha:
     image: ghcr.io/arborae/docker2homeassistant:latest
     container_name: d2ha
@@ -255,110 +547,117 @@
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./data:/app/data
     environment:
-      D2HA_VERSION: "latest"
       D2HA_SECRET_KEY: "change-this-secret-key"
 
-      # MQTT (optional)
+      # Optional: MQTT for Home Assistant
       # MQTT_BROKER: "192.168.1.10"
       # MQTT_PORT: "1883"
       # MQTT_USERNAME: "ha"
       # MQTT_PASSWORD: "password"
-      # MQTT_BASE_TOPIC: "d2ha_server"
-
-    # Local build (alternative to image)
-    # build:
-    #   context: ./d2ha
-    #   dockerfile: ./d2ha/Dockerfile
-    #   args:
-    #     D2HA_VERSION: "latest"</code></pre>
-            <div class="install-small">
-              Start with <code>docker compose up -d</code> and update later with
-              <code>docker compose pull</code> followed by <code>docker compose up -d</code>.
+      # MQTT_BASE_TOPIC: "d2ha_server"</pre>
+                <small>
+                  Bring it up with <code>docker compose up -d</code>.
+                  To update later, run <code>docker compose pull</code> followed by
+                  <code>docker compose up -d</code>.
+                </small>
+              </div>
             </div>
-          </div>
 
-          <!-- Docker run quick test -->
-          <div class="install-block">
-            <h3>🚀 Quick test (docker run)</h3>
-            <pre><code>docker run -d \
+            <div class="install-panel">
+              <h3>🚀 Quick test with <code>docker run</code></h3>
+              <p>
+                Ideal for trying D2HA without touching your existing Compose files. You can migrate
+                to a Compose setup later by reusing the same <code>./data</code> folder.
+              </p>
+              <pre class="install-code">docker run -d \
   --name d2ha \
   -p 12021:12021 \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v $(pwd)/data:/app/data \
   -e D2HA_SECRET_KEY="change-this-secret-key" \
-  ghcr.io/arborae/docker2homeassistant:latest</code></pre>
-            <div class="install-small">
-              The <code>./data</code> folder stores persistent configuration
-              (auth, MQTT preferences, settings). This is ideal for a quick first run.
+  ghcr.io/arborae/docker2homeassistant:latest</pre>
+              <small>
+                Stop the quick test with <code>docker stop d2ha</code> and
+                <code>docker rm d2ha</code>. The data in <code>./data</code> is kept.
+              </small>
             </div>
-          </div>
 
-          <!-- Nightly builds -->
-          <div class="install-block">
-            <h3>🌙 Nightly builds</h3>
-            <pre><code>image: ghcr.io/arborae/docker2homeassistant:nightly
-# or pin a specific commit:
-image: ghcr.io/arborae/docker2homeassistant:nightly-&lt;commit_sha&gt;</code></pre>
-            <div class="install-small">
-              Nightly images track the latest changes merged into <code>main</code>.
-              Use them if you want early access to new features and are comfortable
-              with faster-moving changes.
-            </div>
-          </div>
+            <div class="install-grid-small">
+              <div class="install-panel">
+                <h3>🌙 Nightly builds</h3>
+                <p>
+                  Nightly images track the latest commits on <code>main</code>. Use them if you want
+                  early access to new features and are comfortable with faster-moving changes.
+                </p>
+                <pre class="install-code"># In Docker Compose:
+image: ghcr.io/arborae/docker2homeassistant:nightly
 
-          <!-- Initial credentials / wizard -->
-          <div class="install-block">
-            <h3>🔑 First login &amp; onboarding</h3>
-            <pre><code>Username: admin
-Password: admin</code></pre>
-            <ul class="install-list">
-              <li>On the first login, a guided wizard will ask you to change the password, configure 2FA and choose Safe mode.</li>
-              <li>From the wizard you can also configure MQTT for Home Assistant autodiscovery.</li>
-            </ul>
-          </div>
+# Or pin a specific commit:
+image: ghcr.io/arborae/docker2homeassistant:nightly-&lt;commit_sha&gt;</pre>
+                <small>
+                  You can always roll back to <code>:latest</code> if a nightly introduces a regression.
+                </small>
+              </div>
 
-          <!-- Access URL -->
-          <div class="install-block">
-            <h3>🌐 Access URL</h3>
-            <pre><code>http://localhost:12021</code></pre>
-            <div class="install-small">
-              When running on a remote host, replace <code>localhost</code> with the server IP
-              or DNS name (for example <code>http://192.168.1.10:12021</code>).
-            </div>
-          </div>
-
-          <!-- MQTT .env example -->
-          <div class="install-block">
-            <h3>📡 MQTT .env example</h3>
-            <pre><code>MQTT_BROKER=192.168.1.10
+              <div class="install-panel">
+                <h3>📡 MQTT for Home Assistant</h3>
+                <p>
+                  MQTT is optional, but recommended if you want Home Assistant to auto-discover
+                  sensors and switches for your containers.
+                </p>
+                <pre class="install-code">MQTT_BROKER=192.168.1.10
 MQTT_PORT=1883
 MQTT_USERNAME=homeassistant
 MQTT_PASSWORD=password
 MQTT_BASE_TOPIC=d2ha_server
 MQTT_DISCOVERY_PREFIX=homeassistant
 MQTT_NODE_ID=d2ha_server
-MQTT_STATE_INTERVAL=5</code></pre>
-            <div class="install-small">
-              Without MQTT, D2HA is still a full Docker dashboard. MQTT is only required
-              if you want Home Assistant to discover entities automatically.
+MQTT_STATE_INTERVAL=5</pre>
+                <small>
+                  You can set these as environment variables in Compose, in a <code>.env</code> file,
+                  or via the onboarding wizard once D2HA is running.
+                </small>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="install-callout">
-          Pro tip: define a strong <code>D2HA_SECRET_KEY</code> from day one and enable 2FA
-          during the first login. This secures the web UI that controls your containers.
+          <strong>Security tip:</strong> always set a strong <code>D2HA_SECRET_KEY</code>, change
+          the default admin password during the first login, and enable 2FA if the instance is reachable
+          from the internet or from shared networks.
         </div>
 
         <div class="install-footer">
-          Back to the <a href="../">landing page</a> or visit
-          <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">GitHub</a>
-          for releases and full documentation.
+          <span>
+            Need more context? Check the README and release notes on
+            <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">GitHub</a>.
+          </span>
+          <span>
+            Back to the <a href="../">project overview</a>.
+          </span>
         </div>
       </div>
+
+      <footer>
+        Docker to Home Assistant (D2HA) ·
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
+          View project on GitHub
+        </a>
+      </footer>
     </div>
   </div>
 
   <script src="../js/auth_background.js"></script>
+  <script>
+    // Same intro effect as the landing page:
+    window.addEventListener('load', () => {
+      const body = document.body;
+      setTimeout(() => {
+        body.classList.add('landing-ready');
+        body.classList.remove('landing-intro');
+      }, 2200);
+    });
+  </script>
 </body>
 </html>
