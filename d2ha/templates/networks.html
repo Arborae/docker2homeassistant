@@ -104,6 +104,8 @@
     .toolbar-controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
     .field { display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,0.02); min-height:42px; }
     .field input, .field select { background: transparent; border: none; color: var(--text); outline: none; font-size: 0.95rem; min-width: 160px; }
+    body.theme-dark select { background: var(--control-surface); color: var(--text); }
+    body.theme-dark select option { background: var(--control-surface); color: var(--text); }
     .field select { padding-right: 4px; }
     .toggle { display:flex; align-items:center; gap:6px; color: var(--muted); font-weight:700; }
     table { width:100%; border-collapse:collapse; }
@@ -287,6 +289,7 @@
     const driverSelectModal = document.getElementById('networkDriver');
     let networksCache = initialNetworks || [];
     let detailsCache = {};
+    const openDetails = new Set();
     let refreshTimer = null;
     const defaultRefresh = 20000;
     const slowRefresh = 45000;
@@ -321,6 +324,11 @@
         return true;
       });
 
+      const filteredIds = new Set(filtered.map((net) => net.id));
+      openDetails.forEach((id) => {
+        if (!filteredIds.has(id)) openDetails.delete(id);
+      });
+
       networksBody.innerHTML = '';
       if (!filtered.length) {
         networksEmpty.style.display = 'block';
@@ -353,9 +361,13 @@
         const detailRow = document.createElement('tr');
         detailRow.className = 'details-row';
         detailRow.dataset.id = net.id;
-        detailRow.style.display = 'none';
+        detailRow.style.display = openDetails.has(net.id) ? 'table-row' : 'none';
         detailRow.innerHTML = `<td colspan="9"><div class="details-shell" id="detail-${net.id}"></div></td>`;
         networksBody.appendChild(detailRow);
+
+        if (openDetails.has(net.id)) {
+          loadDetails(net.id);
+        }
       });
     }
 
@@ -377,7 +389,12 @@
       if (!row) return;
       const isOpen = row.style.display !== 'none';
       row.style.display = isOpen ? 'none' : 'table-row';
-      if (!isOpen) loadDetails(id);
+      if (isOpen) {
+        openDetails.delete(id);
+      } else {
+        openDetails.add(id);
+        loadDetails(id);
+      }
     }
 
     function renderContainers(containers = []) {
