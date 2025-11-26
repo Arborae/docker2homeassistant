@@ -465,133 +465,6 @@
       pointer-events: auto;
     }
 
-    /* Modal install */
-    .landing-modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(2, 6, 23, 0.65);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 6;
-    }
-
-    .landing-modal-backdrop.active {
-      display: flex;
-    }
-
-    .landing-modal {
-      width: min(1100px, 92vw);
-      height: min(720px, 90vh);
-      background: rgba(15, 23, 42, 0.94);
-      border: 1px solid rgba(148, 163, 184, 0.45);
-      border-radius: 18px;
-      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65);
-      overflow: hidden;
-      position: relative;
-    }
-
-    .landing-modal header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.95rem;
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid rgba(148, 163, 184, 0.25);
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(15, 23, 42, 0.95));
-      color: #e5f7ff;
-      letter-spacing: 0.03em;
-      flex-wrap: wrap;
-    }
-
-    .landing-modal-info {
-      display: grid;
-      gap: 0.15rem;
-      min-width: 0;
-      color: #cbd5e1;
-    }
-
-    .landing-modal-info .modal-label {
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      color: #94a3b8;
-    }
-
-    .landing-modal-info p {
-      margin: 0;
-      font-size: 0.9rem;
-      line-height: 1.4;
-      color: #e5e7eb;
-    }
-
-    .landing-modal-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 0.92rem;
-      color: #d1d5db;
-    }
-
-    .landing-modal-actions a {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.45rem 0.8rem;
-      border-radius: 10px;
-      background: rgba(79, 195, 247, 0.12);
-      border: 1px solid rgba(79, 195, 247, 0.35);
-      color: #e5f7ff;
-      text-decoration: none;
-      font-weight: 600;
-      transition: background 0.18s ease, border-color 0.18s ease;
-    }
-
-    .landing-modal-actions a:hover {
-      background: rgba(79, 195, 247, 0.18);
-      border-color: rgba(79, 195, 247, 0.6);
-    }
-
-    .landing-modal button {
-      background: rgba(148, 163, 184, 0.12);
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      color: #e5f7ff;
-      border-radius: 10px;
-      padding: 0.4rem 0.85rem;
-      cursor: pointer;
-      transition: background 0.18s ease, transform 0.18s ease;
-    }
-
-    .landing-modal button:hover {
-      background: rgba(148, 163, 184, 0.2);
-      transform: translateY(-1px);
-    }
-
-    .landing-modal iframe {
-      width: 100%;
-      height: calc(100% - 54px);
-      border: none;
-      background: transparent;
-    }
-
-    body.modal-open .auth-overlay {
-      filter: blur(6px);
-      pointer-events: none;
-    }
-
-    body.modal-open .auth-title {
-      filter: blur(1px);
-    }
-
-    body.modal-open .auth-canvas {
-      filter: blur(4px) brightness(0.9);
-    }
-
-    body.modal-open {
-      overflow: hidden;
-    }
-
     @media (max-width: 640px) {
       body.landing-ready .auth-title {
         font-size: 1.8rem;
@@ -638,9 +511,9 @@
             <a class="landing-btn landing-btn-primary" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
               <span>⭐ View on GitHub</span>
             </a>
-            <button class="landing-btn landing-btn-ghost" type="button" id="open-install">
+            <a class="landing-btn landing-btn-ghost" href="./install/" target="_blank" rel="noopener noreferrer">
               <span>⚡ Install</span>
-            </button>
+            </a>
             <a class="landing-btn landing-btn-ghost" href="#quickstart">
               <span>📦 Quick start</span>
             </a>
@@ -776,22 +649,6 @@
     </div>
   </div>
 
-  <div class="landing-modal-backdrop" id="install-modal" role="dialog" aria-modal="true" aria-label="Install guide pop-up">
-    <div class="landing-modal">
-      <header>
-        <div class="landing-modal-info">
-          <span class="modal-label">Installation</span>
-          <p>Follow the steps below or open the complete guide in a separate tab.</p>
-        </div>
-        <div class="landing-modal-actions">
-          <a href="./install/" target="_blank" rel="noopener noreferrer">Open full guide ↗</a>
-          <button type="button" id="close-install">Close</button>
-        </div>
-      </header>
-      <iframe src="./install/" title="Install guide"></iframe>
-    </div>
-  </div>
-
   <!-- JS che disegna lo sfondo animato sul canvas -->
   <script src="./js/auth_background.js"></script>
 
@@ -799,27 +656,6 @@
   <script>
     window.addEventListener('load', () => {
       const body = document.body;
-      const installModal = document.getElementById('install-modal');
-      const openInstall = document.getElementById('open-install');
-      const closeInstall = document.getElementById('close-install');
-
-      const openModal = () => {
-        installModal.classList.add('active');
-        body.classList.add('modal-open');
-      };
-
-      const closeModal = () => {
-        installModal.classList.remove('active');
-        body.classList.remove('modal-open');
-      };
-
-      openInstall?.addEventListener('click', openModal);
-      closeInstall?.addEventListener('click', closeModal);
-      installModal?.addEventListener('click', (event) => {
-        if (event.target === installModal) {
-          closeModal();
-        }
-      });
 
       setTimeout(() => {
         body.classList.add('landing-ready');
