@@ -686,6 +686,47 @@ class DockerService:
         except Exception:
             pass
 
+    def list_unused_images(self) -> List[Dict[str, Any]]:
+        containers = self.docker_client.containers.list(all=True)
+        usage_map: Dict[str, List[str]] = {}
+
+        for container in containers:
+            usage_map.setdefault(container.image.id, []).append(container.name)
+
+        unused: List[Dict[str, Any]] = []
+        for image in self.docker_client.images.list():
+            used_by = usage_map.get(image.id, [])
+            if used_by:
+                continue
+
+            tags = image.tags or ["<none>:<none>"]
+            unused.append(
+                {
+                    "id": image.id,
+                    "short_id": image.short_id,
+                    "tags": tags,
+                    "size": image.attrs.get("Size", 0),
+                    "created": image.attrs.get("Created"),
+                    "used_by": used_by,
+                }
+            )
+
+        unused.sort(key=lambda img: (img["tags"][0] or "").lower())
+        return unused
+
+    def remove_unused_images(self) -> Dict[str, List[Dict[str, Any]]]:
+        removed: List[Dict[str, Any]] = []
+        errors: List[Dict[str, Any]] = []
+
+        for image in self.list_unused_images():
+            try:
+                self.docker_client.images.remove(image["id"])
+                removed.append(image)
+            except Exception as exc:
+                errors.append({**image, "error": str(exc) or "Unknown error"})
+
+        return {"removed": removed, "errors": errors}
+
     def collect_containers_info_for_updates(self) -> List[Dict[str, Any]]:
         now = datetime.now(timezone.utc)
         all_containers = self.docker_client.containers.list(all=True)
