@@ -829,6 +829,37 @@ class DockerService:
             logs = ""
         return logs
 
+    def stream_container_logs(
+        self,
+        container_id: str,
+        tail: Optional[int] = 100,
+        follow: bool = True,
+        timeout: float = 10.0,
+    ) -> Iterable[str]:
+        try:
+            container = self.docker_client.containers.get(container_id)
+        except Exception:
+            return []
+
+        tail_arg: Optional[Any]
+        if tail is None or (isinstance(tail, int) and tail <= 0):
+            tail_arg = "all"
+        else:
+            tail_arg = tail
+
+        try:
+            log_stream = container.logs(stream=True, tail=tail_arg, follow=follow)
+            start = time.time()
+            for chunk in log_stream:
+                try:
+                    yield chunk.decode("utf-8", errors="ignore").rstrip()
+                except Exception:
+                    continue
+                if timeout and time.time() - start > timeout:
+                    break
+        except Exception:
+            return []
+
     def _compose_path_from_labels(self, labels: Dict[str, str]) -> Optional[str]:
         config_files = labels.get("com.docker.compose.project.config_files")
         if not config_files:
