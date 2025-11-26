@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>Docker 2 Home Assistant – Installazione</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="../css/auth.css" />
+  <style>
+    :root {
+      --tech-gradient: linear-gradient(135deg, #38bdf8, #7c3aed);
+    }
+
+    body.theme-dark {
+      overflow-x: hidden;
+    }
+
+    .install-overlay {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 1.2rem 3rem;
+    }
+
+    .install-card {
+      max-width: 1080px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(12, 18, 34, 0.9));
+      border-radius: 22px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.65);
+      padding: 2.6rem;
+      backdrop-filter: blur(20px);
+    }
+
+    .install-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.4rem;
+    }
+
+    .install-title {
+      font-size: clamp(1.9rem, 4vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      background: var(--tech-gradient);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 10px 32px rgba(56, 189, 248, 0.35);
+      margin: 0;
+    }
+
+    .install-subtitle {
+      color: #9ca3af;
+      margin-top: 0.4rem;
+      line-height: 1.6;
+    }
+
+    .install-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .install-badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(79, 195, 247, 0.35);
+      color: #e5f7ff;
+      letter-spacing: 0.05em;
+      font-size: 0.82rem;
+    }
+
+    .install-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-top: 1.2rem;
+    }
+
+    .install-block {
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 16px;
+      padding: 1.2rem 1.2rem 1rem;
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .install-block h3 {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: 0.04em;
+    }
+
+    .install-block code,
+    .install-block pre {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(79, 195, 247, 0.35);
+      color: #bef2ff;
+      border-radius: 12px;
+      padding: 0.65rem 0.75rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.92rem;
+      overflow-x: auto;
+      box-shadow: 0 0 24px rgba(79, 195, 247, 0.1);
+    }
+
+    .install-block pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .install-small {
+      color: #9ca3af;
+      line-height: 1.6;
+      font-size: 0.94rem;
+    }
+
+    .install-list {
+      color: #d1d5db;
+      padding-left: 1.1rem;
+      margin: 0.2rem 0 0;
+      line-height: 1.6;
+    }
+
+    .install-callout {
+      margin-top: 1.3rem;
+      padding: 1rem 1.1rem;
+      border-radius: 14px;
+      border: 1px dashed rgba(79, 195, 247, 0.45);
+      background: rgba(56, 189, 248, 0.08);
+      color: #e5f7ff;
+    }
+
+    .install-footer {
+      text-align: center;
+      color: #9ca3af;
+      margin-top: 1.4rem;
+      font-size: 0.95rem;
+    }
+
+    .install-footer a {
+      color: #4fc3f7;
+      text-decoration: none;
+    }
+
+    .install-footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .install-card {
+        padding: 2rem 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body class="theme-dark landing-ready">
+  <div class="auth-page">
+    <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
+
+    <div class="auth-title" aria-hidden="true" style="top: 1.4rem; opacity: 0.9; letter-spacing: 0.12em;">
+      Docker 2 Home Assistant
+    </div>
+    <div class="auth-logo" aria-hidden="true" style="top: 52%; left: 50%; width: clamp(320px, 36vw, 420px); height: clamp(320px, 36vw, 420px); transform: translate(-50%, -50%); opacity: 0.08; z-index: 0;">
+      <img src="../assets/logo.svg" alt="D2HA Logo" />
+    </div>
+
+    <div class="install-overlay">
+      <div class="install-card">
+        <div class="install-header">
+          <div>
+            <h1 class="install-title">Setup immediato</h1>
+            <div class="install-subtitle">
+              Segui questi passi per portare Docker 2 Home Assistant online in pochi minuti.
+            </div>
+          </div>
+          <div class="install-badges">
+            <span class="install-badge">Docker ready</span>
+            <span class="install-badge">MQTT opzionale</span>
+            <span class="install-badge">Autodiscovery HA</span>
+          </div>
+        </div>
+
+        <div class="install-grid">
+          <div class="install-block">
+            <h3>🚀 Avvio rapido (Docker)</h3>
+            <pre><code>docker run -d \
+  --name d2ha \
+  -p 12021:12021 \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -v $(pwd)/data:/app/data \
+  -e D2HA_SECRET_KEY="cambia-questa-chiave" \
+  ghcr.io/arborae/docker2homeassistant:latest</code></pre>
+            <div class="install-small">La cartella <code>./data</code> ospita le configurazioni persistenti (auth, preferenze MQTT).</div>
+          </div>
+
+          <div class="install-block">
+            <h3>📦 Docker Compose</h3>
+            <pre><code>services:
+  d2ha:
+    image: ghcr.io/arborae/docker2homeassistant:latest
+    container_name: d2ha
+    restart: unless-stopped
+    ports:
+      - "12021:12021"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data:/app/data
+    environment:
+      D2HA_VERSION: "latest"
+      D2HA_SECRET_KEY: "cambia-questa-chiave"
+
+      # MQTT (opzionale)
+      # MQTT_BROKER: "192.168.1.10"
+      # MQTT_PORT: "1883"
+      # MQTT_USERNAME: "ha"
+      # MQTT_PASSWORD: "password"
+      # MQTT_BASE_TOPIC: "d2ha_server"
+
+    # Build locale (alternativa all'immagine)
+    # build:
+    #   context: ./d2ha
+    #   dockerfile: ./d2ha/Dockerfile
+    #   args:
+    #     D2HA_VERSION: "latest"</code></pre>
+            <div class="install-small">Avvia con <code>docker compose up -d</code> e aggiorna con <code>docker compose pull</code> seguito da <code>docker compose up -d</code>.</div>
+          </div>
+
+          <div class="install-block">
+            <h3>🌙 Nightly builds</h3>
+            <pre><code>image: ghcr.io/arborae/docker2homeassistant:nightly
+# oppure
+image: ghcr.io/arborae/docker2homeassistant:nightly-&lt;commit_sha&gt;</code></pre>
+            <div class="install-small">Usa i tag nightly per provare le ultime novità direttamente da <code>main</code>.</div>
+          </div>
+
+          <div class="install-block">
+            <h3>🔑 Credenziali iniziali</h3>
+            <pre><code>Username: admin
+Password: admin</code></pre>
+            <ul class="install-list">
+              <li>Al primo login parte il wizard (password, 2FA, modalità sicura).</li>
+              <li>Configura l'MQTT per l'autodiscovery Home Assistant.</li>
+            </ul>
+          </div>
+
+          <div class="install-block">
+            <h3>🌐 URL di accesso</h3>
+            <pre><code>http://localhost:12021</code></pre>
+            <div class="install-small">Su host remoto sostituisci <code>localhost</code> con IP o dominio del server.</div>
+          </div>
+
+          <div class="install-block">
+            <h3>📡 Esempio .env MQTT</h3>
+            <pre><code>MQTT_BROKER=192.168.1.10
+MQTT_PORT=1883
+MQTT_USERNAME=homeassistant
+MQTT_PASSWORD=password
+MQTT_BASE_TOPIC=d2ha_server
+MQTT_DISCOVERY_PREFIX=homeassistant
+MQTT_NODE_ID=d2ha_server
+MQTT_STATE_INTERVAL=5</code></pre>
+            <div class="install-small">Senza MQTT, D2HA resta una dashboard Docker completa: l'integrazione HA è opzionale.</div>
+          </div>
+        </div>
+
+        <div class="install-callout">
+          Suggerimento: imposta una chiave segreta robusta (<code>D2HA_SECRET_KEY</code>) e abilita la 2FA dal primo accesso.
+        </div>
+
+        <div class="install-footer">
+          Torna alla <a href="../">landing page</a> o visita <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">GitHub</a> per le release.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/auth_background.js"></script>
+</body>
+</html>
