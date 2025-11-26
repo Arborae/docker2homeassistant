@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import logging
 import os
 import secrets
 import time
@@ -80,6 +81,119 @@ MQTT_NODE_ID = os.getenv("MQTT_NODE_ID", "d2ha_server")
 MQTT_STATE_INTERVAL = int(os.getenv("MQTT_STATE_INTERVAL", "5"))
 
 
+class SensitiveDataFilter(logging.Filter):
+    def __init__(self, sensitive_values: Optional[list] = None):
+        super().__init__()
+        self.sensitive_values = [str(v) for v in (sensitive_values or []) if v]
+
+    def filter(self, record: logging.LogRecord) -> bool:  # pragma: no cover - trivial
+        try:
+            message = record.getMessage()
+        except Exception:
+            return True
+
+        sanitized = message
+        for secret in self.sensitive_values:
+            sanitized = sanitized.replace(secret, "<redacted>")
+
+        if sanitized != message:
+            record.msg = sanitized
+            record.args = ()
+
+        return True
+
+
+def _attach_filter(logger: logging.Logger, log_filter: logging.Filter) -> None:
+    if not any(isinstance(existing, type(log_filter)) for existing in logger.filters):
+        logger.addFilter(log_filter)
+
+
+def _ensure_handlers(logger: logging.Logger, source: logging.Logger) -> None:
+    if logger is source:
+        return
+    if not logger.handlers:
+        for handler in source.handlers:
+            logger.addHandler(handler)
+
+
+def configure_logging(debug_mode_enabled: bool) -> None:
+    """Configure application loggers based on debug mode."""
+
+    level = logging.DEBUG if debug_mode_enabled else logging.INFO
+
+    sensitive_values = [
+        app.config.get("SECRET_KEY"),
+        os.environ.get("D2HA_SECRET_KEY"),
+        MQTT_PASSWORD,
+    ]
+
+    try:
+        auth_config = get_auth_config()
+        sensitive_values.extend(
+            auth_config.get(key)
+            for key in ("password_hash", "totp_secret")
+            if auth_config.get(key)
+        )
+    except Exception:
+        pass
+
+    redaction_filter = SensitiveDataFilter(sensitive_values)
+
+    logging.getLogger().setLevel(logging.WARNING)
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+
+    app_logger = app.logger
+    app_logger.setLevel(level)
+    app_logger.propagate = False
+    _attach_filter(app_logger, redaction_filter)
+
+    docker_logger = logging.getLogger("docker_service")
+    docker_logger.setLevel(level)
+    docker_logger.propagate = False
+    _ensure_handlers(docker_logger, app_logger)
+    _attach_filter(docker_logger, redaction_filter)
+
+
+def is_safe_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("safe_mode_enabled", True))
+
+
+def set_safe_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["safe_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    return is_safe_mode_enabled()
+
+
+def is_performance_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("performance_mode_enabled", False))
+
+
+def set_performance_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["performance_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    return is_performance_mode_enabled()
+
+
+def is_debug_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("debug_mode_enabled", False))
+
+
+def set_debug_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["debug_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    configure_logging(bool(enabled))
+    return is_debug_mode_enabled()
+
+
+configure_logging(is_debug_mode_enabled())
+
+
 docker_service = DockerService()
 docker_service.start_overview_refresher()
 preferences_path = os.environ.get(
@@ -150,42 +264,6 @@ def onboarding_required(view):
         return view(*args, **kwargs)
 
     return wrapped
-
-
-def is_safe_mode_enabled() -> bool:
-    config = get_auth_config()
-    return bool(config.get("safe_mode_enabled", True))
-
-
-def set_safe_mode(enabled: bool) -> bool:
-    config = get_auth_config()
-    config["safe_mode_enabled"] = bool(enabled)
-    save_auth_config(config)
-    return is_safe_mode_enabled()
-
-
-def is_performance_mode_enabled() -> bool:
-    config = get_auth_config()
-    return bool(config.get("performance_mode_enabled", False))
-
-
-def set_performance_mode(enabled: bool) -> bool:
-    config = get_auth_config()
-    config["performance_mode_enabled"] = bool(enabled)
-    save_auth_config(config)
-    return is_performance_mode_enabled()
-
-
-def is_debug_mode_enabled() -> bool:
-    config = get_auth_config()
-    return bool(config.get("debug_mode_enabled", False))
-
-
-def set_debug_mode(enabled: bool) -> bool:
-    config = get_auth_config()
-    config["debug_mode_enabled"] = bool(enabled)
-    save_auth_config(config)
-    return is_debug_mode_enabled()
 
 
 def is_onboarding_done():
