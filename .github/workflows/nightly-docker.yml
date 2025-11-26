@@ -31,10 +31,10 @@ jobs:
       - name: Build and push nightly image
         uses: docker/build-push-action@v6
         with:
-          # Il codice e il Dockerfile sono in d2ha/, quindi
-          # usiamo d2ha come contesto di build
+          # Contesto di build = cartella d2ha (dove c'è il codice e requirements.txt)
           context: ./d2ha
-          file: ./Dockerfile
+          # Percorso del Dockerfile rispetto alla root del repo
+          file: ./d2ha/Dockerfile
           push: true
           tags: |
             ghcr.io/arborae/docker2homeassistant:nightly
