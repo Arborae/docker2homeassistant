@@ -314,6 +314,24 @@
     .modal-tab { padding:8px 12px; border-radius:10px 10px 0 0; background: rgba(255,255,255,0.03); border:1px solid transparent; color:var(--muted); font-weight:700; cursor:pointer; }
     .modal-tab.active { background: var(--panel); color: var(--text); border-color: var(--border); box-shadow: inset 0 -3px 0 var(--accent); }
     .modal-body { padding:16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; min-height:0; }
+    .debug-overlay { position:fixed; inset:0; padding:18px; display:none; align-items:center; justify-content:center; background:rgba(5,8,15,0.78); z-index:70; backdrop-filter: blur(4px); }
+    .debug-overlay.visible { display:flex; }
+    .debug-panel { width:min(1100px, 100%); background: var(--panel); border:1px solid var(--accent-border-soft); border-radius: 18px; box-shadow: var(--shadow-strong); overflow:hidden; display:flex; flex-direction:column; gap:0; }
+    .debug-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background: var(--stack-header-bg); border-bottom: 1px solid var(--border); }
+    .debug-eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; color: var(--muted); }
+    .debug-title { font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em; }
+    .debug-actions { display:flex; gap:8px; align-items:center; }
+    .debug-body { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px; padding:14px 16px 18px; background: var(--panel-2); }
+    .debug-column { background: rgba(255,255,255,0.02); border:1px solid var(--border); border-radius: 14px; padding:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); display:flex; flex-direction:column; gap:10px; min-height: 260px; }
+    .debug-subtitle { font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.8rem; color: var(--muted); }
+    .debug-list, .debug-log { flex:1; overflow-y:auto; background: var(--control-surface); border-radius: 10px; padding:10px; border:1px dashed var(--accent-border-soft); font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.9rem; }
+    .debug-log-line { padding:6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); display:flex; gap:8px; align-items:flex-start; }
+    .debug-log-line:last-child { border-bottom:none; }
+    .debug-log-line .tag { padding:2px 6px; border-radius:8px; font-size:0.75rem; background: var(--accent-surface); color: var(--accent); border:1px solid var(--accent-border-soft); }
+    .debug-log-line .text { flex:1; word-break: break-word; }
+    .debug-list .command { padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.06); color: var(--text); }
+    .debug-list .command:last-child { border-bottom:none; }
+    .debug-overlay [class*='inline-btn'] { background: var(--accent-surface); border-color: var(--accent-border); color: var(--accent); }
     .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; }
     .pill { padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.05); border:1px solid var(--border); font-size:0.8rem; display:inline-block; }
     .field { background: var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
@@ -666,6 +684,30 @@
     </div>
   </div>
   <div class="toast-container" id="toast-container"></div>
+  <div class="debug-overlay" id="debug-overlay" aria-hidden="true">
+    <div class="debug-panel">
+      <div class="debug-header">
+        <div>
+          <div class="debug-eyebrow">Debug live</div>
+          <div class="debug-title" id="debug-title">Stream azione</div>
+        </div>
+        <div class="debug-actions">
+          <button class="inline-btn" type="button" id="debug-clear">Pulisci</button>
+          <button class="inline-btn" type="button" id="debug-close">Chiudi</button>
+        </div>
+      </div>
+      <div class="debug-body">
+        <div class="debug-column">
+          <div class="debug-subtitle">Comandi</div>
+          <div class="debug-list" id="debug-commands"></div>
+        </div>
+        <div class="debug-column">
+          <div class="debug-subtitle">Log live</div>
+          <div class="debug-log" id="debug-logs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   {% include 'partials/notifications_script.html' %}
   <script>
     const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
@@ -721,6 +763,12 @@
     const bulkButtons = Array.from(document.querySelectorAll('[data-bulk-action]'));
     const selectionInputs = Array.from(document.querySelectorAll('.container-select'));
     const actionButtons = Array.from(document.querySelectorAll('[data-action-btn]'));
+    const debugOverlay = document.getElementById('debug-overlay');
+    const debugTitle = document.getElementById('debug-title');
+    const debugCommands = document.getElementById('debug-commands');
+    const debugLogs = document.getElementById('debug-logs');
+    const debugClose = document.getElementById('debug-close');
+    const debugClear = document.getElementById('debug-clear');
 
     const rowIndex = new Map();
     Array.from(document.querySelectorAll('tr[data-container-id]')).forEach((row) => {
@@ -758,6 +806,63 @@
     let logsIntervalMs = pollingDefaults.logsIntervalMs;
     let statsSampleLimit = pollingDefaults.historyLimit;
     let activeTab = 'info';
+    const debugEnabled = document.body.dataset.debugMode === '1';
+    const debugStreamSupported = debugEnabled && typeof EventSource !== 'undefined';
+    let activeDebugStream = null;
+
+    const safeParseEvent = (evt) => {
+      try { return JSON.parse(evt.data); }
+      catch (e) { return {}; }
+    };
+
+    const clearDebugOverlay = () => {
+      if (!debugOverlay) return;
+      debugCommands.innerHTML = '';
+      debugLogs.innerHTML = '';
+    };
+
+    const openDebugOverlay = (title) => {
+      if (!debugStreamSupported) return;
+      clearDebugOverlay();
+      debugTitle.textContent = title;
+      debugOverlay.classList.add('visible');
+      debugOverlay.setAttribute('aria-hidden', 'false');
+    };
+
+    const closeDebugOverlay = () => {
+      if (activeDebugStream) {
+        activeDebugStream.close();
+        activeDebugStream = null;
+      }
+      if (!debugOverlay) return;
+      debugOverlay.classList.remove('visible');
+      debugOverlay.setAttribute('aria-hidden', 'true');
+    };
+
+    const pushCommand = (text) => {
+      if (!debugEnabled || !debugCommands) return;
+      const row = document.createElement('div');
+      row.className = 'command';
+      row.textContent = text;
+      debugCommands.appendChild(row);
+      debugCommands.scrollTop = debugCommands.scrollHeight;
+    };
+
+    const pushLog = (text, tag = 'LOG') => {
+      if (!debugEnabled || !debugLogs) return;
+      const row = document.createElement('div');
+      row.className = 'debug-log-line';
+      const badge = document.createElement('span');
+      badge.className = 'tag';
+      badge.textContent = tag;
+      const body = document.createElement('span');
+      body.className = 'text';
+      body.textContent = text;
+      row.appendChild(badge);
+      row.appendChild(body);
+      debugLogs.appendChild(row);
+      debugLogs.scrollTop = debugLogs.scrollHeight;
+    };
 
     const statusClassFor = (status) => {
       const s = (status || '').toLowerCase();
@@ -889,6 +994,58 @@
       return res.json();
     };
 
+    const startActionDebugStream = (containerId, action, row) => {
+      if (!debugStreamSupported) return Promise.reject(new Error('Debug non attivo'));
+
+      return new Promise((resolve, reject) => {
+        const name = row?.dataset.containerName || 'Container';
+        openDebugOverlay(`${action.toUpperCase()} – ${name}`);
+        pushCommand(`Richiesta ${action} per ${name}`);
+
+        const source = new EventSource(`/api/containers/${containerId}/actions/${action}/stream`);
+        activeDebugStream = source;
+        let lastResult = null;
+        let ended = false;
+
+        source.addEventListener('command', (evt) => {
+          const data = safeParseEvent(evt);
+          if (data?.message) pushCommand(data.message);
+        });
+
+        source.addEventListener('status', (evt) => {
+          const data = safeParseEvent(evt);
+          if (data?.state) pushLog(`Stato: ${data.state}`, 'STAT');
+        });
+
+        source.addEventListener('log', (evt) => {
+          const data = safeParseEvent(evt);
+          if (data?.line) pushLog(data.line, 'LOG');
+        });
+
+        source.addEventListener('result', (evt) => {
+          const data = safeParseEvent(evt);
+          lastResult = data;
+          applyActionResult(row, data);
+        });
+
+        source.addEventListener('end', (evt) => {
+          ended = true;
+          const data = safeParseEvent(evt);
+          pushLog('Stream concluso', 'DONE');
+          source.close();
+          activeDebugStream = null;
+          resolve(lastResult || data);
+        });
+
+        source.addEventListener('error', () => {
+          pushLog('Stream interrotto', 'ERR');
+          source.close();
+          activeDebugStream = null;
+          if (!ended) reject(new Error('Stream interrotto'));
+        });
+      });
+    };
+
     const applyActionResult = (row, data) => {
       if (!row) return;
       if (data?.removed) {
@@ -905,6 +1062,17 @@
     const handleContainerAction = async (containerId, action) => {
       const row = rowIndex.get(containerId);
       setRowPending(row, actionPendingLabels[action] || 'In corso...');
+
+      if (debugStreamSupported) {
+        try {
+          await startActionDebugStream(containerId, action, row);
+          const success = actionSuccessLabels[action] || action;
+          showToast(`Container ${success}`, { type: 'success' });
+          return;
+        } catch (err) {
+          console.warn('Debug stream non disponibile, fallback', err);
+        }
+      }
 
       try {
         const data = await fetchContainerAction(containerId, action);
@@ -993,9 +1161,17 @@
       };
 
       try {
-        const results = await Promise.all(ids.map((id) => fetchContainerAction(id, action)));
-        results.forEach((data, idx) => applyActionResult(rows[idx], data));
-        showToast(`Azione di ${labelMap[action] || action} completata`, { type: 'success' });
+        if (debugStreamSupported) {
+          for (const id of ids) {
+            const row = rowIndex.get(id);
+            await startActionDebugStream(id, action, row);
+          }
+          showToast(`Azione di ${labelMap[action] || action} completata`, { type: 'success' });
+        } else {
+          const results = await Promise.all(ids.map((id) => fetchContainerAction(id, action)));
+          results.forEach((data, idx) => applyActionResult(rows[idx], data));
+          showToast(`Azione di ${labelMap[action] || action} completata`, { type: 'success' });
+        }
       } catch (err) {
         console.error(err);
         rows.forEach((row) => clearRowPending(row, true));
@@ -1335,6 +1511,12 @@
     document.getElementById('modal-close').addEventListener('click', closeModal);
     modalEl.addEventListener('click', (e) => {
       if (e.target === modalEl) closeModal();
+    });
+
+    debugClose?.addEventListener('click', closeDebugOverlay);
+    debugClear?.addEventListener('click', clearDebugOverlay);
+    debugOverlay?.addEventListener('click', (e) => {
+      if (e.target === debugOverlay) closeDebugOverlay();
     });
 
     tabButtons.forEach(btn => {

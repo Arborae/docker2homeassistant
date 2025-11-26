@@ -20,7 +20,9 @@ from flask import (
     redirect,
     render_template,
     request,
+    Response,
     session,
+    stream_with_context,
     url_for,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -309,6 +311,14 @@ def _find_container_overview_entry(container_id: str) -> Optional[Dict[str, Any]
             if container.get("id") == container_id:
                 return {**container, "stack": stack.get("name")}
     return None
+
+
+def _sse_event(event: str, data: Any) -> str:
+    try:
+        payload = json.dumps(data, ensure_ascii=False)
+    except TypeError:
+        payload = json.dumps(str(data))
+    return f"event: {event}\ndata: {payload}\n\n"
 
 
 def _build_qr_code_data_uri(data: str) -> str:
@@ -1226,6 +1236,92 @@ def api_debug_mode():
     payload = request.get_json(force=True, silent=True) or {}
     enabled = bool(payload.get("enabled", False))
     return jsonify({"enabled": set_debug_mode(enabled)})
+
+
+@app.route("/api/containers/<container_id>/actions/<action>/stream", methods=["GET"])
+@onboarding_required
+def api_container_action_stream(container_id, action):
+    if not is_debug_mode_enabled():
+        return jsonify({"error": "Debug mode disabilitato"}), 403
+
+    allowed_actions = {
+        "start",
+        "stop",
+        "restart",
+        "pause",
+        "unpause",
+        "delete",
+        "pull",
+        "full_update",
+    }
+
+    if action not in allowed_actions:
+        return jsonify({"error": "Azione non supportata"}), 400
+
+    def generate():
+        yield _sse_event(
+            "command",
+            {
+                "action": action,
+                "container_id": container_id,
+                "message": f"Esecuzione '{action}' per {container_id}",
+            },
+        )
+
+        try:
+            if action in ("start", "stop", "restart", "pause", "unpause", "delete"):
+                docker_service.apply_simple_action(container_id, action)
+            elif action in ("pull", "full_update"):
+                yield _sse_event(
+                    "command",
+                    {
+                        "action": action,
+                        "container_id": container_id,
+                        "message": "Pull immagine e ricreazione container",
+                    },
+                )
+                docker_service.recreate_container_with_latest_image(container_id)
+
+            yield _sse_event(
+                "status", {"state": "completed", "action": action, "container_id": container_id}
+            )
+        except Exception as exc:
+            yield _sse_event(
+                "error",
+                {
+                    "action": action,
+                    "container_id": container_id,
+                    "message": str(exc) or "Action failed",
+                },
+            )
+            yield _sse_event("end", {"action": action, "container_id": container_id})
+            return
+
+        docker_service.refresh_overview_cache()
+        _publish_current_state()
+
+        result = _find_container_overview_entry(container_id)
+        removed = result is None or action == "delete"
+        yield _sse_event(
+            "result",
+            {
+                "action": action,
+                "container_id": container_id,
+                "container": result,
+                "removed": removed,
+            },
+        )
+
+        if not removed:
+            for line in docker_service.stream_container_logs(container_id, tail=50, follow=True, timeout=12.0):
+                if not line:
+                    continue
+                yield _sse_event("log", {"action": action, "line": line})
+
+        yield _sse_event("end", {"action": action, "container_id": container_id})
+
+    headers = {"Cache-Control": "no-cache"}
+    return Response(stream_with_context(generate()), mimetype="text/event-stream", headers=headers)
 
 
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
