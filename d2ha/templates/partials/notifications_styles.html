@@ -61,6 +61,25 @@
   }
   .notif-area,
   .settings-area { position: relative; display: flex; align-items: center; }
+  .debug-indicator {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: var(--control-surface);
+    border: 1px dashed var(--accent-border);
+    color: var(--accent);
+    box-shadow: var(--shadow);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.78rem;
+    line-height: 1;
+  }
+  .debug-indicator-icon { font-size: 1rem; line-height: 1; }
+  .debug-indicator-text { white-space: nowrap; }
+  body[data-debug-mode="1"] .debug-indicator { display: inline-flex; }
   .notif-toggle,
   .settings-toggle { gap: 8px; }
   .notif-icon,
@@ -83,6 +102,11 @@
     .header-bar { grid-template-columns: 1fr; text-align: center; gap: 10px; }
     .header-left, .header-right { justify-content: center; }
     .header-right { flex-wrap: wrap; }
+  }
+  body.theme-light .debug-indicator {
+    background: #fffaf3;
+    border-color: var(--accent-border);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   }
   .backend-modal-backdrop {
     position: fixed;
