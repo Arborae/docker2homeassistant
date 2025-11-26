@@ -7,6 +7,7 @@ TRANSLATIONS = {
     "it": {
         "nav.containers": "Container",
         "nav.images": "Immagini",
+        "nav.volumes": "Volumi",
         "nav.updates": "Aggiornamenti",
         "nav.autodiscovery": "MQTT",
         "nav.settings": "Impostazioni",
@@ -181,6 +182,7 @@ TRANSLATIONS = {
     "en": {
         "nav.containers": "Containers",
         "nav.images": "Images",
+        "nav.volumes": "Volumes",
         "nav.updates": "Updates",
         "nav.autodiscovery": "MQTT",
         "nav.settings": "Settings",
