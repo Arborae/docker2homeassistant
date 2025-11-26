@@ -1078,6 +1078,38 @@ def delete_unused_images():
     return redirect(url_for("images_view"))
 
 
+@app.route("/volumes", methods=["GET"])
+@onboarding_required
+def volumes_view():
+    volumes = docker_service.list_volumes_overview()
+    stacks, summary = _build_home_context()
+    notifications = _build_notifications_summary()
+    return render_template(
+        "volumes.html",
+        volumes=volumes,
+        summary=summary,
+        notifications=notifications,
+        active_page="volumes",
+    )
+
+
+@app.route("/volumes/delete", methods=["POST"])
+@onboarding_required
+def delete_volume():
+    volume_name = request.form.get("volume_name") or ""
+    volume_type = request.form.get("volume_type") or "volume"
+    if volume_name:
+        docker_service.remove_volume(volume_name, volume_type)
+    return redirect(url_for("volumes_view"))
+
+
+@app.route("/volumes/delete_unused", methods=["POST"])
+@onboarding_required
+def delete_unused_volumes():
+    docker_service.remove_unused_volumes()
+    return redirect(url_for("volumes_view"))
+
+
 @app.route("/events", methods=["GET"])
 @onboarding_required
 def events_view():
