@@ -9,7 +9,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     env:
-      D2HA_VERSION: Stable Release ${{ github.ref_name }}
+      D2HA_VERSION: Stable Release v${{ github.ref_name }}
 
     permissions:
       contents: read

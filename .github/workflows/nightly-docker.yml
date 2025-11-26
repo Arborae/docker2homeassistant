@@ -10,7 +10,7 @@ jobs:
   build-and-push-nightly:
     runs-on: ubuntu-latest
     env:
-      D2HA_VERSION: Nightly Release #${{ github.sha[0:7] }}
+      D2HA_VERSION: ${{ github.sha }}
 
     permissions:
       contents: read
