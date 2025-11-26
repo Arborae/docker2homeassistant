@@ -520,7 +520,7 @@
         if (keyInput.value) labels[keyInput.value] = valueInput.value || '';
       });
       const payload = {
-        name: networkForm.name.value.trim(),
+        name: networkForm.elements.namedItem('name').value.trim(),
         driver: networkForm.driver.value,
         internal: networkForm.internal.checked,
         attachable: networkForm.attachable.checked,
