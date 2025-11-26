@@ -50,7 +50,7 @@ body.theme-dark {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 700;
-  color: rgba(241, 245, 249, 0.15);
+  color: rgba(241, 245, 249, 0.35);
   pointer-events: none;
   z-index: 2;
 }
