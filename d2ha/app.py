@@ -1141,7 +1141,9 @@ def autodiscovery_view():
     if request.method == "POST":
         global_preferences = {
             "delete_unused_images": request.form.get("delete_unused_images")
-            == "on"
+            == "on",
+            "updates_overview": request.form.get("updates_overview") == "on",
+            "full_update_all": request.form.get("full_update_all") == "on",
         }
         autodiscovery_preferences.set_global_preferences(global_preferences)
 
@@ -1172,12 +1174,28 @@ def autodiscovery_view():
     notifications = _build_notifications_summary()
 
     shared_entities = sum(1 for pref in pref_map.values() if pref.get("state", True))
+
+    general_total = 1
+    general_shared = 1
+
+    if global_preferences.get("updates_overview", True):
+        general_total += 1
+        general_shared += 1
+
+    if global_preferences.get("delete_unused_images", True):
+        general_total += 1
+        general_shared += 1
+
+    if global_preferences.get("full_update_all", True):
+        general_total += 1
+        general_shared += 1
+
     mqtt_status = {
         "connected": mqtt_manager.is_connected(),
         "broker": mqtt_manager.broker,
         "port": mqtt_manager.port,
-        "shared_entities": shared_entities + 1,
-        "total_entities": len(containers_info) + 1,
+        "shared_entities": shared_entities + general_shared,
+        "total_entities": len(containers_info) + general_total,
     }
 
     return render_template(
