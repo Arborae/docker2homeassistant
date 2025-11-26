@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Docker 2 Home Assistant – Installazione</title>
+  <title>Docker 2 Home Assistant – Install guide</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Shared auth / background styles -->
   <link rel="stylesheet" href="../css/auth.css" />
+
   <style>
     :root {
       --tech-gradient: linear-gradient(135deg, #38bdf8, #7c3aed);
@@ -59,12 +62,15 @@
       color: #9ca3af;
       margin-top: 0.4rem;
       line-height: 1.6;
+      max-width: 620px;
+      font-size: 0.98rem;
     }
 
     .install-badges {
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
     .install-badge {
@@ -75,6 +81,21 @@
       color: #e5f7ff;
       letter-spacing: 0.05em;
       font-size: 0.82rem;
+      text-transform: uppercase;
+    }
+
+    .install-badge-secondary {
+      background: rgba(15, 23, 42, 0.85);
+      border-color: rgba(148, 163, 184, 0.5);
+      color: #cbd5f5;
+    }
+
+    .install-section-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #9ca3af;
+      margin-bottom: 0.6rem;
     }
 
     .install-grid {
@@ -98,6 +119,17 @@
       margin: 0;
       font-size: 1.05rem;
       letter-spacing: 0.04em;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .install-block h3 span {
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: #9ca3af;
     }
 
     .install-block code,
@@ -130,6 +162,7 @@
       padding-left: 1.1rem;
       margin: 0.2rem 0 0;
       line-height: 1.6;
+      font-size: 0.94rem;
     }
 
     .install-callout {
@@ -139,6 +172,8 @@
       border: 1px dashed rgba(79, 195, 247, 0.45);
       background: rgba(56, 189, 248, 0.08);
       color: #e5f7ff;
+      font-size: 0.94rem;
+      line-height: 1.6;
     }
 
     .install-footer {
@@ -161,6 +196,15 @@
       .install-card {
         padding: 2rem 1.4rem;
       }
+
+      .install-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .install-badges {
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
@@ -171,6 +215,7 @@
     <div class="auth-title" aria-hidden="true" style="top: 1.4rem; opacity: 0.9; letter-spacing: 0.12em;">
       Docker 2 Home Assistant
     </div>
+
     <div class="auth-logo" aria-hidden="true" style="top: 52%; left: 50%; width: clamp(320px, 36vw, 420px); height: clamp(320px, 36vw, 420px); transform: translate(-50%, -50%); opacity: 0.08; z-index: 0;">
       <img src="../assets/logo.svg" alt="D2HA Logo" />
     </div>
@@ -179,33 +224,26 @@
       <div class="install-card">
         <div class="install-header">
           <div>
-            <h1 class="install-title">Setup immediato</h1>
+            <h1 class="install-title">Install D2HA in minutes</h1>
             <div class="install-subtitle">
-              Segui questi passi per portare Docker 2 Home Assistant online in pochi minuti.
+              Use this page as a focused install guide for Docker and Docker Compose. Choose the path that best matches your stack and then connect Home Assistant via MQTT if you want autodiscovery.
             </div>
           </div>
           <div class="install-badges">
             <span class="install-badge">Docker ready</span>
-            <span class="install-badge">MQTT opzionale</span>
-            <span class="install-badge">Autodiscovery HA</span>
+            <span class="install-badge install-badge-secondary">MQTT optional</span>
+            <span class="install-badge install-badge-secondary">Home Assistant autodiscovery</span>
           </div>
         </div>
 
-        <div class="install-grid">
-          <div class="install-block">
-            <h3>🚀 Avvio rapido (Docker)</h3>
-            <pre><code>docker run -d \
-  --name d2ha \
-  -p 12021:12021 \
-  -v /var/run/docker.sock:/var/run/docker.sock:ro \
-  -v $(pwd)/data:/app/data \
-  -e D2HA_SECRET_KEY="cambia-questa-chiave" \
-  ghcr.io/arborae/docker2homeassistant:latest</code></pre>
-            <div class="install-small">La cartella <code>./data</code> ospita le configurazioni persistenti (auth, preferenze MQTT).</div>
-          </div>
+        <div class="install-section-label">
+          Recommended setup
+        </div>
 
+        <div class="install-grid">
+          <!-- Docker Compose (recommended) -->
           <div class="install-block">
-            <h3>📦 Docker Compose</h3>
+            <h3>📦 Docker Compose <span>Recommended</span></h3>
             <pre><code>services:
   d2ha:
     image: ghcr.io/arborae/docker2homeassistant:latest
@@ -218,50 +256,80 @@
       - ./data:/app/data
     environment:
       D2HA_VERSION: "latest"
-      D2HA_SECRET_KEY: "cambia-questa-chiave"
+      D2HA_SECRET_KEY: "change-this-secret-key"
 
-      # MQTT (opzionale)
+      # MQTT (optional)
       # MQTT_BROKER: "192.168.1.10"
       # MQTT_PORT: "1883"
       # MQTT_USERNAME: "ha"
       # MQTT_PASSWORD: "password"
       # MQTT_BASE_TOPIC: "d2ha_server"
 
-    # Build locale (alternativa all'immagine)
+    # Local build (alternative to image)
     # build:
     #   context: ./d2ha
     #   dockerfile: ./d2ha/Dockerfile
     #   args:
     #     D2HA_VERSION: "latest"</code></pre>
-            <div class="install-small">Avvia con <code>docker compose up -d</code> e aggiorna con <code>docker compose pull</code> seguito da <code>docker compose up -d</code>.</div>
+            <div class="install-small">
+              Start with <code>docker compose up -d</code> and update later with
+              <code>docker compose pull</code> followed by <code>docker compose up -d</code>.
+            </div>
           </div>
 
+          <!-- Docker run quick test -->
+          <div class="install-block">
+            <h3>🚀 Quick test (docker run)</h3>
+            <pre><code>docker run -d \
+  --name d2ha \
+  -p 12021:12021 \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -v $(pwd)/data:/app/data \
+  -e D2HA_SECRET_KEY="change-this-secret-key" \
+  ghcr.io/arborae/docker2homeassistant:latest</code></pre>
+            <div class="install-small">
+              The <code>./data</code> folder stores persistent configuration
+              (auth, MQTT preferences, settings). This is ideal for a quick first run.
+            </div>
+          </div>
+
+          <!-- Nightly builds -->
           <div class="install-block">
             <h3>🌙 Nightly builds</h3>
             <pre><code>image: ghcr.io/arborae/docker2homeassistant:nightly
-# oppure
+# or pin a specific commit:
 image: ghcr.io/arborae/docker2homeassistant:nightly-&lt;commit_sha&gt;</code></pre>
-            <div class="install-small">Usa i tag nightly per provare le ultime novità direttamente da <code>main</code>.</div>
+            <div class="install-small">
+              Nightly images track the latest changes merged into <code>main</code>.
+              Use them if you want early access to new features and are comfortable
+              with faster-moving changes.
+            </div>
           </div>
 
+          <!-- Initial credentials / wizard -->
           <div class="install-block">
-            <h3>🔑 Credenziali iniziali</h3>
+            <h3>🔑 First login &amp; onboarding</h3>
             <pre><code>Username: admin
 Password: admin</code></pre>
             <ul class="install-list">
-              <li>Al primo login parte il wizard (password, 2FA, modalità sicura).</li>
-              <li>Configura l'MQTT per l'autodiscovery Home Assistant.</li>
+              <li>On the first login, a guided wizard will ask you to change the password, configure 2FA and choose Safe mode.</li>
+              <li>From the wizard you can also configure MQTT for Home Assistant autodiscovery.</li>
             </ul>
           </div>
 
+          <!-- Access URL -->
           <div class="install-block">
-            <h3>🌐 URL di accesso</h3>
+            <h3>🌐 Access URL</h3>
             <pre><code>http://localhost:12021</code></pre>
-            <div class="install-small">Su host remoto sostituisci <code>localhost</code> con IP o dominio del server.</div>
+            <div class="install-small">
+              When running on a remote host, replace <code>localhost</code> with the server IP
+              or DNS name (for example <code>http://192.168.1.10:12021</code>).
+            </div>
           </div>
 
+          <!-- MQTT .env example -->
           <div class="install-block">
-            <h3>📡 Esempio .env MQTT</h3>
+            <h3>📡 MQTT .env example</h3>
             <pre><code>MQTT_BROKER=192.168.1.10
 MQTT_PORT=1883
 MQTT_USERNAME=homeassistant
@@ -270,16 +338,22 @@ MQTT_BASE_TOPIC=d2ha_server
 MQTT_DISCOVERY_PREFIX=homeassistant
 MQTT_NODE_ID=d2ha_server
 MQTT_STATE_INTERVAL=5</code></pre>
-            <div class="install-small">Senza MQTT, D2HA resta una dashboard Docker completa: l'integrazione HA è opzionale.</div>
+            <div class="install-small">
+              Without MQTT, D2HA is still a full Docker dashboard. MQTT is only required
+              if you want Home Assistant to discover entities automatically.
+            </div>
           </div>
         </div>
 
         <div class="install-callout">
-          Suggerimento: imposta una chiave segreta robusta (<code>D2HA_SECRET_KEY</code>) e abilita la 2FA dal primo accesso.
+          Pro tip: define a strong <code>D2HA_SECRET_KEY</code> from day one and enable 2FA
+          during the first login. This secures the web UI that controls your containers.
         </div>
 
         <div class="install-footer">
-          Torna alla <a href="../">landing page</a> o visita <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">GitHub</a> per le release.
+          Back to the <a href="../">landing page</a> or visit
+          <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">GitHub</a>
+          for releases and full documentation.
         </div>
       </div>
     </div>
