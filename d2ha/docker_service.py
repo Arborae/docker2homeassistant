@@ -826,6 +826,25 @@ class DockerService:
             if abs_path in {"/", ""}:
                 return
 
+            bind_volumes = [
+                vol
+                for vol in self.list_volumes_overview()
+                if vol.get("type") == "bind"
+            ]
+
+            volume_info = next(
+                (
+                    vol
+                    for vol in bind_volumes
+                    if os.path.abspath(vol.get("name", "")) == abs_path
+                    or os.path.abspath(vol.get("mountpoint", "")) == abs_path
+                ),
+                None,
+            )
+
+            if not volume_info or volume_info.get("used_by"):
+                return
+
             try:
                 if os.path.isdir(abs_path):
                     shutil.rmtree(abs_path)
