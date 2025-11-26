@@ -81,7 +81,11 @@ class AutodiscoveryPreferences:
         "full_update",
     )
 
-    DEFAULT_GLOBAL_PREFERENCES = {"delete_unused_images": True}
+    DEFAULT_GLOBAL_PREFERENCES = {
+        "delete_unused_images": True,
+        "updates_overview": True,
+        "full_update_all": True,
+    }
 
     def __init__(self, path: str):
         self.path = path
@@ -1178,6 +1182,94 @@ class MqttManager:
         else:
             self._publish(btn_config_topic, "", qos=0, retain=True)
 
+    def _publish_updates_overview(
+        self,
+        containers_info: List[Dict[str, Any]],
+        device_info: Dict[str, Any],
+        enabled: bool,
+    ) -> None:
+        sensor_config_topic = (
+            f"{self.discovery_prefix}/sensor/{self.node_id}/docker_updates/config"
+        )
+        state_topic = f"{self.base_topic}/docker/updates/state"
+        attr_topic = f"{self.base_topic}/docker/updates/attributes"
+
+        if enabled:
+            updates = [
+                c for c in containers_info if c.get("update_state") == "update_available"
+            ]
+            payload = {
+                "name": "Container da aggiornare",
+                "state_topic": state_topic,
+                "json_attr_t": attr_topic,
+                "unique_id": "d2ha_docker_updates",
+                "device": device_info,
+                "icon": "mdi:update",
+            }
+
+            attributes = {
+                "containers": [c.get("name") for c in updates if c.get("name")],
+                "updates_pending": len(updates),
+            }
+
+            self._publish(sensor_config_topic, json.dumps(payload), qos=0, retain=True)
+            self._publish(state_topic, str(len(updates)), qos=0, retain=True)
+            self._publish(attr_topic, json.dumps(attributes), qos=0, retain=True)
+        else:
+            for topic in (sensor_config_topic, state_topic, attr_topic):
+                self._publish(topic, "", qos=0, retain=True)
+
+    def _publish_full_update_all_button(
+        self, device_info: Dict[str, Any], enabled: bool
+    ) -> None:
+        btn_config_topic = (
+            f"{self.discovery_prefix}/button/{self.node_id}/docker_full_update_all/config"
+        )
+        cmd_topic = f"{self.base_topic}/docker/set/full_update_all"
+
+        if enabled:
+            payload = {
+                "name": "Aggiorna tutti i container",
+                "command_topic": cmd_topic,
+                "unique_id": "d2ha_full_update_all",
+                "device": device_info,
+                "icon": "mdi:update-all",
+            }
+            self._publish(btn_config_topic, json.dumps(payload), qos=0, retain=True)
+        else:
+            self._publish(btn_config_topic, "", qos=0, retain=True)
+
+    def _full_update_all_containers(self) -> None:
+        containers_info = self.docker_service.collect_containers_info_for_updates()
+
+        for c in containers_info:
+            if self._is_self_container(c):
+                continue
+            if c.get("update_state") != "update_available":
+                continue
+
+            container_id = c.get("id")
+            if not container_id:
+                continue
+
+            try:
+                self.docker_service.recreate_container_with_latest_image(container_id)
+            except Exception:
+                self.logger.exception(
+                    "MQTT action full_update_all failed for %s", container_id
+                )
+
+        try:
+            self.docker_service.refresh_overview_cache()
+        except Exception:
+            self.logger.exception("Failed to refresh overview cache after full update")
+
+        try:
+            updated = self.docker_service.collect_containers_info_for_updates()
+            self.publish_autodiscovery_and_state(updated)
+        except Exception:
+            self.logger.exception("Failed to refresh MQTT state after full update")
+
     def _publish_docker_status(
         self,
         containers_info: List[Dict[str, Any]],
@@ -1234,6 +1326,14 @@ class MqttManager:
 
         self._publish_delete_unused_images_button(
             device_info, bool(global_preferences.get("delete_unused_images", True))
+        )
+        self._publish_updates_overview(
+            containers_info,
+            device_info,
+            bool(global_preferences.get("updates_overview", True)),
+        )
+        self._publish_full_update_all_button(
+            device_info, bool(global_preferences.get("full_update_all", True))
         )
 
     def _is_self_container(self, container_info: Dict[str, Any]) -> bool:
@@ -1297,6 +1397,13 @@ class MqttManager:
                 self.docker_service.remove_unused_images()
             except Exception:
                 self.logger.exception("MQTT action delete_unused_images failed")
+            return
+
+        if slug == "docker" and action == "full_update_all":
+            try:
+                self._full_update_all_containers()
+            except Exception:
+                self.logger.exception("MQTT action full_update_all failed")
             return
 
         container_id = self.container_slug_map.get(slug)

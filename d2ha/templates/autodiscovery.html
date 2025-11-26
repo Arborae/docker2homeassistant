@@ -453,6 +453,20 @@
             </label>
           </div>
           <div class="muted">Rende disponibile su MQTT il comando per eliminare le immagini Docker non utilizzate.</div>
+          <div class="checkbox-row" style="margin-top: 1rem;">
+            <label class="checkbox-item" title="Esponi su MQTT un sensore con il numero di container da aggiornare">
+              <input type="checkbox" name="updates_overview" aria-label="Esponi su MQTT un sensore con il numero di container da aggiornare" {% if global_preferences.get('updates_overview') %}checked{% endif %} />
+              <span class="checkbox-label">Sensore "Container da aggiornare"</span>
+            </label>
+          </div>
+          <div class="muted">Pubblica un sensore con il numero di container con aggiornamenti disponibili e i loro nomi negli attributi.</div>
+          <div class="checkbox-row" style="margin-top: 1rem;">
+            <label class="checkbox-item" title="Esponi su MQTT un bottone per aggiornare tutti i container">
+              <input type="checkbox" name="full_update_all" aria-label="Esponi su MQTT un bottone per aggiornare tutti i container" {% if global_preferences.get('full_update_all') %}checked{% endif %} />
+              <span class="checkbox-label">Bottone "Aggiorna tutti i container"</span>
+            </label>
+          </div>
+          <div class="muted">Esegue il pull e la ricreazione di tutti i container con aggiornamenti disponibili.</div>
         </div>
       </section>
 
