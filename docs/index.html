@@ -20,8 +20,13 @@
 
   <!-- Stili extra per la landing + animazione intro -->
   <style>
+    :root {
+      --tech-gradient: linear-gradient(135deg, #38bdf8, #7c3aed);
+      --tech-glow: 0 18px 48px rgba(56, 189, 248, 0.35);
+    }
+
     .landing-card {
-      padding: 2.2rem 2.4rem 2.4rem;
+      padding: 2.6rem 2.6rem 2.4rem;
     }
 
     .landing-header {
@@ -29,9 +34,14 @@
     }
 
     .landing-title {
-      font-size: 1.7rem;
-      font-weight: 600;
-      margin-bottom: 0.6rem;
+      font-size: clamp(1.9rem, 4vw, 2.2rem);
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.02em;
+      background: var(--tech-gradient);
+      -webkit-background-clip: text;
+      color: transparent;
+      text-shadow: 0 8px 30px rgba(56, 189, 248, 0.3);
     }
 
     .landing-subtitle {
@@ -71,6 +81,14 @@
       margin-bottom: 0.4rem;
     }
 
+    .auth-logo {
+      z-index: 0;
+    }
+
+    .auth-title {
+      z-index: 3;
+    }
+
     .landing-btn {
       display: inline-flex;
       align-items: center;
@@ -88,7 +106,7 @@
     }
 
     .landing-btn-primary {
-      background: linear-gradient(135deg, #4fc3f7, #22c1c3);
+      background: var(--tech-gradient);
       color: #020617;
       box-shadow: 0 12px 30px rgba(56, 189, 248, 0.45);
     }
@@ -195,6 +213,7 @@
       border-radius: 14px;
       overflow: hidden;
       border: 1px solid rgba(148, 163, 184, 0.35);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.4);
     }
 
     .landing-swipe img {
@@ -213,6 +232,71 @@
       margin-top: 0.9rem;
       font-size: 0.8rem;
       color: #6b7280;
+    }
+
+    /* Quickstart card */
+    .landing-quickstart {
+      margin-top: 1.4rem;
+      padding: 1.1rem 1.1rem 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 14px;
+      background: radial-gradient(circle at top left, rgba(34, 193, 195, 0.16), rgba(15, 23, 42, 0.94));
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+    }
+
+    .landing-quickstart h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      gap: 0.45rem;
+      align-items: center;
+    }
+
+    .landing-quickstart h3 span {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #22c1c3;
+    }
+
+    .landing-qs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 0.7rem;
+    }
+
+    .landing-qs-step {
+      padding: 0.65rem 0.75rem;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5f7ff;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .landing-qs-step strong {
+      font-weight: 600;
+    }
+
+    .landing-qs-step code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      padding: 0.18rem 0.35rem;
+      border-radius: 10px;
+      background: rgba(79, 195, 247, 0.08);
+      border: 1px solid rgba(79, 195, 247, 0.3);
+      color: #bef2ff;
+    }
+
+    .landing-qs-step small {
+      color: #9ca3af;
+      line-height: 1.5;
+    }
+
+    .landing-qs-footer {
+      margin-top: 0.8rem;
+      font-size: 0.85rem;
+      color: #9ca3af;
     }
 
     /* Founders section */
@@ -287,25 +371,29 @@
         font-size 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
         width 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
         height 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
-        opacity 0.8s ease;
+        opacity 0.8s ease,
+        filter 1.35s ease;
     }
 
     /* Stato iniziale: logo + scritta grandi e centrati, card nascosta */
     body.landing-intro .auth-title {
-      top: 50%;
+      top: 48%;
       left: 50%;
-      transform: translate(-50%, -40%);
-      font-size: clamp(3.1rem, 6vw, 3.8rem);
+      transform: translate(-50%, -50%);
+      font-size: clamp(3.4rem, 7vw, 4.2rem);
       opacity: 1;
+      filter: drop-shadow(0 22px 45px rgba(56, 189, 248, 0.3));
+      letter-spacing: 0.08em;
     }
 
     body.landing-intro .auth-logo {
-      top: 50%;
+      top: 52%;
       left: 50%;
-      transform: translate(-50%, 38%);
-      width: 220px;
-      height: 220px;
-      opacity: 1;
+      transform: translate(-50%, -30%);
+      width: clamp(320px, 34vw, 380px);
+      height: clamp(320px, 34vw, 380px);
+      opacity: 0.28;
+      filter: drop-shadow(0 32px 65px rgba(56, 189, 248, 0.45));
     }
 
     body.landing-intro .auth-overlay {
@@ -317,22 +405,26 @@
         transform 0.9s ease;
     }
 
-    /* Stato finale: come il layout standard, card visibile */
+    /* Stato finale: logo a filligrana centrale, titolo in alto visibile */
     body.landing-ready .auth-title {
       top: 1rem;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 2.1rem;
-      opacity: 0.7;
+      font-size: clamp(2.1rem, 4vw, 2.4rem);
+      opacity: 0.95;
+      letter-spacing: 0.12em;
+      text-shadow: 0 8px 26px rgba(56, 189, 248, 0.35);
     }
 
     body.landing-ready .auth-logo {
-      top: 1.4rem;
-      left: 1.6rem;
-      width: 70px;
-      height: 70px;
-      transform: translate(0, 0);
-      opacity: 1;
+      top: 52%;
+      left: 50%;
+      width: clamp(360px, 38vw, 440px);
+      height: clamp(360px, 38vw, 440px);
+      transform: translate(-50%, -50%);
+      opacity: 0.08;
+      filter: drop-shadow(0 18px 38px rgba(56, 189, 248, 0.25));
+      pointer-events: none;
     }
 
     body.landing-ready .auth-overlay {
@@ -341,9 +433,91 @@
       pointer-events: auto;
     }
 
+    /* Modal install */
+    .landing-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.65);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 6;
+    }
+
+    .landing-modal-backdrop.active {
+      display: flex;
+    }
+
+    .landing-modal {
+      width: min(1100px, 92vw);
+      height: min(720px, 90vh);
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      border-radius: 18px;
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .landing-modal header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(15, 23, 42, 0.95));
+      color: #e5f7ff;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .landing-modal button {
+      background: rgba(148, 163, 184, 0.12);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #e5f7ff;
+      border-radius: 10px;
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .landing-modal button:hover {
+      background: rgba(148, 163, 184, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .landing-modal iframe {
+      width: 100%;
+      height: calc(100% - 54px);
+      border: none;
+      background: transparent;
+    }
+
+    body.modal-open .auth-overlay {
+      filter: blur(6px);
+      pointer-events: none;
+    }
+
+    body.modal-open .auth-title {
+      filter: blur(1px);
+    }
+
+    body.modal-open .auth-canvas {
+      filter: blur(4px) brightness(0.9);
+    }
+
+    body.modal-open {
+      overflow: hidden;
+    }
+
     @media (max-width: 640px) {
       body.landing-ready .auth-title {
         font-size: 1.8rem;
+      }
+
+      .landing-card {
+        padding: 2.1rem 1.6rem 2.1rem;
       }
     }
   </style>
@@ -354,7 +528,7 @@
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
 
     <!-- Logo e titolo “fluttuanti” -->
-    <div class="auth-title" aria-hidden="true">D2HA</div>
+    <div class="auth-title" aria-hidden="true">Docker 2 Home Assistant</div>
     <div class="auth-logo" aria-hidden="true">
       <!-- Assicurati che il file esista in docs/assets/logo.svg -->
       <img src="./assets/logo.svg" alt="D2HA Logo">
@@ -383,8 +557,11 @@
             <a class="landing-btn landing-btn-primary" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
               <span>⭐ View on GitHub</span>
             </a>
-            <a class="landing-btn landing-btn-ghost" href="./install" target="_blank" rel="noopener noreferrer">
-              <span>📦 Quick start &amp; docs</span>
+            <button class="landing-btn landing-btn-ghost" type="button" id="open-install">
+              <span>⚡ Install</span>
+            </button>
+            <a class="landing-btn landing-btn-ghost" href="#quickstart">
+              <span>📦 Quick start</span>
             </a>
           </div>
 
@@ -449,6 +626,34 @@
             <div class="landing-extra-note">
               Requirements: Docker host (Linux is recommended), MQTT broker compatible with Home Assistant, and a Home Assistant instance to consume the entities.
             </div>
+
+            <div class="landing-quickstart" id="quickstart">
+              <h3>
+                🚀 Quick start
+                <span>Up in under 30 seconds</span>
+              </h3>
+
+              <div class="landing-qs-grid">
+                <div class="landing-qs-step">
+                  <strong>1) Run the container</strong>
+                  <code>docker run -d -p 12021:12021 -v /var/run/docker.sock:/var/run/docker.sock:ro ghcr.io/arborae/docker2homeassistant:latest</code>
+                  <small>Mount the Docker socket in read-only mode. The UI will be available at <code>http://localhost:12021</code>.</small>
+                </div>
+                <div class="landing-qs-step">
+                  <strong>2) Secure the dashboard</strong>
+                  <small>On first login set a new password, optionally enable 2FA and decide if you want Safe Mode to require confirmations for destructive actions.</small>
+                </div>
+                <div class="landing-qs-step">
+                  <strong>3) Connect Home Assistant</strong>
+                  <small>Point D2HA to your MQTT broker to publish sensors and switches automatically. Home Assistant will discover entities without extra YAML.</small>
+                </div>
+              </div>
+
+              <div class="landing-qs-footer">
+                Prefer Docker Compose? Follow the full install guide →
+                <a href="./install" target="_blank" rel="noopener noreferrer">docs/install</a>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -490,6 +695,16 @@
     </div>
   </div>
 
+  <div class="landing-modal-backdrop" id="install-modal" role="dialog" aria-modal="true" aria-label="Install guide pop-up">
+    <div class="landing-modal">
+      <header>
+        <span>Installazione Docker 2 Home Assistant</span>
+        <button type="button" id="close-install">Chiudi</button>
+      </header>
+      <iframe src="./install/" title="Install guide"></iframe>
+    </div>
+  </div>
+
   <!-- JS che disegna lo sfondo animato sul canvas -->
   <script src="./js/auth_background.js"></script>
 
@@ -497,6 +712,28 @@
   <script>
     window.addEventListener('load', () => {
       const body = document.body;
+      const installModal = document.getElementById('install-modal');
+      const openInstall = document.getElementById('open-install');
+      const closeInstall = document.getElementById('close-install');
+
+      const openModal = () => {
+        installModal.classList.add('active');
+        body.classList.add('modal-open');
+      };
+
+      const closeModal = () => {
+        installModal.classList.remove('active');
+        body.classList.remove('modal-open');
+      };
+
+      openInstall?.addEventListener('click', openModal);
+      closeInstall?.addEventListener('click', closeModal);
+      installModal?.addEventListener('click', (event) => {
+        if (event.target === installModal) {
+          closeModal();
+        }
+      });
+
       setTimeout(() => {
         body.classList.add('landing-ready');
         body.classList.remove('landing-intro');
