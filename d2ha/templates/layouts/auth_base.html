@@ -6,7 +6,12 @@
   <title>{% block title %}D2HA{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 </head>
-<body class="theme-{{ get_current_theme() }}">
+<body
+  class="theme-{{ get_current_theme() }}"
+  data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}"
+>
   <div class="auth-page">
     <!-- Auth animated tech background (login + wizard) -->
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
