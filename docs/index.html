@@ -7,7 +7,7 @@
   <!-- SEO base -->
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="D2HA (Docker to Home Assistant) is a modern web UI to monitor and control Docker containers with MQTT autodiscovery integration for Home Assistant." />
-  <meta name="keywords" content="docker, home assistant, mqtt, autodiscovery, docker containers, web ui, docker monitoring, d2ha" />
+  <meta name="keywords" content="docker, home assistant, mqtt, autodiscovery, docker containers, web ui, docker monitoring, docker management, d2ha" />
 
   <!-- Open Graph / Social -->
   <meta property="og:title" content="Docker to Home Assistant (D2HA)" />
@@ -18,14 +18,18 @@
   <!-- CSS per la pagina auth + background -->
   <link rel="stylesheet" href="./css/auth.css" />
 
-  <!-- Stili extra per la landing -->
+  <!-- Stili extra per la landing + animazione intro -->
   <style>
     .landing-card {
-      padding: 2.2rem 2.4rem;
+      padding: 2.2rem 2.4rem 2.4rem;
+    }
+
+    .landing-header {
+      margin-bottom: 1.6rem;
     }
 
     .landing-title {
-      font-size: 1.6rem;
+      font-size: 1.7rem;
       font-weight: 600;
       margin-bottom: 0.6rem;
     }
@@ -33,7 +37,7 @@
     .landing-subtitle {
       font-size: 0.98rem;
       color: #9ca3af;
-      margin-bottom: 1.6rem;
+      margin-bottom: 1.4rem;
       line-height: 1.6;
     }
 
@@ -41,7 +45,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin-bottom: 1.6rem;
+      margin-bottom: 1.4rem;
       font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -64,7 +68,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.8rem;
-      margin-bottom: 1.4rem;
+      margin-bottom: 0.4rem;
     }
 
     .landing-btn {
@@ -109,10 +113,85 @@
     .landing-note {
       font-size: 0.8rem;
       color: #9ca3af;
+      margin-top: 0.6rem;
+    }
+
+    /* Layout interno card: testo + features + gif */
+    .landing-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+      gap: 1.8rem;
+      margin-top: 1.6rem;
+    }
+
+    @media (max-width: 820px) {
+      .landing-body {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .landing-section-title {
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #9ca3af;
+      margin-bottom: 0.6rem;
+    }
+
+    .landing-features-title {
+      font-size: 1.02rem;
+      font-weight: 600;
+      margin-bottom: 0.6rem;
+    }
+
+    .landing-features-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.55rem;
+      font-size: 0.92rem;
+    }
+
+    .landing-feature-item {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.45rem;
+      align-items: flex-start;
+    }
+
+    .landing-feature-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      margin-top: 0.35rem;
+      background: radial-gradient(circle, #4fc3f7, transparent 70%);
+      box-shadow: 0 0 10px rgba(79, 195, 247, 0.8);
+      flex-shrink: 0;
+    }
+
+    .landing-feature-label strong {
+      font-weight: 600;
+    }
+
+    .landing-how {
+      margin-top: 1.2rem;
+      font-size: 0.9rem;
+      color: #9ca3af;
+      line-height: 1.6;
+    }
+
+    .landing-how code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.82rem;
+      padding: 0.15rem 0.35rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: #e5f7ff;
     }
 
     .landing-swipe {
-      margin-top: 1.6rem;
       border-radius: 14px;
       overflow: hidden;
       border: 1px solid rgba(148, 163, 184, 0.35);
@@ -130,6 +209,12 @@
       text-align: center;
     }
 
+    .landing-extra-note {
+      margin-top: 0.9rem;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
     footer {
       text-align: center;
       font-size: 0.8rem;
@@ -145,55 +230,194 @@
     footer a:hover {
       text-decoration: underline;
     }
+
+    /* ============================ */
+    /* ANIMAZIONE INTRO LOGO + D2HA */
+    /* ============================ */
+
+    .auth-title,
+    .auth-logo {
+      transition:
+        top 0.9s cubic-bezier(0.25, 0.9, 0.3, 1),
+        left 0.9s cubic-bezier(0.25, 0.9, 0.3, 1),
+        transform 0.9s cubic-bezier(0.25, 0.9, 0.3, 1),
+        font-size 0.9s cubic-bezier(0.25, 0.9, 0.3, 1),
+        opacity 0.7s ease;
+    }
+
+    /* Stato iniziale: logo + scritta grandi e centrati, card nascosta */
+    body.landing-intro .auth-title {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -40%);
+      font-size: clamp(2.8rem, 5vw, 3.4rem);
+      opacity: 1;
+    }
+
+    body.landing-intro .auth-logo {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, 40%);
+      width: 84px;
+      height: 84px;
+      opacity: 1;
+    }
+
+    body.landing-intro .auth-overlay {
+      opacity: 0;
+      transform: translateY(26px);
+      pointer-events: none;
+      transition:
+        opacity 0.7s ease,
+        transform 0.7s ease;
+    }
+
+    /* Stato finale: come il layout standard, card visibile */
+    body.landing-ready .auth-title {
+      top: 1.8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.1rem;
+      opacity: 0.18;
+    }
+
+    body.landing-ready .auth-logo {
+      top: 1.4rem;
+      left: 1.6rem;
+      width: 52px;
+      height: 52px;
+      transform: translate(0, 0);
+      opacity: 1;
+    }
+
+    body.landing-ready .auth-overlay {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    @media (max-width: 640px) {
+      body.landing-ready .auth-title {
+        font-size: 1.7rem;
+      }
+    }
   </style>
 </head>
-<body class="theme-dark">
+<body class="theme-dark landing-intro">
   <div class="auth-page">
     <!-- Canvas + animazione di sfondo -->
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
 
-    <!-- Logo e titolo “fluttuanti” in stile login/wizard -->
+    <!-- Logo e titolo “fluttuanti” -->
     <div class="auth-title" aria-hidden="true">D2HA</div>
     <div class="auth-logo" aria-hidden="true">
-      <!-- Inserisci qui il tuo logo come logo.svg nella cartella assets -->
+      <!-- Assicurati che il file esista in docs/assets/logo.svg -->
       <img src="./assets/logo.svg" alt="D2HA Logo">
     </div>
 
     <!-- Overlay con la card della landing -->
     <div class="auth-overlay">
       <div class="auth-card landing-card">
-        <h1 class="landing-title">Docker to Home Assistant (D2HA)</h1>
-        <p class="landing-subtitle">
-          A modern web UI to monitor and control your Docker containers, with MQTT autodiscovery integration tailored for Home Assistant.
-          Self-hosted, Docker-first, and designed for Home Assistant users.
-        </p>
 
-        <div class="landing-badges">
-          <span class="landing-badge landing-badge-primary">Docker ➜ Home Assistant</span>
-          <span class="landing-badge">MQTT autodiscovery</span>
-          <span class="landing-badge">Light & Dark theme</span>
-          <span class="landing-badge">Safe & performance modes</span>
+        <!-- Header: titolo + badge + CTA -->
+        <div class="landing-header">
+          <h1 class="landing-title">Docker to Home Assistant (D2HA)</h1>
+          <p class="landing-subtitle">
+            D2HA is a modern web UI to monitor and control your Docker containers, with MQTT autodiscovery integration tailored for Home Assistant.
+            It keeps your stack visible, debuggable and easy to manage directly from your browser.
+          </p>
+
+          <div class="landing-badges">
+            <span class="landing-badge landing-badge-primary">Docker ➜ Home Assistant</span>
+            <span class="landing-badge">MQTT autodiscovery</span>
+            <span class="landing-badge">Light &amp; Dark theme</span>
+            <span class="landing-badge">Safe &amp; performance modes</span>
+          </div>
+
+          <div class="landing-actions">
+            <a class="landing-btn landing-btn-primary" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
+              <span>⭐ View on GitHub</span>
+            </a>
+            <a class="landing-btn landing-btn-ghost" href="https://github.com/Arborae/docker2homeassistant#-getting-started" target="_blank" rel="noopener noreferrer">
+              <span>📦 Quick start &amp; docs</span>
+            </a>
+          </div>
+
+          <div class="landing-note">
+            Self-hosted and Docker-first, designed for people who already live inside Home Assistant and want their containers to feel native.
+          </div>
         </div>
 
-        <div class="landing-actions">
-          <a class="landing-btn landing-btn-primary" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
-            <span>⭐ View on GitHub</span>
-          </a>
-          <a class="landing-btn landing-btn-ghost" href="https://github.com/Arborae/docker2homeassistant#-getting-started" target="_blank" rel="noopener noreferrer">
-            <span>📦 Quick start &amp; docs</span>
-          </a>
-        </div>
+        <!-- Corpo: features + gif / UI preview -->
+        <div class="landing-body">
+          <div>
+            <div class="landing-section-title">Features</div>
+            <div class="landing-features-title">What D2HA adds on top of Docker + Home Assistant</div>
 
-        <div class="landing-note">
-          Built to expose Docker metrics, controls and MQTT entities that plug directly into your Home Assistant setup.
-        </div>
+            <ul class="landing-features-list">
+              <li class="landing-feature-item">
+                <span class="landing-feature-dot"></span>
+                <span class="landing-feature-label">
+                  <strong>Live dashboard</strong> for container status, CPU, RAM and network usage – see at a glance what your host is doing.
+                </span>
+              </li>
+              <li class="landing-feature-item">
+                <span class="landing-feature-dot"></span>
+                <span class="landing-feature-label">
+                  <strong>One-click controls</strong> to start, stop, restart or update containers directly from the web UI.
+                </span>
+              </li>
+              <li class="landing-feature-item">
+                <span class="landing-feature-dot"></span>
+                <span class="landing-feature-label">
+                  <strong>MQTT autodiscovery</strong> that publishes sensors and switches following Home Assistant conventions.
+                </span>
+              </li>
+              <li class="landing-feature-item">
+                <span class="landing-feature-dot"></span>
+                <span class="landing-feature-label">
+                  <strong>Safe mode</strong> to avoid destructive actions without an explicit confirmation.
+                </span>
+              </li>
+              <li class="landing-feature-item">
+                <span class="landing-feature-dot"></span>
+                <span class="landing-feature-label">
+                  <strong>Performance mode</strong> to tune how often the UI refreshes and how heavy the backend polling is.
+                </span>
+              </li>
+              <li class="landing-feature-item">
+                <span class="landing-feature-dot"></span>
+                <span class="landing-feature-label">
+                  <strong>Debug helpers</strong> (log views &amp; commands) to understand what Docker is actually doing when you click a button.
+                </span>
+              </li>
+            </ul>
 
-        <div class="landing-swipe">
-          <!-- Assicurati che questo file esista in docs/assets/d2ha_home_swipe.gif -->
-          <img src="./assets/d2ha_home_swipe.gif" alt="D2HA light and dark theme preview" />
-        </div>
-        <div class="landing-swipe-caption">
-          Light &amp; dark theme preview of the D2HA dashboard.
+            <div class="landing-how">
+              <span class="landing-section-title" style="margin-bottom: 0.3rem;">How it fits your stack</span>
+              Install D2HA as a Docker container on the same host where you run the rest of your services,
+              point it to your Docker socket and MQTT broker, and it will publish entities that Home Assistant
+              can discover automatically. The goal is to keep your <code>docker-compose</code> world and your
+              <code>configuration.yaml</code> world in sync without manual glue.
+            </div>
+
+            <div class="landing-extra-note">
+              Requirements: Docker host (Linux is recommended), MQTT broker compatible with Home Assistant, and a Home Assistant instance to consume the entities.
+            </div>
+          </div>
+
+          <div>
+            <div class="landing-section-title">Interface</div>
+            <div class="landing-features-title">Light &amp; dark theme preview</div>
+
+            <div class="landing-swipe">
+              <!-- Assicurati che questo file esista in docs/assets/d2ha_home_swipe.gif -->
+              <img src="./assets/d2ha_home_swipe.gif" alt="D2HA light and dark theme preview" />
+            </div>
+            <div class="landing-swipe-caption">
+              Animated preview of the D2HA dashboard in light and dark theme.
+            </div>
+          </div>
         </div>
       </div>
 
@@ -208,5 +432,16 @@
 
   <!-- JS che disegna lo sfondo animato sul canvas -->
   <script src="./js/auth_background.js"></script>
+
+  <!-- Piccolo script per far partire l'animazione: logo + titolo centrati, poi card -->
+  <script>
+    window.addEventListener('load', () => {
+      const body = document.body;
+      setTimeout(() => {
+        body.classList.add('landing-ready');
+        body.classList.remove('landing-intro');
+      }, 1300); // ritardo in millisecondi prima di mostrare la card
+    });
+  </script>
 </body>
 </html>
