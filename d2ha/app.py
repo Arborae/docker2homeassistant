@@ -1067,6 +1067,13 @@ def images_view():
     )
 
 
+@app.route("/images/delete_unused", methods=["POST"])
+@onboarding_required
+def delete_unused_images():
+    docker_service.remove_unused_images()
+    return redirect(url_for("images_view"))
+
+
 @app.route("/events", methods=["GET"])
 @onboarding_required
 def events_view():
@@ -1236,6 +1243,72 @@ def api_debug_mode():
     payload = request.get_json(force=True, silent=True) or {}
     enabled = bool(payload.get("enabled", False))
     return jsonify({"enabled": set_debug_mode(enabled)})
+
+
+@app.route("/api/images/delete_unused/stream", methods=["GET"])
+@onboarding_required
+def api_delete_unused_images_stream():
+    if not is_debug_mode_enabled():
+        return jsonify({"error": "Debug mode disabilitato"}), 403
+
+    def generate():
+        yield _sse_event(
+            "command",
+            {"action": "delete_unused_images", "message": "Ricerca immagini non in uso"},
+        )
+
+        removed: List[Dict[str, Any]] = []
+        errors: List[Dict[str, Any]] = []
+        unused_images = docker_service.list_unused_images()
+
+        if not unused_images:
+            yield _sse_event("log", {"message": "Nessuna immagine non utilizzata trovata"})
+            yield _sse_event("result", {"removed": removed, "errors": errors})
+            yield _sse_event("end", {"removed": removed, "errors": errors})
+            return
+
+        for image in unused_images:
+            tag = image.get("tags", [""])[0] or image.get("short_id", "Immagine")
+            yield _sse_event(
+                "command",
+                {
+                    "action": "delete_unused_images",
+                    "image": image,
+                    "message": f"Eliminazione {tag} ({image.get('short_id')})",
+                },
+            )
+            try:
+                docker_service.remove_image(image["id"])
+                removed.append(image)
+                yield _sse_event(
+                    "log",
+                    {
+                        "action": "delete_unused_images",
+                        "image": image,
+                        "message": f"Immagine {tag} rimossa",
+                    },
+                )
+            except Exception as exc:
+                error_msg = str(exc) or "Impossibile rimuovere l'immagine"
+                errors.append({**image, "error": error_msg})
+                yield _sse_event(
+                    "error",
+                    {
+                        "action": "delete_unused_images",
+                        "image": image,
+                        "message": error_msg,
+                    },
+                )
+
+        yield _sse_event("result", {"removed": removed, "errors": errors})
+        yield _sse_event("end", {"removed": removed, "errors": errors})
+
+    headers = {"Cache-Control": "no-cache"}
+    return Response(
+        stream_with_context(generate()),
+        mimetype="text/event-stream",
+        headers=headers,
+    )
 
 
 @app.route("/api/containers/<container_id>/actions/<action>/stream", methods=["GET"])
