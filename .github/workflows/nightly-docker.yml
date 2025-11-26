@@ -39,3 +39,5 @@ jobs:
           tags: |
             ghcr.io/arborae/docker2homeassistant:nightly
             ghcr.io/arborae/docker2homeassistant:nightly-${{ github.sha }}
+          build-args: |
+            D2HA_VERSION=${{ github.ref_name }}

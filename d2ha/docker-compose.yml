@@ -2,7 +2,10 @@ version: "3.8"
 
 services:
   d2ha_server:
-    build: .
+    build:
+      context: .
+      args:
+        D2HA_VERSION: ${D2HA_VERSION:-dev}
     container_name: d2ha_server
     ports:
       - "12021:12021"
@@ -10,6 +13,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/app/data
     environment:
+      - D2HA_VERSION=${D2HA_VERSION:-dev}
       - D2HA_AUTH_CONFIG_PATH=${D2HA_AUTH_CONFIG_PATH:-/app/data/auth_config.json}
       - MQTT_BROKER=${MQTT_BROKER}
       - MQTT_PORT=${MQTT_PORT:-1883}

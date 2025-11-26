@@ -31,12 +31,15 @@ jobs:
         id: meta
         run: |
           TAGS="ghcr.io/arborae/docker2homeassistant:latest"
+          VERSION="${GITHUB_REF_NAME:-dev}"
           if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
             RAW_TAG="${GITHUB_REF#refs/tags/}"
             CLEAN_TAG="${RAW_TAG#v}"
             TAGS="$TAGS,ghcr.io/arborae/docker2homeassistant:${CLEAN_TAG}"
+            VERSION="${CLEAN_TAG}"
           fi
           echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -45,3 +48,5 @@ jobs:
           file: ./d2ha/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            D2HA_VERSION=${{ steps.meta.outputs.version }}
