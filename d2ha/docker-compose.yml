@@ -15,13 +15,13 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/app/data
     environment:
-      - D2HA_VERSION=*d2ha_version
-      - D2HA_AUTH_CONFIG_PATH=${D2HA_AUTH_CONFIG_PATH:-/app/data/auth_config.json}
-      - MQTT_BROKER=${MQTT_BROKER}
-      - MQTT_PORT=${MQTT_PORT:-1883}
-      - MQTT_USERNAME=${MQTT_USERNAME}
-      - MQTT_PASSWORD=${MQTT_PASSWORD}
-      - MQTT_BASE_TOPIC=${MQTT_BASE_TOPIC:-d2ha_server}
-      - MQTT_DISCOVERY_PREFIX=${MQTT_DISCOVERY_PREFIX:-homeassistant}
-      - MQTT_NODE_ID=${MQTT_NODE_ID:-d2ha_server}
+      D2HA_VERSION: *d2ha_version
+      D2HA_AUTH_CONFIG_PATH: ${D2HA_AUTH_CONFIG_PATH:-/app/data/auth_config.json}
+      MQTT_BROKER: ${MQTT_BROKER}
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME}
+      MQTT_PASSWORD: ${MQTT_PASSWORD}
+      MQTT_BASE_TOPIC: ${MQTT_BASE_TOPIC:-d2ha_server}
+      MQTT_DISCOVERY_PREFIX: ${MQTT_DISCOVERY_PREFIX:-homeassistant}
+      MQTT_NODE_ID: ${MQTT_NODE_ID:-d2ha_server}
     restart: unless-stopped
