@@ -1093,6 +1093,21 @@ def volumes_view():
     )
 
 
+@app.route("/networks", methods=["GET"])
+@onboarding_required
+def networks_view():
+    networks = docker_service.list_networks_overview()
+    stacks, summary = _build_home_context()
+    notifications = _build_notifications_summary()
+    return render_template(
+        "networks.html",
+        networks=networks,
+        summary=summary,
+        notifications=notifications,
+        active_page="networks",
+    )
+
+
 @app.route("/volumes/delete", methods=["POST"])
 @onboarding_required
 def delete_volume():
@@ -1272,6 +1287,103 @@ def api_notifications():
     force_refresh = request.args.get("refresh") == "1"
     data = _build_notifications_summary(force=force_refresh)
     return jsonify(data)
+
+
+@app.route("/api/networks", methods=["GET", "POST"])
+@onboarding_required
+def api_networks():
+    if request.method == "GET":
+        try:
+            networks = docker_service.list_networks_overview()
+            return jsonify({"networks": networks})
+        except Exception as exc:
+            return jsonify({"error": str(exc) or "Impossibile elencare le reti"}), 500
+
+    payload = request.get_json(force=True, silent=True) or {}
+    name = (payload.get("name") or "").strip()
+    driver = (payload.get("driver") or "bridge").strip() or "bridge"
+    internal = bool(payload.get("internal", False))
+    attachable = bool(payload.get("attachable", False))
+    subnet = (payload.get("subnet") or "").strip() or None
+    gateway = (payload.get("gateway") or "").strip() or None
+    labels = payload.get("labels") or {}
+
+    try:
+        created = docker_service.create_network(
+            name,
+            driver=driver,
+            internal=internal,
+            attachable=attachable,
+            subnet=subnet,
+            gateway=gateway,
+            labels=labels,
+        )
+        return jsonify(created), 201
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        return jsonify({"error": str(exc) or "Impossibile creare la rete"}), 500
+
+
+@app.route("/api/networks/<network_id>", methods=["GET", "DELETE"])
+@onboarding_required
+def api_network_detail(network_id):
+    if request.method == "GET":
+        details = docker_service.inspect_network(network_id)
+        if not details:
+            return jsonify({"error": "Rete non trovata"}), 404
+        return jsonify(details)
+
+    payload = request.get_json(force=True, silent=True) or {}
+    confirmed = bool(payload.get("confirm")) or request.args.get("confirm") == "1"
+
+    if is_safe_mode_enabled() and not confirmed:
+        return jsonify({"error": "Modalità sicura attiva: conferma richiesta"}), 403
+
+    try:
+        docker_service.remove_network(network_id)
+        return jsonify({"status": "removed"})
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:
+        return jsonify({"error": str(exc) or "Impossibile rimuovere la rete"}), 500
+
+
+@app.route("/api/networks/<network_id>/connect", methods=["POST"])
+@onboarding_required
+def api_network_connect(network_id):
+    payload = request.get_json(force=True, silent=True) or {}
+    container_id = (payload.get("container_id") or "").strip()
+    if not container_id:
+        return jsonify({"error": "Container non valido"}), 400
+
+    try:
+        docker_service.connect_container_to_network(network_id, container_id)
+        return jsonify({"status": "connected"})
+    except Exception as exc:
+        return jsonify({"error": str(exc) or "Impossibile collegare il container"}), 500
+
+
+@app.route("/api/networks/<network_id>/disconnect", methods=["POST"])
+@onboarding_required
+def api_network_disconnect(network_id):
+    payload = request.get_json(force=True, silent=True) or {}
+    container_id = (payload.get("container_id") or "").strip()
+    confirmed = bool(payload.get("confirm")) or request.args.get("confirm") == "1"
+
+    if not container_id:
+        return jsonify({"error": "Container non valido"}), 400
+
+    if is_safe_mode_enabled() and not confirmed:
+        return jsonify({"error": "Modalità sicura attiva: conferma richiesta"}), 403
+
+    try:
+        docker_service.disconnect_container_from_network(
+            network_id, container_id, force=True
+        )
+        return jsonify({"status": "disconnected"})
+    except Exception as exc:
+        return jsonify({"error": str(exc) or "Impossibile scollegare il container"}), 500
 
 
 @app.route("/api/safe_mode", methods=["GET", "POST"])

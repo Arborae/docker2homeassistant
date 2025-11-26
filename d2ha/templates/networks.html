@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>D2HA – {{ t('nav.networks') }}</title>
+  {% include 'partials/notifications_styles.html' %}
+  <style>
+    :root {
+      --bg-base: #0b1020;
+      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0,255,255,0.05), transparent 26%),
+                    radial-gradient(circle at 84% 18%, rgba(124,255,195,0.06), transparent 24%),
+                    linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
+      --bg-card: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
+                  linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
+                  rgba(17, 22, 36, 0.92);
+      --bg-card-alt: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)),
+                     rgba(26, 34, 52, 0.86);
+      --accent-primary: #31c4ff;
+      --accent: var(--accent-primary);
+      --accent-2: #7cffc3;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(49,196,255,0.35);
+      --accent-glow-soft: rgba(49,196,255,0.25);
+      --accent-border-strong: rgba(49,196,255,0.55);
+      --accent-border: rgba(49,196,255,0.45);
+      --accent-border-soft: rgba(49,196,255,0.3);
+      --accent-surface: rgba(49,196,255,0.08);
+      --text: #e7ecf4;
+      --muted: #9aa7bd;
+      --border: rgba(255,255,255,0.08);
+      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
+      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
+      --control-surface: #0f141f;
+      --bg: var(--bg-base);
+      --panel: var(--bg-card);
+      --panel-2: var(--bg-card-alt);
+    }
+
+    body.theme-light {
+      --bg-base: linear-gradient(135deg, #fff3e0, #ffe0c2);
+      --bg-primary: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
+                    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
+                    var(--bg-base);
+      --bg-card: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.78)),
+                  linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
+                  #ffffff;
+      --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.84)),
+                     #fff7ed;
+      --accent-primary: #f97316;
+      --accent: var(--accent-primary);
+      --accent-2: #fb923c;
+      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+      --accent-glow: rgba(249,115,22,0.28);
+      --accent-glow-soft: rgba(249,115,22,0.18);
+      --accent-border-strong: rgba(249,115,22,0.55);
+      --accent-border: rgba(249,115,22,0.42);
+      --accent-border-soft: rgba(249,115,22,0.26);
+      --accent-surface: rgba(249,115,22,0.08);
+      --text: #1f2937;
+      --muted: #4b5563;
+      --border: rgba(0,0,0,0.08);
+      --shadow: 0 8px 24px rgba(0,0,0,0.1);
+      --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
+      --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
+      --control-surface: #fffaf3;
+      --auth-bg-1: #ffe9d6;
+      --auth-bg-2: #ffd0a1;
+      --bg: #fff7ed;
+      --panel: var(--bg-card);
+      --panel-2: var(--bg-card-alt);
+    }
+
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-primary); color: var(--text); }
+    a { color: inherit; text-decoration: none; }
+    :root {
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --shadow-strong: 0 16px 40px rgba(0,0,0,0.45);
+      --shadow-soft: 0 10px 28px rgba(0,0,0,0.32);
+    }
+    .btn { border:1px solid var(--border); background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); color: var(--text); border-radius:10px; padding:9px 12px; cursor:pointer; font-weight:700; letter-spacing:0.02em; box-shadow:0 6px 16px rgba(0,0,0,0.25); transition: all 0.15s ease; display:inline-flex; align-items:center; gap:8px; justify-content: center; }
+    .btn:hover { border-color: var(--accent-border); color: var(--accent); }
+    .btn-primary-glow { background: var(--accent-gradient); color:#0c121e; border:1px solid var(--accent-border); box-shadow: 0 12px 26px var(--accent-glow); }
+    .btn-ghost { background: rgba(255,255,255,0.06); border-color: var(--border); color: var(--text); }
+    .btn-chip { border: 1px solid var(--accent-border); background: rgba(255,255,255,0.04); color: var(--accent); border-radius: 999px; padding: 6px 12px; font-weight: 700; letter-spacing: 0.02em; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px var(--accent-glow-soft); transition: all 0.15s ease; }
+    .btn-chip:hover { background: var(--accent-surface); color: var(--text); }
+    header { background: var(--bg-primary); border-bottom:1px solid var(--border); padding:16px 18px; box-shadow: var(--shadow); position:sticky; top:0; z-index:10; backdrop-filter: blur(6px); }
+    .header-shell { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 2px 0; align-items: center; }
+    .tab { padding:9px 14px; border-radius:10px; background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); color: var(--muted); font-weight:700; border:1px solid rgba(255,255,255,0.08); transition: all 0.15s ease; box-shadow:0 6px 18px rgba(0,0,0,0.28); }
+    .tab:hover { color: var(--text); border-color: var(--accent-border-soft); background: rgba(255,255,255,0.06); }
+    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 10px 26px var(--accent-glow); border-color: var(--accent-border); }
+    .logout-link { margin-left:auto; background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06)); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.35); border-color: var(--border); }
+    main { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+    .card { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:14px 16px; box-shadow: var(--shadow); }
+    .page-header { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
+    .page-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem; color: var(--muted); }
+    .page-title { font-size:1.4rem; font-weight:800; letter-spacing:0.01em; }
+    .page-subtitle { color: var(--muted); }
+    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .toolbar-controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .field { display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,0.02); min-height:42px; }
+    .field input, .field select { background: transparent; border: none; color: var(--text); outline: none; font-size: 0.95rem; min-width: 160px; }
+    .field select { padding-right: 4px; }
+    .toggle { display:flex; align-items:center; gap:6px; color: var(--muted); font-weight:700; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px 8px; text-align:left; }
+    th { text-transform: uppercase; letter-spacing:0.06em; font-size:0.8rem; color: var(--muted); border-bottom:1px solid var(--border); }
+    tr { border-bottom:1px solid var(--border); }
+    tr:hover { background: rgba(255,255,255,0.02); }
+    .badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 10px; border:1px solid var(--border); font-weight:700; font-size:0.85rem; }
+    .badge-ok { background: rgba(124,255,195,0.08); color: #7cffc3; border-color: rgba(124,255,195,0.4); }
+    .badge-warn { background: rgba(249,115,22,0.12); color: #fca05d; border-color: rgba(249,115,22,0.4); }
+    .meta { color: var(--muted); font-size:0.9rem; }
+    .actions { display:flex; gap:8px; }
+    .pill-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+    .details-row { background: var(--bg-card-alt); }
+    .details-shell { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px; padding:8px 4px; }
+    .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:12px; background: rgba(255,255,255,0.05); border:1px solid var(--border); }
+    .muted { color: var(--muted); }
+    .label-row { display:flex; gap:8px; align-items:center; margin-top:6px; }
+    .network-name { font-weight:800; letter-spacing:0.01em; }
+    .inline-link { color: var(--accent); font-weight:700; }
+    .modal-backdrop { position: fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.4); z-index:50; backdrop-filter: blur(2px); }
+    .modal-backdrop.open { display:flex; }
+    .modal { background: var(--panel); border:1px solid var(--border); border-radius:16px; padding:16px; width: min(640px, 94vw); box-shadow: var(--shadow-strong); }
+    .modal-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
+    .modal-title { font-weight:800; font-size:1.2rem; }
+    .modal-body { display:flex; flex-direction:column; gap:10px; }
+    .form-row { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; }
+    .form-control { display:flex; flex-direction:column; gap:6px; background: rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:10px; }
+    .form-control label { font-weight:700; font-size:0.95rem; }
+    .form-control input, .form-control select { background: transparent; border:none; color: var(--text); font-size:1rem; outline:none; }
+    .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:6px; }
+    .label-pair { display:flex; gap:8px; align-items:center; }
+    .helper { font-size:0.85rem; color: var(--muted); }
+    .small { font-size:0.9rem; }
+    @media (max-width: 840px) {
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .toolbar-controls { width:100%; }
+      .toolbar-controls .field { flex:1; }
+      .actions { flex-wrap:wrap; }
+    }
+  </style>
+</head>
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
+  <header>
+    <div class="header-shell">
+      <div class="title-row" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div class="logo" style="font-weight:900; letter-spacing:0.08em;">D2HA</div>
+        <div class="header-actions" style="display:flex; gap:8px; align-items:center;">
+          <button id="settingsToggle" class="btn btn-ghost" type="button">⚙️</button>
+          <button id="notifToggle" class="btn btn-ghost" type="button">🔔<span id="notifBadge" class="notif-badge">0</span></button>
+          <div class="header-clock" id="header-clock" aria-live="polite">--:--:--</div>
+          <a href="{{ url_for('logout') }}" class="btn logout-link">{{ t('nav.logout') }}</a>
+        </div>
+      </div>
+      <nav>
+        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">{{ t("nav.home") }}</a>
+        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+        <a href="{{ url_for('volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{ t("nav.volumes") }}</a>
+        <a href="{{ url_for('networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{ t("nav.networks") }}</a>
+        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="page-header">
+        <div class="page-eyebrow">{{ t('nav.networks') }}</div>
+        <div class="page-title">{{ t('networks.title') }}</div>
+        <div class="page-subtitle">{{ t('networks.subtitle') }}</div>
+      </div>
+      <div class="toolbar">
+        <div class="toolbar-controls">
+          <div class="field">
+            🔍 <input id="searchInput" type="search" placeholder="{{ t('networks.search_placeholder') }}" />
+          </div>
+          <div class="field">
+            🌉
+            <select id="driverFilter">
+              <option value="">{{ t('networks.filter.driver') }}</option>
+            </select>
+          </div>
+          <label class="toggle"><input type="checkbox" id="customOnly"> {{ t('networks.only_custom') }}</label>
+        </div>
+        <button id="createNetworkBtn" class="btn btn-primary-glow" type="button">＋ {{ t('networks.create_button') }}</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="networksTable">
+          <thead>
+            <tr>
+              <th>{{ t('networks.name') }}</th>
+              <th>{{ t('networks.driver') }}</th>
+              <th>{{ t('networks.scope') }}</th>
+              <th>{{ t('networks.internal') }}</th>
+              <th>{{ t('networks.attachable') }}</th>
+              <th>{{ t('networks.subnet') }}</th>
+              <th>{{ t('networks.gateway') }}</th>
+              <th>{{ t('networks.containers') }}</th>
+              <th>{{ t('networks.actions') }}</th>
+            </tr>
+          </thead>
+          <tbody id="networksBody">
+          </tbody>
+        </table>
+        <div id="networksEmpty" class="muted" style="padding:10px 4px; display:none;">{{ t('networks.no_data') }}</div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="networkModal">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">{{ t('networks.create_modal.title') }}</div>
+        <button type="button" class="btn btn-ghost" id="closeModal">✕</button>
+      </div>
+      <form id="networkForm">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-control">
+              <label for="networkName">{{ t('networks.form.name') }}</label>
+              <input id="networkName" name="name" required />
+              <div class="helper">{{ t('networks.form.name_hint') }}</div>
+            </div>
+            <div class="form-control">
+              <label for="networkDriver">{{ t('networks.form.driver') }}</label>
+              <select id="networkDriver" name="driver">
+                <option value="bridge">bridge</option>
+                <option value="overlay">overlay</option>
+                <option value="host">host</option>
+                <option value="macvlan">macvlan</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-control" style="flex-direction:row; align-items:center; gap:8px;">
+              <input type="checkbox" id="networkInternal" name="internal"> {{ t('networks.form.internal') }}
+            </label>
+            <label class="form-control" style="flex-direction:row; align-items:center; gap:8px;">
+              <input type="checkbox" id="networkAttachable" name="attachable"> {{ t('networks.form.attachable') }}
+            </label>
+          </div>
+          <div class="form-row">
+            <div class="form-control">
+              <label for="networkSubnet">{{ t('networks.form.subnet') }}</label>
+              <input id="networkSubnet" name="subnet" placeholder="192.168.0.0/24" />
+            </div>
+            <div class="form-control">
+              <label for="networkGateway">{{ t('networks.form.gateway') }}</label>
+              <input id="networkGateway" name="gateway" placeholder="192.168.0.1" />
+            </div>
+          </div>
+          <div class="form-control">
+            <label>{{ t('networks.form.labels') }}</label>
+            <div id="labelsContainer"></div>
+            <button type="button" class="btn btn-chip" id="addLabel">{{ t('networks.form.add_label') }}</button>
+          </div>
+          <div id="formError" class="helper" style="color:#f87171; display:none;"></div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="cancelModal">{{ t('networks.form.cancel') }}</button>
+          <button type="submit" class="btn btn-primary-glow">{{ t('networks.form.create') }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% include 'partials/notifications_panel.html' %}
+  {% include 'partials/notifications_script.html' %}
+  <script>
+    const initialNetworks = {{ networks|default([])|tojson }};
+    const networksBody = document.getElementById('networksBody');
+    const networksEmpty = document.getElementById('networksEmpty');
+    const searchInput = document.getElementById('searchInput');
+    const driverFilter = document.getElementById('driverFilter');
+    const customOnly = document.getElementById('customOnly');
+    const createBtn = document.getElementById('createNetworkBtn');
+    const modal = document.getElementById('networkModal');
+    const closeModalBtn = document.getElementById('closeModal');
+    const cancelModalBtn = document.getElementById('cancelModal');
+    const networkForm = document.getElementById('networkForm');
+    const formError = document.getElementById('formError');
+    const labelsContainer = document.getElementById('labelsContainer');
+    const addLabelBtn = document.getElementById('addLabel');
+    const driverSelectModal = document.getElementById('networkDriver');
+    let networksCache = initialNetworks || [];
+    let detailsCache = {};
+    let refreshTimer = null;
+    const defaultRefresh = 20000;
+    const slowRefresh = 45000;
+
+    function renderDriversOptions() {
+      const drivers = new Set(['']);
+      networksCache.forEach((net) => {
+        if (net.driver) drivers.add(net.driver);
+      });
+      driverFilter.innerHTML = '';
+      drivers.forEach((drv) => {
+        const opt = document.createElement('option');
+        opt.value = drv;
+        opt.textContent = drv ? drv : '{{ t("networks.filter.driver") }}';
+        driverFilter.appendChild(opt);
+      });
+    }
+
+    function badge(content, ok=true) {
+      const cls = ok ? 'badge badge-ok' : 'badge badge-warn';
+      return `<span class="${cls}">${content}</span>`;
+    }
+
+    function renderRows() {
+      const term = (searchInput.value || '').toLowerCase();
+      const driver = driverFilter.value;
+      const onlyCustom = customOnly.checked;
+      const filtered = networksCache.filter((net) => {
+        if (term && !net.name.toLowerCase().includes(term)) return false;
+        if (driver && net.driver !== driver) return false;
+        if (onlyCustom && !net.deletable) return false;
+        return true;
+      });
+
+      networksBody.innerHTML = '';
+      if (!filtered.length) {
+        networksEmpty.style.display = 'block';
+        return;
+      }
+      networksEmpty.style.display = 'none';
+
+      filtered.forEach((net) => {
+        const row = document.createElement('tr');
+        row.className = 'network-row';
+        row.dataset.id = net.id;
+        row.innerHTML = `
+          <td class="network-name">${net.name}</td>
+          <td>${net.driver || '-'}</td>
+          <td>${net.scope || '-'}</td>
+          <td>${badge(net.internal ? '✔' : '✕', !!net.internal)}</td>
+          <td>${badge(net.attachable ? '✔' : '✕', !!net.attachable)}</td>
+          <td>${net.ipam_subnet || '-'}</td>
+          <td>${net.ipam_gateway || '-'}</td>
+          <td>${net.container_count}</td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-ghost" data-action="details" data-id="${net.id}">🔎</button>
+              <button class="btn btn-ghost" data-action="delete" data-id="${net.id}" ${net.deletable ? '' : 'disabled title="{{ t("networks.protected_hint") }}"'}>🗑</button>
+            </div>
+          </td>
+        `;
+        networksBody.appendChild(row);
+
+        const detailRow = document.createElement('tr');
+        detailRow.className = 'details-row';
+        detailRow.dataset.id = net.id;
+        detailRow.style.display = 'none';
+        detailRow.innerHTML = `<td colspan="9"><div class="details-shell" id="detail-${net.id}"></div></td>`;
+        networksBody.appendChild(detailRow);
+      });
+    }
+
+    async function fetchNetworks() {
+      try {
+        const res = await fetch('/api/networks');
+        if (!res.ok) throw new Error('fail');
+        const data = await res.json();
+        networksCache = data.networks || [];
+        renderDriversOptions();
+        renderRows();
+      } catch (err) {
+        console.warn('Unable to load networks', err);
+      }
+    }
+
+    function toggleDetails(id) {
+      const row = document.querySelector(`.details-row[data-id="${id}"]`);
+      if (!row) return;
+      const isOpen = row.style.display !== 'none';
+      row.style.display = isOpen ? 'none' : 'table-row';
+      if (!isOpen) loadDetails(id);
+    }
+
+    function renderContainers(containers = []) {
+      if (!containers.length) return '<div class="muted">{{ t("networks.details.no_containers") }}</div>';
+      return containers.map((c) => `
+        <div class="chip">🧱 <a class="inline-link" href="/containers#${c.id}">${c.name}</a> · ${c.status || '-'}${c.ip ? ' · ' + c.ip : ''} <button class="btn btn-ghost" data-disconnect="${c.id}" title="{{ t("networks.disconnect") }}">✖</button></div>
+      `).join('');
+    }
+
+    async function loadDetails(id) {
+      if (detailsCache[id]) {
+        updateDetailPanel(id, detailsCache[id]);
+        return;
+      }
+      try {
+        const res = await fetch(`/api/networks/${id}`);
+        if (!res.ok) throw new Error('missing');
+        const data = await res.json();
+        detailsCache[id] = data;
+        updateDetailPanel(id, data);
+      } catch (err) {
+        console.error('Unable to load details', err);
+      }
+    }
+
+    function updateDetailPanel(id, data) {
+      const container = document.getElementById(`detail-${id}`);
+      if (!container) return;
+      const ipam = data.ipam || [];
+      const ipamHtml = ipam.length ? ipam.map((entry) => `<div class="chip">${entry.Subnet || '-'}${entry.Gateway ? ' → ' + entry.Gateway : ''}</div>`).join('') : '<div class="muted">{{ t("networks.details.no_ipam") }}</div>';
+      container.innerHTML = `
+        <div>
+          <div class="small muted">IPAM</div>
+          ${ipamHtml}
+        </div>
+        <div>
+          <div class="small muted">{{ t('networks.details.attached_containers') }}</div>
+          ${renderContainers(data.containers || [])}
+        </div>
+      `;
+      container.querySelectorAll('[data-disconnect]').forEach((btn) => {
+        btn.addEventListener('click', () => handleDisconnect(id, btn.dataset.disconnect));
+      });
+    }
+
+    async function handleDelete(id) {
+      const target = networksCache.find((n) => n.id === id);
+      if (!target || !target.deletable) return;
+      const confirmed = await window.d2haConfirm?.('{{ t("networks.confirm_delete") }}'.replace('{name}', target.name)) ?? true;
+      if (!confirmed) return;
+      try {
+        const res = await fetch(`/api/networks/${id}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ confirm: true }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'fail');
+        await fetchNetworks();
+      } catch (err) {
+        alert(err.message || 'Errore');
+      }
+    }
+
+    async function handleDisconnect(networkId, containerId) {
+      const confirmed = await window.d2haConfirm?.('{{ t("networks.confirm_disconnect") }}') ?? true;
+      if (!confirmed) return;
+      try {
+        const res = await fetch(`/api/networks/${networkId}/disconnect`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ container_id: containerId, confirm: true }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'fail');
+        detailsCache[networkId] = null;
+        await fetchNetworks();
+        toggleDetails(networkId);
+        toggleDetails(networkId);
+      } catch (err) {
+        alert(err.message || 'Errore');
+      }
+    }
+
+    function startRefresh(interval) {
+      clearInterval(refreshTimer);
+      refreshTimer = setInterval(fetchNetworks, interval);
+    }
+
+    function setupPerformanceSync() {
+      const handler = (enabled) => startRefresh(enabled ? slowRefresh : defaultRefresh);
+      if (window.registerPerformanceHandler) {
+        window.registerPerformanceHandler(handler);
+      }
+      handler((window.d2haSettings?.performanceMode) || false);
+    }
+
+    networksBody.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('button[data-action]');
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (btn.dataset.action === 'details') {
+        toggleDetails(id);
+      } else if (btn.dataset.action === 'delete') {
+        handleDelete(id);
+      }
+    });
+
+    createBtn.addEventListener('click', () => modal.classList.add('open'));
+    closeModalBtn.addEventListener('click', () => modal.classList.remove('open'));
+    cancelModalBtn.addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', (ev) => { if (ev.target === modal) modal.classList.remove('open'); });
+
+    function addLabelRow(key='', value='') {
+      const row = document.createElement('div');
+      row.className = 'label-row';
+      row.innerHTML = `
+        <input class="btn" style="flex:1;" placeholder="${'{{ t("networks.form.key") }}'}" value="${key}">
+        <input class="btn" style="flex:1;" placeholder="${'{{ t("networks.form.value") }}'}" value="${value}">
+        <button type="button" class="btn btn-ghost">✕</button>
+      `;
+      row.querySelector('button').addEventListener('click', () => row.remove());
+      labelsContainer.appendChild(row);
+    }
+    addLabelBtn.addEventListener('click', () => addLabelRow());
+
+    networkForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      formError.style.display = 'none';
+      const labels = {};
+      labelsContainer.querySelectorAll('.label-row').forEach((row) => {
+        const [keyInput, valueInput] = row.querySelectorAll('input');
+        if (keyInput.value) labels[keyInput.value] = valueInput.value || '';
+      });
+      const payload = {
+        name: networkForm.name.value.trim(),
+        driver: networkForm.driver.value,
+        internal: networkForm.internal.checked,
+        attachable: networkForm.attachable.checked,
+        subnet: networkForm.subnet.value.trim(),
+        gateway: networkForm.gateway.value.trim(),
+        labels,
+      };
+      try {
+        const res = await fetch('/api/networks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Errore');
+        modal.classList.remove('open');
+        networkForm.reset();
+        labelsContainer.innerHTML = '';
+        addLabelRow();
+        await fetchNetworks();
+      } catch (err) {
+        formError.textContent = err.message || 'Errore';
+        formError.style.display = 'block';
+      }
+    });
+
+    searchInput.addEventListener('input', renderRows);
+    driverFilter.addEventListener('change', renderRows);
+    customOnly.addEventListener('change', renderRows);
+
+    renderDriversOptions();
+    renderRows();
+    addLabelRow();
+    fetchNetworks();
+    startRefresh((window.d2haSettings?.performanceMode) ? slowRefresh : defaultRefresh);
+    setupPerformanceSync();
+  </script>
+</body>
+</html>
