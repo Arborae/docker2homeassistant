@@ -19,6 +19,8 @@
     };
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
+    const debugModeToggleEl = document.getElementById('debug-mode-toggle');
+    const debugIndicatorEl = document.getElementById('debug-indicator');
     const safeConfirmState = {
       modal: null,
       message: null,
@@ -28,9 +30,11 @@
     };
     let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
     const initialPerformanceMode = (document.body?.dataset?.performanceMode || '0') === '1';
+    const initialDebugMode = (document.body?.dataset?.debugMode || '0') === '1';
     window.d2haSettings = window.d2haSettings || { performanceMode: initialPerformanceMode };
     window.d2haRuntime = window.d2haRuntime || { performanceHandlers: [] };
     const performanceState = window.d2haSettings;
+    window.d2haDebug = { enabled: initialDebugMode };
     let currentNotifications = initialNotifications;
     let dismissedNotifications = {};
     let clockInterval = null;
@@ -108,6 +112,65 @@
       }
 
       loadPerformanceMode();
+    }
+
+    function updateDebugIndicator(enabled) {
+      if (debugIndicatorEl) {
+        debugIndicatorEl.classList.toggle('active', !!enabled);
+      }
+    }
+
+    function updateDebugMode(enabled) {
+      const state = !!enabled;
+      window.d2haDebug = { enabled: state };
+      document.body.dataset.debugMode = state ? '1' : '0';
+      if (debugModeToggleEl) {
+        debugModeToggleEl.checked = state;
+      }
+      updateDebugIndicator(state);
+      document.dispatchEvent(new CustomEvent('debug-mode-changed', { detail: { enabled: state } }));
+    }
+
+    async function loadDebugMode() {
+      try {
+        const res = await fetch('/api/debug_mode');
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        updateDebugMode(!!data.enabled);
+      } catch (err) {
+        console.warn('Unable to load debug mode from backend', err);
+      }
+    }
+
+    async function persistDebugMode(enabled) {
+      try {
+        const res = await fetch('/api/debug_mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled }),
+        });
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        updateDebugMode(!!data.enabled);
+      } catch (err) {
+        console.error('Impossibile aggiornare la modalità debug', err);
+        if (debugModeToggleEl) {
+          debugModeToggleEl.checked = window.d2haDebug?.enabled;
+        }
+        alert('Impossibile aggiornare la modalità debug');
+      }
+    }
+
+    function initDebugMode() {
+      updateDebugMode(initialDebugMode);
+
+      if (debugModeToggleEl) {
+        debugModeToggleEl.addEventListener('change', () => {
+          persistDebugMode(debugModeToggleEl.checked);
+        });
+      }
+
+      loadDebugMode();
     }
 
     function updateSafeModeState(enabled) {
@@ -536,6 +599,7 @@
 
   window.registerPerformanceHandler = registerPerformanceHandler;
   window.applyPerformanceMode = applyPerformanceMode;
+  initDebugMode();
   initPerformanceMode();
   loadDismissedNotifications();
   updateSafeModeState(safeModeEnabled);

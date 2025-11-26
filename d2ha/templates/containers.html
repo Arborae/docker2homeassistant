@@ -357,6 +357,22 @@
     .toast-success { border-color: rgba(124,255,195,0.25); }
     .toast-error { border-color: rgba(255,138,122,0.25); }
     .toast-warning { border-color: rgba(255,213,79,0.35); }
+    .debug-overlay { position: fixed; inset: 0; background: rgba(9,11,17,0.72); display: none; align-items: flex-start; justify-content: center; padding: 20px; z-index: 80; backdrop-filter: blur(2px); }
+    .debug-overlay.visible { display: flex; }
+    .debug-panel { background: var(--panel); border:1px solid var(--border); border-radius: 16px; width: min(960px, 96vw); box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
+    .debug-panel-header { display:flex; align-items:center; justify-content: space-between; padding:12px 14px; border-bottom:1px solid var(--border); }
+    .debug-title { margin:0; font-size:1rem; letter-spacing:0.03em; }
+    .debug-subtitle { color: var(--muted); font-size:0.9rem; }
+    .debug-close { background: none; border:1px solid var(--border); color: var(--text); border-radius:10px; padding:6px 10px; cursor:pointer; }
+    .debug-panel-body { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:0; }
+    .debug-column { padding:12px 14px; display:flex; flex-direction:column; gap:8px; border-right:1px solid var(--border); min-height: 240px; }
+    .debug-column:last-child { border-right:none; }
+    .debug-column-title { font-weight:800; font-size:0.9rem; letter-spacing:0.03em; }
+    .debug-stream { background: var(--control-surface); border:1px solid var(--border); border-radius: 12px; padding:10px; font-family: "JetBrains Mono", monospace; font-size:0.82rem; color: var(--text); min-height: 200px; max-height: 320px; overflow:auto; line-height:1.4; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04); }
+    .debug-line { margin-bottom:6px; display:flex; gap:10px; align-items:flex-start; }
+    .debug-line:last-child { margin-bottom:0; }
+    .debug-bullet { color: var(--muted); }
+    .debug-log-empty { color: var(--muted); }
     @media(max-width: 960px) {
       table, thead, tbody, th, td, tr { display:block; }
       thead { display:none; }
@@ -367,7 +383,7 @@
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}">
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <header>
     <div class="header-shell">
       {% include 'partials/notifications_panel.html' %}
@@ -665,6 +681,27 @@
       </div>
     </div>
   </div>
+  <div class="debug-overlay" id="debug-overlay" aria-hidden="true">
+    <div class="debug-panel">
+      <div class="debug-panel-header">
+        <div>
+          <div class="debug-title">{{ t('debug_mode.overlay_title') }}</div>
+          <div class="debug-subtitle" id="debug-overlay-subtitle"></div>
+        </div>
+        <button type="button" class="debug-close" id="debug-overlay-close" aria-label="Chiudi debug">✕</button>
+      </div>
+      <div class="debug-panel-body">
+        <div class="debug-column">
+          <div class="debug-column-title">{{ t('debug_mode.commands_title') }}</div>
+          <div class="debug-stream" id="debug-commands"></div>
+        </div>
+        <div class="debug-column">
+          <div class="debug-column-title">{{ t('debug_mode.logs_title') }}</div>
+          <div class="debug-stream" id="debug-logs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="toast-container" id="toast-container"></div>
   {% include 'partials/notifications_script.html' %}
   <script>
@@ -716,6 +753,11 @@
     const updatesCheck = document.getElementById('updates-check');
     const updatesFeedback = document.getElementById('updates-feedback');
     const toastContainer = document.getElementById('toast-container');
+    const debugOverlay = document.getElementById('debug-overlay');
+    const debugCommands = document.getElementById('debug-commands');
+    const debugLogs = document.getElementById('debug-logs');
+    const debugSubtitle = document.getElementById('debug-overlay-subtitle');
+    const debugCloseBtn = document.getElementById('debug-overlay-close');
     const bulkBar = document.getElementById('bulk-bar');
     const bulkCount = document.getElementById('bulk-count');
     const bulkButtons = Array.from(document.querySelectorAll('[data-bulk-action]'));
@@ -744,6 +786,7 @@
       unpause: 'ripreso',
       delete: 'eliminato'
     };
+    const debugTrackedActions = new Set(['stop', 'restart', 'delete']);
 
     let currentContainerId = null;
     let statsInterval = null;
@@ -758,6 +801,9 @@
     let logsIntervalMs = pollingDefaults.logsIntervalMs;
     let statsSampleLimit = pollingDefaults.historyLimit;
     let activeTab = 'info';
+    let debugModeEnabled = (document.body.dataset.debugMode || '0') === '1';
+    let debugLogInterval = null;
+    let debugLogContainerId = null;
 
     const statusClassFor = (status) => {
       const s = (status || '').toLowerCase();
@@ -904,10 +950,21 @@
 
     const handleContainerAction = async (containerId, action) => {
       const row = rowIndex.get(containerId);
+      const containerName = row?.dataset.containerName || containerId;
       setRowPending(row, actionPendingLabels[action] || 'In corso...');
+      const shouldDebug = debugModeEnabled && debugTrackedActions.has(action);
+
+      if (shouldDebug) {
+        openDebugOverlay(`${containerName} · ${action}`, containerId);
+        appendDebugLine(debugCommands, `POST /containers/${containerId}/${action}`);
+        appendDebugLine(debugCommands, `docker ${action} ${containerName}`);
+      }
 
       try {
         const data = await fetchContainerAction(containerId, action);
+        if (shouldDebug && data?.debug_steps?.length) {
+          data.debug_steps.forEach((step) => appendDebugLine(debugCommands, step));
+        }
         applyActionResult(row, data);
         const success = actionSuccessLabels[action] || action;
         showToast(`Container ${success}`, { type: 'success' });
@@ -915,6 +972,13 @@
         console.error(err);
         clearRowPending(row, true);
         showToast("Errore nell'eseguire l'azione", { type: 'error' });
+        if (shouldDebug) {
+          appendDebugLine(debugCommands, `Errore: ${err.message || err}`);
+        }
+      } finally {
+        if (shouldDebug) {
+          setTimeout(closeDebugOverlay, 5000);
+        }
       }
     };
 
@@ -947,6 +1011,67 @@
         toast.classList.remove('visible');
         setTimeout(() => toast.remove(), 350);
       }, lifetime);
+    };
+
+    const appendDebugLine = (target, text) => {
+      if (!target) return;
+      const line = document.createElement('div');
+      line.className = 'debug-line';
+      const bullet = document.createElement('span');
+      bullet.className = 'debug-bullet';
+      bullet.textContent = '›';
+      const body = document.createElement('span');
+      body.textContent = text;
+      line.appendChild(bullet);
+      line.appendChild(body);
+      target.appendChild(line);
+      target.scrollTop = target.scrollHeight;
+    };
+
+    const renderDebugLogs = (logsText) => {
+      if (!debugLogs) return;
+      if (!logsText) {
+        debugLogs.innerHTML = `<div class="debug-log-empty">Log non disponibili</div>`;
+        return;
+      }
+      debugLogs.textContent = '';
+      logsText.split('\n').forEach((line) => {
+        if (line.trim()) appendDebugLine(debugLogs, line);
+      });
+    };
+
+    const closeDebugOverlay = () => {
+      debugOverlay?.classList.remove('visible');
+      debugOverlay?.setAttribute('aria-hidden', 'true');
+      debugLogContainerId = null;
+      clearInterval(debugLogInterval);
+    };
+
+    const fetchDebugLogs = async () => {
+      if (!debugLogContainerId) return;
+      try {
+        const res = await fetch(`/api/containers/${debugLogContainerId}/logs?tail=80`);
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        renderDebugLogs(data.logs || '');
+      } catch (err) {
+        renderDebugLogs('');
+      }
+    };
+
+    const openDebugOverlay = (subtitle, containerId) => {
+      if (!debugModeEnabled || !debugOverlay) return;
+      debugCommands.textContent = '';
+      debugLogs.textContent = '';
+      if (debugSubtitle) debugSubtitle.textContent = subtitle || '';
+      debugOverlay.classList.add('visible');
+      debugOverlay.setAttribute('aria-hidden', 'false');
+      debugLogContainerId = containerId;
+      clearInterval(debugLogInterval);
+      if (containerId) {
+        fetchDebugLogs();
+        debugLogInterval = setInterval(fetchDebugLogs, 2000);
+      }
     };
 
     const updateBulkBar = () => {
@@ -1330,6 +1455,18 @@
         updateLogs();
         startPolling();
       }
+    });
+
+    document.addEventListener('debug-mode-changed', (event) => {
+      debugModeEnabled = !!event.detail?.enabled;
+      if (!debugModeEnabled) {
+        closeDebugOverlay();
+      }
+    });
+
+    debugCloseBtn?.addEventListener('click', closeDebugOverlay);
+    debugOverlay?.addEventListener('click', (evt) => {
+      if (evt.target === debugOverlay) closeDebugOverlay();
     });
 
     document.getElementById('modal-close').addEventListener('click', closeModal);

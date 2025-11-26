@@ -900,12 +900,18 @@ class DockerService:
         except Exception:
             return False
 
-    def apply_simple_action(self, container_id: str, action: str):
+    def apply_simple_action(self, container_id: str, action: str, debug_steps: Optional[List[str]] = None):
+        def record(step: str):
+            if debug_steps is not None:
+                debug_steps.append(step)
+
         try:
             c = self.docker_client.containers.get(container_id)
         except Exception:
             return
         try:
+            record(f"docker {action} {c.name}")
+            self.logger.debug("Executing action %s on %s", action, c.name)
             if action == "start":
                 c.start()
             elif action == "stop":
@@ -917,17 +923,32 @@ class DockerService:
             elif action == "unpause":
                 c.unpause()
             elif action == "delete":
-                self.remove_container(container_id)
-        except Exception:
-            pass
+                self.remove_container(container_id, debug_steps=debug_steps)
+            record("Operazione completata")
+        except Exception as exc:
+            record(f"Errore: {exc}")
+            self.logger.exception("Failed docker action %s on %s", action, container_id)
+            raise
 
-    def remove_container(self, container_id: str):
+    def remove_container(self, container_id: str, debug_steps: Optional[List[str]] = None):
+        def record(step: str):
+            if debug_steps is not None:
+                debug_steps.append(step)
+
         try:
+            record(f"docker rm -f {container_id}")
+            self.logger.debug("Removing container %s", container_id)
             self.docker_api.remove_container(container_id, force=True)
+            record("Container rimosso")
         except Exception:
-            pass
+            record("Errore nella rimozione")
+            raise
 
-    def recreate_container_with_latest_image(self, container_id: str):
+    def recreate_container_with_latest_image(self, container_id: str, debug_steps: Optional[List[str]] = None):
+        def record(step: str):
+            if debug_steps is not None:
+                debug_steps.append(step)
+
         try:
             c = self.docker_client.containers.get(container_id)
         except Exception:
@@ -938,6 +959,8 @@ class DockerService:
         image_ref = installed_info["image_ref"]
 
         try:
+            record(f"docker pull {image_ref}")
+            self.logger.debug("Pulling latest image for %s", c.name)
             self.docker_client.images.pull(image_ref)
         except Exception:
             return
@@ -953,8 +976,11 @@ class DockerService:
             networking_config = {"EndpointsConfig": networks}
 
         try:
+            record(f"docker rm -f {c.id}")
+            self.logger.debug("Removing container %s", c.name)
             self.docker_api.remove_container(c.id, force=True)
         except Exception:
+            record("Errore nella rimozione del container esistente")
             return
 
         create_kwargs: Dict[str, Any] = {
@@ -976,10 +1002,15 @@ class DockerService:
             create_kwargs["networking_config"] = networking_config
 
         try:
+            record(f"docker create --name {name} {image_ref}")
             new_container = self.docker_api.create_container(**create_kwargs)
+            record(f"docker start {new_container.get('Id')}")
+            self.logger.debug("Container %s recreated and starting", name)
             self.docker_api.start(new_container.get("Id"))
-        except Exception:
-            pass
+            record("Container aggiornato e avviato")
+        except Exception as exc:
+            record(f"Errore durante la ricreazione: {exc}")
+            self.logger.exception("Recreate container failed for %s", container_id)
 
 
 class MqttManager:

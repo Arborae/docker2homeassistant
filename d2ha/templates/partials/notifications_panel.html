@@ -16,6 +16,10 @@
         <circle cx="12" cy="20" r="1.25" fill="currentColor" />
       </svg>
     </div>
+    <div class="debug-indicator {% if debug_mode_enabled %}active{% endif %}" id="debug-indicator" title="{{ t('debug_mode.badge') }}" aria-label="{{ t('debug_mode.badge') }}">
+      <span class="debug-dot" aria-hidden="true"></span>
+      <span class="debug-text">{{ t('debug_mode.label_short') }}</span>
+    </div>
     <div class="notif-area">
       <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
         <span class="notif-icon" aria-hidden="true">🔔</span>
@@ -69,6 +73,16 @@
             </div>
             <div class="switch" title="Riduce il carico iniziale e le frequenze di refresh">
               <input type="checkbox" id="performance-mode-toggle" />
+              <span class="slider"></span>
+            </div>
+          </div>
+          <div class="settings-row settings-row-toggle">
+            <div>
+              <span>{{ t('debug_mode.label') }}</span>
+              <p class="settings-hint">{{ t('debug_mode.settings_hint') }}</p>
+            </div>
+            <div class="switch" title="{{ t('debug_mode.settings_hint') }}">
+              <input type="checkbox" id="debug-mode-toggle" {% if debug_mode_enabled %}checked{% endif %} />
               <span class="slider"></span>
             </div>
           </div>

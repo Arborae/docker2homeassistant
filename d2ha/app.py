@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import logging
 import os
 import secrets
 import time
@@ -107,6 +108,8 @@ mqtt_manager = MqttManager(
 mqtt_manager.setup()
 mqtt_manager.start_periodic_publisher()
 
+_configure_debug_logging(is_debug_mode_enabled())
+
 
 _notifications_cache = {"ts": 0.0, "data": {}}
 _app_started_ts = time.time()
@@ -174,6 +177,38 @@ def set_performance_mode(enabled: bool) -> bool:
     config["performance_mode_enabled"] = bool(enabled)
     save_auth_config(config)
     return is_performance_mode_enabled()
+
+
+def is_debug_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("debug_mode_enabled", False))
+
+
+def _configure_debug_logging(enabled: Optional[bool] = None) -> None:
+    level = logging.DEBUG if enabled else logging.INFO
+    targets = [
+        app.logger,
+        getattr(docker_service, "logger", None),
+        logging.getLogger("docker_service"),
+        logging.getLogger("auth_store"),
+        logging.getLogger("theme"),
+        logging.getLogger("i18n"),
+    ]
+
+    for logger in targets:
+        if not logger:
+            continue
+        logger.setLevel(level)
+        for handler in logger.handlers:
+            handler.setLevel(level)
+
+
+def set_debug_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["debug_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    _configure_debug_logging(enabled)
+    return is_debug_mode_enabled()
 
 
 def is_onboarding_done():
@@ -486,16 +521,20 @@ def setup_modes():
 
     safe_mode_enabled = bool(config.get("safe_mode_enabled", True))
     performance_mode_enabled = bool(config.get("performance_mode_enabled", False))
+    debug_mode_enabled = bool(config.get("debug_mode_enabled", False))
 
     if request.method == "POST":
         safe_choice = request.form.get("safe_mode_enabled")
         perf_choice = request.form.get("performance_mode_enabled")
+        debug_choice = request.form.get("debug_mode_enabled")
 
         safe_mode_enabled = bool(safe_choice)
         performance_mode_enabled = bool(perf_choice)
+        debug_mode_enabled = bool(debug_choice)
 
         config["safe_mode_enabled"] = safe_mode_enabled
         config["performance_mode_enabled"] = performance_mode_enabled
+        config["debug_mode_enabled"] = debug_mode_enabled
         save_auth_config(config)
 
         return redirect(url_for("setup_autodiscovery"))
@@ -504,6 +543,7 @@ def setup_modes():
         "setup_modes.html",
         safe_mode_enabled=safe_mode_enabled,
         performance_mode_enabled=performance_mode_enabled,
+        debug_mode_enabled=debug_mode_enabled,
     )
 
 
@@ -821,6 +861,7 @@ def inject_common_context():
     return {
         "safe_mode_enabled": is_safe_mode_enabled(),
         "performance_mode_enabled": is_performance_mode_enabled(),
+        "debug_mode_enabled": is_debug_mode_enabled(),
         "system_info": _get_system_info(),
     }
 
@@ -1121,6 +1162,17 @@ def api_performance_mode():
     return jsonify({"enabled": set_performance_mode(enabled)})
 
 
+@app.route("/api/debug_mode", methods=["GET", "POST"])
+@onboarding_required
+def api_debug_mode():
+    if request.method == "GET":
+        return jsonify({"enabled": is_debug_mode_enabled()})
+
+    payload = request.get_json(force=True, silent=True) or {}
+    enabled = bool(payload.get("enabled", False))
+    return jsonify({"enabled": set_debug_mode(enabled)})
+
+
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
 @onboarding_required
 def container_action(container_id, action):
@@ -1132,11 +1184,16 @@ def container_action(container_id, action):
     if action == "play":
         action = "start"
 
+    debug_steps: list[str] = []
     try:
         if action in ("start", "stop", "restart", "pause", "unpause"):
-            docker_service.apply_simple_action(container_id, action)
+            docker_service.apply_simple_action(
+                container_id, action, debug_steps=debug_steps if is_debug_mode_enabled() else None
+            )
         elif action == "delete":
-            docker_service.remove_container(container_id)
+            docker_service.remove_container(
+                container_id, debug_steps=debug_steps if is_debug_mode_enabled() else None
+            )
         else:
             if wants_json:
                 return jsonify({"error": "Unsupported action"}), 400
@@ -1144,7 +1201,7 @@ def container_action(container_id, action):
     except Exception as exc:  # pragma: no cover - defensive logging
         app.logger.exception("Failed to apply action %s for %s", action, container_id)
         if wants_json:
-            return jsonify({"error": str(exc) or "Action failed"}), 500
+            return jsonify({"error": str(exc) or "Action failed", "debug_steps": debug_steps}), 500
         return redirect(url_for("containers_view"))
 
     docker_service.refresh_overview_cache()
@@ -1158,6 +1215,7 @@ def container_action(container_id, action):
                 "action": action,
                 "container": updated_container,
                 "removed": updated_container is None,
+                "debug_steps": debug_steps,
             }
         )
 
@@ -1167,9 +1225,28 @@ def container_action(container_id, action):
 @app.route("/containers/<container_id>/full_update", methods=["POST"])
 @onboarding_required
 def container_full_update(container_id):
-    docker_service.recreate_container_with_latest_image(container_id)
+    wants_json = (
+        request.accept_mimetypes["application/json"]
+        >= request.accept_mimetypes["text/html"]
+    )
+
+    debug_steps: list[str] = []
+    docker_service.recreate_container_with_latest_image(
+        container_id, debug_steps=debug_steps if is_debug_mode_enabled() else None
+    )
     docker_service.refresh_overview_cache()
     _publish_current_state()
+
+    if wants_json:
+        updated_container = _find_container_overview_entry(container_id)
+        return jsonify(
+            {
+                "status": "ok",
+                "container": updated_container,
+                "debug_steps": debug_steps,
+            }
+        )
+
     return redirect(url_for("updates"))
 
 
