@@ -19,6 +19,7 @@
     };
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
+    const debugModeToggleEl = document.getElementById('debug-mode-toggle');
     const safeConfirmState = {
       modal: null,
       message: null,
@@ -28,7 +29,13 @@
     };
     let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
     const initialPerformanceMode = (document.body?.dataset?.performanceMode || '0') === '1';
-    window.d2haSettings = window.d2haSettings || { performanceMode: initialPerformanceMode };
+    const initialDebugMode = (document.body?.dataset?.debugMode || '0') === '1';
+    const existingSettings = window.d2haSettings || {};
+    window.d2haSettings = {
+      ...existingSettings,
+      performanceMode: existingSettings.performanceMode ?? initialPerformanceMode,
+      debugMode: existingSettings.debugMode ?? initialDebugMode,
+    };
     window.d2haRuntime = window.d2haRuntime || { performanceHandlers: [] };
     const performanceState = window.d2haSettings;
     let currentNotifications = initialNotifications;
@@ -108,6 +115,63 @@
       }
 
       loadPerformanceMode();
+    }
+
+    function syncDebugToggle(enabled) {
+      if (debugModeToggleEl) {
+        debugModeToggleEl.checked = enabled;
+      }
+    }
+
+    function updateDebugMode(enabled) {
+      performanceState.debugMode = !!enabled;
+      document.body.dataset.debugMode = performanceState.debugMode ? '1' : '0';
+      syncDebugToggle(performanceState.debugMode);
+      document.dispatchEvent(
+        new CustomEvent('debug-mode-changed', { detail: { enabled: performanceState.debugMode } })
+      );
+    }
+
+    async function loadDebugMode() {
+      try {
+        const res = await fetch('/api/debug_mode');
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        updateDebugMode(!!data.enabled);
+      } catch (err) {
+        console.warn('Unable to load debug mode from backend', err);
+      }
+    }
+
+    async function persistDebugMode(enabled) {
+      try {
+        const res = await fetch('/api/debug_mode', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled }),
+        });
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
+        updateDebugMode(!!data.enabled);
+      } catch (err) {
+        console.error('Impossibile aggiornare la modalità debug', err);
+        if (debugModeToggleEl) {
+          debugModeToggleEl.checked = performanceState.debugMode;
+        }
+        alert('Impossibile aggiornare la modalità debug');
+      }
+    }
+
+    function initDebugMode() {
+      updateDebugMode(initialDebugMode);
+
+      if (debugModeToggleEl) {
+        debugModeToggleEl.addEventListener('change', () => {
+          persistDebugMode(debugModeToggleEl.checked);
+        });
+      }
+
+      loadDebugMode();
     }
 
     function updateSafeModeState(enabled) {
@@ -537,6 +601,7 @@
   window.registerPerformanceHandler = registerPerformanceHandler;
   window.applyPerformanceMode = applyPerformanceMode;
   initPerformanceMode();
+  initDebugMode();
   loadDismissedNotifications();
   updateSafeModeState(safeModeEnabled);
   renderNotificationList(currentNotifications);

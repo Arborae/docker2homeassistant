@@ -176,6 +176,18 @@ def set_performance_mode(enabled: bool) -> bool:
     return is_performance_mode_enabled()
 
 
+def is_debug_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("debug_mode_enabled", False))
+
+
+def set_debug_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["debug_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    return is_debug_mode_enabled()
+
+
 def is_onboarding_done():
     config = get_auth_config()
     return bool(config.get("onboarding_done"))
@@ -486,16 +498,20 @@ def setup_modes():
 
     safe_mode_enabled = bool(config.get("safe_mode_enabled", True))
     performance_mode_enabled = bool(config.get("performance_mode_enabled", False))
+    debug_mode_enabled = bool(config.get("debug_mode_enabled", False))
 
     if request.method == "POST":
         safe_choice = request.form.get("safe_mode_enabled")
         perf_choice = request.form.get("performance_mode_enabled")
+        debug_choice = request.form.get("debug_mode_enabled")
 
         safe_mode_enabled = bool(safe_choice)
         performance_mode_enabled = bool(perf_choice)
+        debug_mode_enabled = bool(debug_choice)
 
         config["safe_mode_enabled"] = safe_mode_enabled
         config["performance_mode_enabled"] = performance_mode_enabled
+        config["debug_mode_enabled"] = debug_mode_enabled
         save_auth_config(config)
 
         return redirect(url_for("setup_autodiscovery"))
@@ -504,6 +520,7 @@ def setup_modes():
         "setup_modes.html",
         safe_mode_enabled=safe_mode_enabled,
         performance_mode_enabled=performance_mode_enabled,
+        debug_mode_enabled=debug_mode_enabled,
     )
 
 
@@ -821,6 +838,7 @@ def inject_common_context():
     return {
         "safe_mode_enabled": is_safe_mode_enabled(),
         "performance_mode_enabled": is_performance_mode_enabled(),
+        "debug_mode_enabled": is_debug_mode_enabled(),
         "system_info": _get_system_info(),
     }
 
@@ -1119,6 +1137,17 @@ def api_performance_mode():
     payload = request.get_json(force=True, silent=True) or {}
     enabled = bool(payload.get("enabled", False))
     return jsonify({"enabled": set_performance_mode(enabled)})
+
+
+@app.route("/api/debug_mode", methods=["GET", "POST"])
+@onboarding_required
+def api_debug_mode():
+    if request.method == "GET":
+        return jsonify({"enabled": is_debug_mode_enabled()})
+
+    payload = request.get_json(force=True, silent=True) or {}
+    enabled = bool(payload.get("enabled", False))
+    return jsonify({"enabled": set_debug_mode(enabled)})
 
 
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
