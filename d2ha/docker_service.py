@@ -209,8 +209,9 @@ class DockerService:
     def _extract_changelog(self, labels: dict) -> Optional[str]:
         for key in (
             "org.opencontainers.image.changelog",
+            "org.opencontainers.image.release-notes",
+            "release-notes",
             "changelog",
-            "org.opencontainers.image.description",
         ):
             val = labels.get(key)
             if val:
@@ -220,6 +221,7 @@ class DockerService:
     def _extract_breaking(self, labels: dict) -> Optional[str]:
         for key in (
             "org.opencontainers.image.breaking_changes",
+            "org.opencontainers.image.breaking-changes",
             "breaking_changes",
         ):
             val = labels.get(key)

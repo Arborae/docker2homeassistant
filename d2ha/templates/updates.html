@@ -267,12 +267,23 @@
     .collapsed .stack-body { display:none; }
     .status-meta { display:flex; flex-direction:column; gap:4px; }
     .pill-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-    .confirm-backdrop { position:fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:50; padding:18px; }
-    .confirm-backdrop.visible { display:flex; }
-    .confirm-modal { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:18px; width:min(420px, 100%); box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
+    .confirm-backdrop, .dialog-backdrop { position:fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:50; padding:18px; }
+    .confirm-backdrop.visible, .dialog-backdrop.visible { display:flex; }
+    .confirm-modal, .dialog-modal { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:18px; width:min(620px, 100%); box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
     .confirm-title { margin:0; font-size:1rem; }
     .confirm-actions { display:flex; justify-content:flex-end; gap:8px; }
     .btn-ghost { background: var(--control-surface); color: var(--text); border-color: var(--border); }
+    .dialog-header { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+    .dialog-eyebrow { font-size:0.82rem; color: var(--muted); margin:0; text-transform: uppercase; letter-spacing:0.08em; font-weight:800; }
+    .dialog-title { margin:2px 0 0; }
+    .dialog-body { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px; }
+    .dialog-section { background: var(--panel-2); border:1px solid var(--border); border-radius:14px; padding:12px; box-shadow: var(--shadow); display:flex; flex-direction:column; gap:8px; }
+    .dialog-section-title { font-weight:800; letter-spacing:0.04em; text-transform: uppercase; font-size:0.9rem; color: var(--muted); }
+    .dialog-content { max-height: 320px; overflow:auto; font-size:0.9rem; line-height:1.45; padding-right:4px; }
+    .dialog-content::-webkit-scrollbar { width:6px; }
+    .dialog-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 999px; }
+    .dialog-meta { color: var(--muted); margin: 2px 0 0; }
+    .muted { color: var(--muted); }
     @media(max-width: 1100px) {
       table, thead, tbody, th, td, tr { display:block; }
       thead { display:none; }
@@ -356,7 +367,7 @@
             </thead>
             <tbody>
               {% for c in stack.containers %}
-                <tr class="container-row" data-container-id="{{ c.id }}">
+                <tr class="container-row" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}" data-installed-version="{{ c.installed_version or '' }}" data-remote-version="{{ c.remote_version or '' }}" data-changelog-text="{{ c.changelog or '' }}" data-breaking-text="{{ c.breaking_changes or '' }}">
                   <td data-label="Container">
                     <div><strong>{{ c.name }}</strong></div>
                     <div class="small">{{ c.image_ref }}</div>
@@ -416,6 +427,7 @@
                   </td>
                   <td class="actions-cell" data-label="Azioni">
                     <div class="actions">
+                      <button class="btn" type="button" data-changelog-open>Note versione</button>
                       <form class="full-update-form" data-container-name="{{ c.name }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
                         <button class="btn-primary-glow" type="submit">Aggiorna immagine</button>
                       </form>
@@ -438,6 +450,29 @@
       <div class="confirm-actions">
         <button type="button" class="btn btn-ghost" id="cancel-confirm">Annulla</button>
         <button type="button" class="btn btn-full-update" id="confirm-continue">Procedi</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-backdrop" id="changelog-modal">
+    <div class="dialog-modal">
+      <div class="dialog-header">
+        <div>
+          <p class="dialog-eyebrow">Changelog & breaking changes</p>
+          <h3 class="dialog-title" id="dialog-title">-</h3>
+          <p class="small dialog-meta" id="dialog-meta"></p>
+        </div>
+        <button class="btn btn-ghost dialog-close" type="button" id="close-changelog">Chiudi</button>
+      </div>
+      <div class="dialog-body">
+        <div class="dialog-section">
+          <div class="dialog-section-title">Changelog</div>
+          <div class="dialog-content" id="dialog-changelog"></div>
+        </div>
+        <div class="dialog-section">
+          <div class="dialog-section-title">Breaking changes</div>
+          <div class="dialog-content" id="dialog-breaking"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -607,6 +642,67 @@
         pendingForm.submit();
       }
       closeConfirm();
+    });
+
+    const changelogModal = document.getElementById('changelog-modal');
+    const changelogTitle = document.getElementById('dialog-title');
+    const changelogMeta = document.getElementById('dialog-meta');
+    const changelogBody = document.getElementById('dialog-changelog');
+    const breakingBody = document.getElementById('dialog-breaking');
+    const closeChangelogBtn = document.getElementById('close-changelog');
+
+    function formatMultiline(text) {
+      return text
+        .split(/\n/) // preserve blank lines
+        .map((line) => {
+          if (line.trim() === '') return '&nbsp;';
+          return line
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+        })
+        .join('<br>');
+    }
+
+    function renderDialogContent(target, text, emptyLabel) {
+      if (text) {
+        target.innerHTML = formatMultiline(text);
+      } else {
+        target.innerHTML = `<span class="small muted">${emptyLabel}</span>`;
+      }
+    }
+
+    function openChangelog(row) {
+      const name = row.dataset.containerName || 'Container';
+      const installed = row.dataset.installedVersion || row.querySelector('[data-installed-version]')?.textContent || '-';
+      const remote = row.dataset.remoteVersion || row.querySelector('[data-remote-version]')?.textContent || '-';
+      const changelogText = (row.dataset.changelogText || '').trim() || row.querySelector('[data-changelog]')?.textContent.trim();
+      const breakingText = (row.dataset.breakingText || '').trim() || row.querySelector('[data-breaking]')?.textContent.trim();
+
+      changelogTitle.textContent = name;
+      changelogMeta.textContent = `Installata: ${installed || 'n/d'} · Remota: ${remote || 'n/d'}`;
+
+      renderDialogContent(changelogBody, changelogText, 'Nessuna nota disponibile');
+      renderDialogContent(breakingBody, breakingText, 'Nessun breaking change indicato');
+
+      changelogModal.classList.add('visible');
+    }
+
+    function closeChangelog() {
+      changelogModal.classList.remove('visible');
+    }
+
+    document.querySelectorAll('[data-changelog-open]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const row = btn.closest('.container-row');
+        if (!row) return;
+        openChangelog(row);
+      });
+    });
+
+    closeChangelogBtn?.addEventListener('click', closeChangelog);
+    changelogModal?.addEventListener('click', (evt) => {
+      if (evt.target === changelogModal) closeChangelog();
     });
   </script>
 </body>
