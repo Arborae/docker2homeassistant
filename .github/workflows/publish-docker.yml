@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      D2HA_VERSION: Stable Release ${{ github.ref_name }}
 
     permissions:
       contents: read
@@ -49,4 +51,4 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
-            D2HA_VERSION=${{ steps.meta.outputs.version }}
+            D2HA_VERSION=${{ env.D2HA_VERSION }}
