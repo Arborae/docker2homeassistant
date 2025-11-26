@@ -37,9 +37,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
-          # Anche qui usiamo d2ha come contesto, così Docker trova requirements.txt
           context: ./d2ha
-          file: ./Dockerfile
+          file: ./d2ha/Dockerfile
           push: true
           tags: |
             ghcr.io/arborae/docker2homeassistant:latest
