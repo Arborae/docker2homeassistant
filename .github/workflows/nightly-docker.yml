@@ -1,10 +1,10 @@
 name: Nightly Docker image (GHCR)
 
 on:
-  # Build la nightly solo quando ci sono nuovi commit su main
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build-and-push-nightly:
@@ -31,7 +31,10 @@ jobs:
       - name: Build and push nightly image
         uses: docker/build-push-action@v6
         with:
+          # Manteniamo il contesto sulla root del repo,
+          # ma specifichiamo il Dockerfile nella sottocartella d2ha
           context: .
+          file: ./d2ha/Dockerfile
           push: true
           tags: |
             ghcr.io/arborae/docker2homeassistant:nightly
