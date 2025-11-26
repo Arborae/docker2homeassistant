@@ -9,6 +9,8 @@ on:
 jobs:
   build-and-push-nightly:
     runs-on: ubuntu-latest
+    env:
+      D2HA_VERSION: Nightly Release #${{ github.sha[0:7] }}
 
     permissions:
       contents: read
@@ -40,4 +42,4 @@ jobs:
             ghcr.io/arborae/docker2homeassistant:nightly
             ghcr.io/arborae/docker2homeassistant:nightly-${{ github.sha }}
           build-args: |
-            D2HA_VERSION=${{ github.ref_name }}
+            D2HA_VERSION=${{ env.D2HA_VERSION }}
