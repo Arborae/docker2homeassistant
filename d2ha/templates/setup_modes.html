@@ -23,6 +23,14 @@
       </div>
     </label>
 
+    <label class="auth-choice" style="display:flex;align-items:flex-start;gap:10px;">
+      <input type="checkbox" name="debug_mode_enabled" {% if debug_mode_enabled %}checked{% endif %}>
+      <div>
+        <strong>{{ t('setup_modes.debug') }}</strong>
+        <span class="hint">{{ t('setup_modes.debug_hint') }}</span>
+      </div>
+    </label>
+
     <button type="submit">{{ t('setup_modes.submit') }}</button>
   </form>
 {% endblock %}

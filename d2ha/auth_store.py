@@ -19,6 +19,7 @@ _DEFAULT_CONFIG = {
     "totp_secret": None,
     "safe_mode_enabled": True,
     "performance_mode_enabled": False,
+    "debug_mode_enabled": False,
     "mqtt_default_entities_enabled": True,
     "session_timeout_minutes": 30,
 }

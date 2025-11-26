@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+import logging
 import os
 import secrets
 import time
@@ -19,7 +20,9 @@ from flask import (
     redirect,
     render_template,
     request,
+    Response,
     session,
+    stream_with_context,
     url_for,
 )
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -78,6 +81,119 @@ MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", "d2ha_server")
 MQTT_DISCOVERY_PREFIX = os.getenv("MQTT_DISCOVERY_PREFIX", "homeassistant")
 MQTT_NODE_ID = os.getenv("MQTT_NODE_ID", "d2ha_server")
 MQTT_STATE_INTERVAL = int(os.getenv("MQTT_STATE_INTERVAL", "5"))
+
+
+class SensitiveDataFilter(logging.Filter):
+    def __init__(self, sensitive_values: Optional[list] = None):
+        super().__init__()
+        self.sensitive_values = [str(v) for v in (sensitive_values or []) if v]
+
+    def filter(self, record: logging.LogRecord) -> bool:  # pragma: no cover - trivial
+        try:
+            message = record.getMessage()
+        except Exception:
+            return True
+
+        sanitized = message
+        for secret in self.sensitive_values:
+            sanitized = sanitized.replace(secret, "<redacted>")
+
+        if sanitized != message:
+            record.msg = sanitized
+            record.args = ()
+
+        return True
+
+
+def _attach_filter(logger: logging.Logger, log_filter: logging.Filter) -> None:
+    if not any(isinstance(existing, type(log_filter)) for existing in logger.filters):
+        logger.addFilter(log_filter)
+
+
+def _ensure_handlers(logger: logging.Logger, source: logging.Logger) -> None:
+    if logger is source:
+        return
+    if not logger.handlers:
+        for handler in source.handlers:
+            logger.addHandler(handler)
+
+
+def configure_logging(debug_mode_enabled: bool) -> None:
+    """Configure application loggers based on debug mode."""
+
+    level = logging.DEBUG if debug_mode_enabled else logging.INFO
+
+    sensitive_values = [
+        app.config.get("SECRET_KEY"),
+        os.environ.get("D2HA_SECRET_KEY"),
+        MQTT_PASSWORD,
+    ]
+
+    try:
+        auth_config = get_auth_config()
+        sensitive_values.extend(
+            auth_config.get(key)
+            for key in ("password_hash", "totp_secret")
+            if auth_config.get(key)
+        )
+    except Exception:
+        pass
+
+    redaction_filter = SensitiveDataFilter(sensitive_values)
+
+    logging.getLogger().setLevel(logging.WARNING)
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)
+
+    app_logger = app.logger
+    app_logger.setLevel(level)
+    app_logger.propagate = False
+    _attach_filter(app_logger, redaction_filter)
+
+    docker_logger = logging.getLogger("docker_service")
+    docker_logger.setLevel(level)
+    docker_logger.propagate = False
+    _ensure_handlers(docker_logger, app_logger)
+    _attach_filter(docker_logger, redaction_filter)
+
+
+def is_safe_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("safe_mode_enabled", True))
+
+
+def set_safe_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["safe_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    return is_safe_mode_enabled()
+
+
+def is_performance_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("performance_mode_enabled", False))
+
+
+def set_performance_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["performance_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    return is_performance_mode_enabled()
+
+
+def is_debug_mode_enabled() -> bool:
+    config = get_auth_config()
+    return bool(config.get("debug_mode_enabled", False))
+
+
+def set_debug_mode(enabled: bool) -> bool:
+    config = get_auth_config()
+    config["debug_mode_enabled"] = bool(enabled)
+    save_auth_config(config)
+    configure_logging(bool(enabled))
+    return is_debug_mode_enabled()
+
+
+configure_logging(is_debug_mode_enabled())
 
 
 docker_service = DockerService()
@@ -152,30 +268,6 @@ def onboarding_required(view):
     return wrapped
 
 
-def is_safe_mode_enabled() -> bool:
-    config = get_auth_config()
-    return bool(config.get("safe_mode_enabled", True))
-
-
-def set_safe_mode(enabled: bool) -> bool:
-    config = get_auth_config()
-    config["safe_mode_enabled"] = bool(enabled)
-    save_auth_config(config)
-    return is_safe_mode_enabled()
-
-
-def is_performance_mode_enabled() -> bool:
-    config = get_auth_config()
-    return bool(config.get("performance_mode_enabled", False))
-
-
-def set_performance_mode(enabled: bool) -> bool:
-    config = get_auth_config()
-    config["performance_mode_enabled"] = bool(enabled)
-    save_auth_config(config)
-    return is_performance_mode_enabled()
-
-
 def is_onboarding_done():
     config = get_auth_config()
     return bool(config.get("onboarding_done"))
@@ -219,6 +311,14 @@ def _find_container_overview_entry(container_id: str) -> Optional[Dict[str, Any]
             if container.get("id") == container_id:
                 return {**container, "stack": stack.get("name")}
     return None
+
+
+def _sse_event(event: str, data: Any) -> str:
+    try:
+        payload = json.dumps(data, ensure_ascii=False)
+    except TypeError:
+        payload = json.dumps(str(data))
+    return f"event: {event}\ndata: {payload}\n\n"
 
 
 def _build_qr_code_data_uri(data: str) -> str:
@@ -486,16 +586,20 @@ def setup_modes():
 
     safe_mode_enabled = bool(config.get("safe_mode_enabled", True))
     performance_mode_enabled = bool(config.get("performance_mode_enabled", False))
+    debug_mode_enabled = bool(config.get("debug_mode_enabled", False))
 
     if request.method == "POST":
         safe_choice = request.form.get("safe_mode_enabled")
         perf_choice = request.form.get("performance_mode_enabled")
+        debug_choice = request.form.get("debug_mode_enabled")
 
         safe_mode_enabled = bool(safe_choice)
         performance_mode_enabled = bool(perf_choice)
+        debug_mode_enabled = bool(debug_choice)
 
         config["safe_mode_enabled"] = safe_mode_enabled
         config["performance_mode_enabled"] = performance_mode_enabled
+        config["debug_mode_enabled"] = debug_mode_enabled
         save_auth_config(config)
 
         return redirect(url_for("setup_autodiscovery"))
@@ -504,6 +608,7 @@ def setup_modes():
         "setup_modes.html",
         safe_mode_enabled=safe_mode_enabled,
         performance_mode_enabled=performance_mode_enabled,
+        debug_mode_enabled=debug_mode_enabled,
     )
 
 
@@ -821,6 +926,7 @@ def inject_common_context():
     return {
         "safe_mode_enabled": is_safe_mode_enabled(),
         "performance_mode_enabled": is_performance_mode_enabled(),
+        "debug_mode_enabled": is_debug_mode_enabled(),
         "system_info": _get_system_info(),
     }
 
@@ -1119,6 +1225,103 @@ def api_performance_mode():
     payload = request.get_json(force=True, silent=True) or {}
     enabled = bool(payload.get("enabled", False))
     return jsonify({"enabled": set_performance_mode(enabled)})
+
+
+@app.route("/api/debug_mode", methods=["GET", "POST"])
+@onboarding_required
+def api_debug_mode():
+    if request.method == "GET":
+        return jsonify({"enabled": is_debug_mode_enabled()})
+
+    payload = request.get_json(force=True, silent=True) or {}
+    enabled = bool(payload.get("enabled", False))
+    return jsonify({"enabled": set_debug_mode(enabled)})
+
+
+@app.route("/api/containers/<container_id>/actions/<action>/stream", methods=["GET"])
+@onboarding_required
+def api_container_action_stream(container_id, action):
+    if not is_debug_mode_enabled():
+        return jsonify({"error": "Debug mode disabilitato"}), 403
+
+    allowed_actions = {
+        "start",
+        "stop",
+        "restart",
+        "pause",
+        "unpause",
+        "delete",
+        "pull",
+        "full_update",
+    }
+
+    if action not in allowed_actions:
+        return jsonify({"error": "Azione non supportata"}), 400
+
+    def generate():
+        yield _sse_event(
+            "command",
+            {
+                "action": action,
+                "container_id": container_id,
+                "message": f"Esecuzione '{action}' per {container_id}",
+            },
+        )
+
+        try:
+            if action in ("start", "stop", "restart", "pause", "unpause", "delete"):
+                docker_service.apply_simple_action(container_id, action)
+            elif action in ("pull", "full_update"):
+                yield _sse_event(
+                    "command",
+                    {
+                        "action": action,
+                        "container_id": container_id,
+                        "message": "Pull immagine e ricreazione container",
+                    },
+                )
+                docker_service.recreate_container_with_latest_image(container_id)
+
+            yield _sse_event(
+                "status", {"state": "completed", "action": action, "container_id": container_id}
+            )
+        except Exception as exc:
+            yield _sse_event(
+                "error",
+                {
+                    "action": action,
+                    "container_id": container_id,
+                    "message": str(exc) or "Action failed",
+                },
+            )
+            yield _sse_event("end", {"action": action, "container_id": container_id})
+            return
+
+        docker_service.refresh_overview_cache()
+        _publish_current_state()
+
+        result = _find_container_overview_entry(container_id)
+        removed = result is None or action == "delete"
+        yield _sse_event(
+            "result",
+            {
+                "action": action,
+                "container_id": container_id,
+                "container": result,
+                "removed": removed,
+            },
+        )
+
+        if not removed:
+            for line in docker_service.stream_container_logs(container_id, tail=50, follow=True, timeout=12.0):
+                if not line:
+                    continue
+                yield _sse_event("log", {"action": action, "line": line})
+
+        yield _sse_event("end", {"action": action, "container_id": container_id})
+
+    headers = {"Cache-Control": "no-cache"}
+    return Response(stream_with_context(generate()), mimetype="text/event-stream", headers=headers)
 
 
 @app.route("/containers/<container_id>/<action>", methods=["POST"])
