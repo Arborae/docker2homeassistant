@@ -5,6 +5,24 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/Arborae/docker2homeassistant/actions/workflows/publish-docker.yml">
+    <img src="https://github.com/Arborae/docker2homeassistant/actions/workflows/publish-docker.yml/badge.svg" alt="Release CI" />
+  </a>
+  <a href="https://github.com/Arborae/docker2homeassistant/actions/workflows/nightly-docker.yml">
+    <img src="https://github.com/Arborae/docker2homeassistant/actions/workflows/nightly-docker.yml/badge.svg" alt="Nightly CI" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Arborae/docker2homeassistant/releases">
+    <img src="https://img.shields.io/github/v/release/Arborae/docker2homeassistant?style=for-the-badge&label=stable%20release" alt="Latest release" />
+  </a>
+  <a href="https://ghcr.io/arborae/docker2homeassistant">
+    <img src="https://img.shields.io/badge/GHCR-docker2homeassistant-0d1117?style=for-the-badge&logo=docker&logoColor=white" alt="GHCR Docker image" />
+  </a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/status-alpha-00bcd4.svg" alt="Status: alpha" />
   <img src="https://img.shields.io/badge/python-3.11+-3776AB.svg" alt="Python 3.11+" />
   <img src="https://img.shields.io/badge/backend-Flask-ff9800.svg" alt="Flask" />
@@ -229,26 +247,92 @@ Assicurati che l’utente con cui la esegui abbia accesso a Docker
 
 ---
 
-## 🐳 Esecuzione con Docker Compose
+## 🐳 Installazione via Docker / Docker Compose
 
-All’interno della cartella `d2ha/` (sotto `docker2homeassistant/`):
+Se preferisci usare direttamente le **immagini pronte su GitHub Container Registry (GHCR)**, puoi installare D2HA in pochi passi.
 
-```bash
-docker compose up --build -d
+### 1. Scegli il tag dell'immagine
+
+Immagine stabile (release):
+
+```text
+ghcr.io/arborae/docker2homeassistant:latest
+ghcr.io/arborae/docker2homeassistant:X.Y.Z   # es. 0.1.1
 ```
 
-Per conservare credenziali e preferenze MQTT tra i rebuild:
+Immagine di sviluppo (nightly):
 
-- copia `.env.example` in `.env` e configura `D2HA_AUTH_CONFIG_PATH` (default `/app/data/auth_config.json`) insieme alle variabili MQTT;
-- il `docker-compose.yml` monta `./data:/app/data` così il file `auth_config.json` resta persistente sull'host;
-- avvia con `docker compose --env-file .env up -d` per usare i valori statici.
+```text
+ghcr.io/arborae/docker2homeassistant:nightly
+```
 
-Questo:
+### 2. Esempio `docker-compose.yml`
 
-- costruisce l’immagine dell’app;
-- avvia il container in background;
-- espone la UI su `http://<host>:12021`;
-- monta `/var/run/docker.sock` nel container (se definito nel `docker-compose.yml`).
+Crea un file `docker-compose.yml` simile a questo:
+
+```yaml
+services:
+  d2ha:
+    image: ghcr.io/arborae/docker2homeassistant:latest
+    container_name: d2ha
+    restart: unless-stopped
+    ports:
+      - "12021:12021"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data:/app/data
+    environment:
+      # Chiave segreta Flask (obbligatoria in produzione)
+      D2HA_SECRET_KEY: "cambia-questa-chiave"
+
+      # (Opzionale) Username admin iniziale prima del primo avvio
+      # D2HA_ADMIN_USERNAME: "admin"
+
+      # (Opzionale) Config MQTT
+      # MQTT_BROKER: "192.168.1.100"
+      # MQTT_PORT: "1883"
+      # MQTT_USERNAME: "homeassistant"
+      # MQTT_PASSWORD: "password"
+      # MQTT_BASE_TOPIC: "d2ha_server"
+      # MQTT_DISCOVERY_PREFIX: "homeassistant"
+      # MQTT_NODE_ID: "d2ha_server"
+      # MQTT_STATE_INTERVAL: "5"
+```
+
+Il volume `./data:/app/data` mantiene persistenti:
+
+- `auth_config.json` (credenziali + 2FA + sicurezza)
+- `autodiscovery_preferences.json` (sensori MQTT esposti)
+
+### 3. Avvio del container
+
+```bash
+docker compose up -d
+```
+
+### 4. Aggiornare all’ultima versione
+
+Per aggiornare alla **release stabile** più recente:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Per passare alla **nightly**:
+
+1. Cambia l’immagine nel `docker-compose.yml`:
+
+   ```yaml
+   image: ghcr.io/arborae/docker2homeassistant:nightly
+   ```
+
+2. Poi:
+
+   ```bash
+   docker compose pull
+   docker compose up -d
+   ```
 
 ---
 
