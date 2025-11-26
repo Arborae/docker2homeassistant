@@ -69,7 +69,9 @@ def get_d2ha_version() -> str:
     # 2) Nessuna D2HA_VERSION valida -> controlla se il commit corrente è taggato
     tag = _run_git_command(["git", "describe", "--tags", "--exact-match"])
     if tag:
-        return f"Stable Release v{tag}"
+        # Avoid duplicating the leading "v" if the tag already includes it
+        prefix = "" if tag.lower().startswith("v") else "v"
+        return f"Stable Release {prefix}{tag}"
 
     # 3) Altrimenti usa la short SHA come nightly
     short_sha = _run_git_command(["git", "rev-parse", "--short", "HEAD"])
