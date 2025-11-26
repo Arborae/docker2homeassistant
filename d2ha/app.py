@@ -42,6 +42,7 @@ from docker_service import (
 )
 from i18n import DEFAULT_LANG, SUPPORTED_LANGS, get_current_lang, set_current_lang, t
 from theme import SUPPORTED_THEMES, get_current_theme, set_current_theme
+from version import get_d2ha_version
 
 load_dotenv()
 
@@ -345,6 +346,7 @@ def _get_system_info():
         "docker_version": host_info.get("ServerVersion")
         or host_info.get("Version")
         or "-",
+        "d2ha_version": get_d2ha_version(),
         "uptime": format_timedelta(uptime_seconds) if uptime_seconds >= 0 else "-",
     }
 
