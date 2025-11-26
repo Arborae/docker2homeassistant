@@ -39,20 +39,42 @@ def get_d2ha_version() -> str:
     4. Fallback: dev.
     """
 
-    env_version = os.environ.get("D2HA_VERSION")
+    env_version = os.environ.get("D2HA_VERSION", "").strip()
+
+    # 1) Prova a usare D2HA_VERSION se ha un formato sensato
     if env_version:
+        # Caso 1: Stable Release già pronta
         if env_version.startswith("Stable Release "):
             return env_version
-        if _looks_like_sha(env_version):
-            return f"Nightly Release #{env_version[:7]}"
-        return env_version
 
+        # Caso 2: nightly formattata tipo "Nightly Release #<sha>"
+        if env_version.lower().startswith("nightly release #"):
+            after_hash = env_version.split("#", 1)[1].strip() if "#" in env_version else ""
+            if _looks_like_sha(after_hash):
+                return f"Nightly Release #{after_hash[:7]}"
+            # se non ci sono cifre valide, consideriamo D2HA_VERSION non valida
+            env_version = ""
+
+        # Caso 3: raw SHA passato dal workflow (es. github.sha)
+        if env_version and _looks_like_sha(env_version):
+            return f"Nightly Release #{env_version[:7]}"
+
+        # Caso 4: altri valori personalizzati diversi da "dev"
+        # (es. "Custom Build xyz") -> usali così come sono
+        if env_version.lower() != "dev":
+            return env_version
+
+        # Se è "dev" o qualcosa di vuoto/rotto, passiamo alla logica git
+
+    # 2) Nessuna D2HA_VERSION valida -> controlla se il commit corrente è taggato
     tag = _run_git_command(["git", "describe", "--tags", "--exact-match"])
     if tag:
         return f"Stable Release v{tag}"
 
+    # 3) Altrimenti usa la short SHA come nightly
     short_sha = _run_git_command(["git", "rev-parse", "--short", "HEAD"])
     if short_sha:
         return f"Nightly Release #{short_sha}"
 
+    # 4) Fallback finale
     return "dev"
