@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Install Docker 2 Home Assistant (D2HA)</title>
+  <title>Docker to Home Assistant (D2HA) – Install guide</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="Install guide for Docker 2 Home Assistant (D2HA): Docker Compose, quick test, nightly builds, first login, access URL and MQTT autodiscovery for Home Assistant." />
@@ -28,6 +28,8 @@
       padding: 2.6rem 2.6rem 2.4rem;
       width: 100%;
       max-width: 1100px;
+      position: relative;
+      overflow: hidden;
       background:
         linear-gradient(150deg, rgba(49, 196, 255, 0.08), rgba(124, 255, 195, 0.06)),
         linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
@@ -38,53 +40,65 @@
       backdrop-filter: blur(16px) saturate(112%);
     }
 
-    .landing-header {
+    .landing-card::after {
+      content: "";
+      position: absolute;
+      inset: 8% 12%;
+      background: url('../assets/logo.svg') center center / contain no-repeat;
+      opacity: 0.12;
+      filter: drop-shadow(0 10px 28px rgba(56, 189, 248, 0.28));
+      pointer-events: none;
+    }
+
+    .install-hero {
       margin-bottom: 1.8rem;
       display: flex;
       flex-direction: column;
-      gap: 0.7rem;
+      gap: 0.9rem;
+      align-items: flex-start;
     }
 
-    .landing-kicker {
+    .install-back {
       font-size: 0.8rem;
       text-transform: uppercase;
       letter-spacing: 0.16em;
       color: #9ca3af;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-    }
-
-    .landing-kicker a {
-      color: #9ca3af;
-      text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.35rem;
+      text-decoration: none;
       opacity: 0.9;
     }
 
-    .landing-kicker a:hover {
+    .install-back:hover {
       opacity: 1;
       text-decoration: underline;
     }
 
-    .landing-title {
-      font-size: clamp(1.9rem, 4vw, 2.3rem);
+    .install-title-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      background: rgba(13, 25, 44, 0.75);
+      border: 1px solid rgba(120, 196, 255, 0.55);
+      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.25);
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
       font-weight: 700;
-      margin: 0;
-      letter-spacing: 0.02em;
-      background: var(--tech-gradient);
-      -webkit-background-clip: text;
-      color: transparent;
-      text-shadow: 0 8px 30px rgba(56, 189, 248, 0.3);
+      font-size: clamp(1.35rem, 3.4vw, 1.7rem);
+      color: #dbeafe;
+      line-height: 1;
+      width: min(100%, 900px);
+      text-align: center;
+      white-space: nowrap;
     }
 
     .landing-subtitle {
       font-size: 0.98rem;
       color: #e5e7eb;
-      max-width: 680px;
+      max-width: 780px;
       line-height: 1.7;
     }
 
@@ -275,6 +289,10 @@
       margin-top: 0.7rem;
     }
 
+    .install-grid-duo {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
     .install-chip-row {
       display: flex;
       flex-wrap: wrap;
@@ -300,10 +318,11 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       font-size: 0.86rem;
       color: #e0f2fe;
-      overflow-x: auto;
+      overflow: visible;
       box-shadow: 0 0 26px rgba(56, 189, 248, 0.18);
       line-height: 1.45;
-      white-space: pre;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     code {
@@ -373,12 +392,19 @@
     }
 
     @media (max-width: 640px) {
-      .landing-header {
-        margin-bottom: 1.4rem;
+      .install-hero {
+        align-items: center;
+        text-align: center;
       }
 
-      .landing-title {
-        font-size: 1.7rem;
+      .install-back {
+        align-self: flex-start;
+      }
+
+      .install-title-pill {
+        font-size: 1.05rem;
+        letter-spacing: 0.14em;
+        padding: 0.85rem 1.2rem;
       }
 
       .landing-subtitle {
@@ -392,27 +418,18 @@
     }
   </style>
 </head>
-<body class="theme-dark landing-intro">
+<body class="theme-dark">
   <div class="auth-page">
     <!-- Animated background -->
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
 
-    <!-- Floating title + logo (same style as landing) -->
-    <div class="auth-title" aria-hidden="true">Docker 2 Home Assistant</div>
-    <div class="auth-logo" aria-hidden="true">
-      <img src="../assets/logo.svg" alt="D2HA Logo" />
-    </div>
-
     <!-- Main install card -->
     <div class="auth-overlay">
       <div class="auth-card landing-card">
-        <header class="landing-header">
-          <div class="landing-kicker">
-            <a href="../">&larr; Back to landing</a>
-            <span>Install guide</span>
-          </div>
+        <header class="install-hero">
+          <a class="install-back" href="../">&larr; Back to landing</a>
 
-          <h1 class="landing-title">Install D2HA on your Docker host</h1>
+          <div class="install-title-pill">Docker 2 Home Assistant</div>
 
           <p class="landing-subtitle">
             Pick the install method that best fits your stack: use <strong>Docker Compose</strong> for
@@ -582,7 +599,7 @@ http://&lt;server-ip&gt;:12021</pre>
               </small>
             </div>
 
-            <div class="install-grid-small">
+            <div class="install-grid-small install-grid-duo">
               <div class="install-panel">
                 <h3>🌙 Nightly builds</h3>
                 <p>
@@ -649,15 +666,5 @@ MQTT_STATE_INTERVAL=5</pre>
   </div>
 
   <script src="../js/auth_background.js"></script>
-  <script>
-    // Same intro effect as the landing page:
-    window.addEventListener('load', () => {
-      const body = document.body;
-      setTimeout(() => {
-        body.classList.add('landing-ready');
-        body.classList.remove('landing-intro');
-      }, 2200);
-    });
-  </script>
 </body>
 </html>
