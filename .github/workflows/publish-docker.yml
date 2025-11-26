@@ -17,13 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract version from tag
-        id: vars
-        run: |
-          RAW_TAG="${GITHUB_REF#refs/tags/}"
-          CLEAN_TAG="${RAW_TAG#v}"
-          echo "version=${CLEAN_TAG}" >> "$GITHUB_OUTPUT"
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -34,12 +27,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Compute image tags
+        id: meta
+        run: |
+          TAGS="ghcr.io/arborae/docker2homeassistant:latest"
+          if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
+            RAW_TAG="${GITHUB_REF#refs/tags/}"
+            CLEAN_TAG="${RAW_TAG#v}"
+            TAGS="$TAGS,ghcr.io/arborae/docker2homeassistant:${CLEAN_TAG}"
+          fi
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: ./d2ha
           file: ./d2ha/Dockerfile
           push: true
-          tags: |
-            ghcr.io/arborae/docker2homeassistant:latest
-            ghcr.io/arborae/docker2homeassistant:${{ steps.vars.outputs.version }}
+          tags: ${{ steps.meta.outputs.tags }}
