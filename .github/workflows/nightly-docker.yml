@@ -34,5 +34,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ toLower(github.repository_owner) }}/docker2homeassistant:nightly
-            ghcr.io/${{ toLower(github.repository_owner) }}/docker2homeassistant:nightly-${{ github.sha }}
+            ghcr.io/arborae/docker2homeassistant:nightly
+            ghcr.io/arborae/docker2homeassistant:nightly-${{ github.sha }}
