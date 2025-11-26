@@ -39,5 +39,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/docker2homeassistant:latest
-            ghcr.io/${{ github.repository_owner }}/docker2homeassistant:${{ steps.vars.outputs.version }}
+            ghcr.io/${{ toLower(github.repository_owner) }}/docker2homeassistant:latest
+            ghcr.io/${{ toLower(github.repository_owner) }}/docker2homeassistant:${{ steps.vars.outputs.version }}
