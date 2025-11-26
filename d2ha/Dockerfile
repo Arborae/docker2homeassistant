@@ -5,7 +5,7 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-ARG D2HA_VERSION=latest
+ARG D2HA_VERSION=dev
 ENV D2HA_VERSION=${D2HA_VERSION}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
