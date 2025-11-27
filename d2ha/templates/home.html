@@ -331,7 +331,7 @@
     .tile h3 { margin: 0 0 8px; font-size: 1rem; }
     .flex-between { display: flex; justify-content: space-between; align-items: center; }
     .chart-box {
-      aspect-ratio: 1 / 1;
+      aspect-ratio: 16 / 9;
       padding: 6px;
       border-radius: 10px;
       background: radial-gradient(circle at 20% 20%, rgba(49,196,255,0.06), transparent 35%),
@@ -343,9 +343,15 @@
       width: 100% !important;
       height: 100% !important;
       display: block;
-      aspect-ratio: 1 / 1;
+      aspect-ratio: 16 / 9;
       image-rendering: optimizeQuality;
       image-rendering: -webkit-optimize-contrast;
+    }
+    .chart-box.pie {
+      aspect-ratio: 1 / 1;
+    }
+    .chart-box.pie canvas {
+      aspect-ratio: 1 / 1;
     }
     .chart-row {
       display: grid;
@@ -486,7 +492,7 @@
             <div class="label">{{ t("nav.containers") }}</div>
             <div class="value" id="containerValue">{{ summary.running }}/{{ summary.total_containers }}</div>
             <div class="muted" id="containerStatus">{{ summary.paused }} {{ t('home.paused') }} · {{ summary.stopped }} {{ t('home.stopped') }}</div>
-            <div class="chart-box">
+            <div class="chart-box pie">
               <canvas id="containersChart"></canvas>
             </div>
             <div class="chart-caption">
@@ -499,7 +505,7 @@
             <div class="label">{{ t("nav.images") }}</div>
             <div class="value" id="imagesValue">{{ summary.images }}</div>
             <div class="muted" id="imagesDetail">Disk layers: {{ summary.disk_layers_h }}</div>
-            <div class="chart-box">
+            <div class="chart-box pie">
               <canvas id="imagesChart"></canvas>
             </div>
             <div class="chart-caption">
@@ -732,7 +738,7 @@
     const gridColor = 'rgba(255,255,255,0.06)';
     const tickColor = '#a8b5cb';
     const formatPercent = (value) => `${value}%`;
-    const chartDefaults = (formatter = formatPercent) => ({
+    const chartDefaults = (formatter = formatPercent, yMax = null) => ({
       responsive: true,
       animation: false,
       plugins: {
@@ -753,6 +759,7 @@
         x: { display: false },
         y: {
           beginAtZero: true,
+          ...(yMax != null ? { suggestedMax: yMax, max: yMax } : {}),
           ticks: { color: tickColor, callback: (v) => formatter(v) },
           grid: { color: gridColor }
         }
@@ -775,7 +782,7 @@
       return slug || 'stack';
     }
 
-    function buildLineChart(ctx, color, label) {
+    function buildLineChart(ctx, color, label, yMax = null) {
       const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
       gradient.addColorStop(0, color + '33');
       gradient.addColorStop(1, 'rgba(255,255,255,0)');
@@ -795,7 +802,7 @@
             borderCapStyle: 'round',
           }]
         },
-        options: chartDefaults(),
+        options: chartDefaults(formatPercent, yMax),
       });
     }
 
@@ -875,8 +882,8 @@
     }
 
     const charts = {
-      cpu: buildLineChart(document.getElementById('cpuChart'), '#31c4ff', 'CPU'),
-      ram: buildLineChart(document.getElementById('ramChart'), '#7cffc3', 'RAM'),
+      cpu: buildLineChart(document.getElementById('cpuChart'), '#31c4ff', 'CPU', 100),
+      ram: buildLineChart(document.getElementById('ramChart'), '#7cffc3', 'RAM', 100),
       containers: buildPieChart(document.getElementById('containersChart'), ['#7cffc3', '#ffd54f', '#ff8a7a'], ''),
       images: buildPieChart(document.getElementById('imagesChart'), ['#31c4ff', '#1b2131'], '')
     };
@@ -890,8 +897,8 @@
       const netCanvas = document.getElementById(`stack-${slug}-net`);
       if (!cpuCanvas || !memCanvas || !netCanvas) return;
       stackCharts[slug] = {
-        cpu: buildLineChart(cpuCanvas, '#31c4ff', 'CPU'),
-        mem: buildLineChart(memCanvas, '#7cffc3', 'RAM'),
+        cpu: buildLineChart(cpuCanvas, '#31c4ff', 'CPU', 100),
+        mem: buildLineChart(memCanvas, '#7cffc3', 'RAM', 100),
         net: buildNetChart(netCanvas),
       };
     });
