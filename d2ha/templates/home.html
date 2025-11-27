@@ -347,6 +347,12 @@
       image-rendering: optimizeQuality;
       image-rendering: -webkit-optimize-contrast;
     }
+    .chart-box.pie {
+      aspect-ratio: 1 / 1;
+    }
+    .chart-box.pie canvas {
+      aspect-ratio: 1 / 1;
+    }
     .chart-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -486,7 +492,7 @@
             <div class="label">{{ t("nav.containers") }}</div>
             <div class="value" id="containerValue">{{ summary.running }}/{{ summary.total_containers }}</div>
             <div class="muted" id="containerStatus">{{ summary.paused }} {{ t('home.paused') }} · {{ summary.stopped }} {{ t('home.stopped') }}</div>
-            <div class="chart-box">
+            <div class="chart-box pie">
               <canvas id="containersChart"></canvas>
             </div>
             <div class="chart-caption">
@@ -499,7 +505,7 @@
             <div class="label">{{ t("nav.images") }}</div>
             <div class="value" id="imagesValue">{{ summary.images }}</div>
             <div class="muted" id="imagesDetail">Disk layers: {{ summary.disk_layers_h }}</div>
-            <div class="chart-box">
+            <div class="chart-box pie">
               <canvas id="imagesChart"></canvas>
             </div>
             <div class="chart-caption">
