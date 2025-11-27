@@ -732,7 +732,7 @@
     const gridColor = 'rgba(255,255,255,0.06)';
     const tickColor = '#a8b5cb';
     const formatPercent = (value) => `${value}%`;
-    const chartDefaults = (formatter = formatPercent) => ({
+    const chartDefaults = (formatter = formatPercent, yMax = null) => ({
       responsive: true,
       animation: false,
       plugins: {
@@ -753,6 +753,7 @@
         x: { display: false },
         y: {
           beginAtZero: true,
+          ...(yMax != null ? { suggestedMax: yMax, max: yMax } : {}),
           ticks: { color: tickColor, callback: (v) => formatter(v) },
           grid: { color: gridColor }
         }
@@ -775,7 +776,7 @@
       return slug || 'stack';
     }
 
-    function buildLineChart(ctx, color, label) {
+    function buildLineChart(ctx, color, label, yMax = null) {
       const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 120);
       gradient.addColorStop(0, color + '33');
       gradient.addColorStop(1, 'rgba(255,255,255,0)');
@@ -795,7 +796,7 @@
             borderCapStyle: 'round',
           }]
         },
-        options: chartDefaults(),
+        options: chartDefaults(formatPercent, yMax),
       });
     }
 
@@ -875,8 +876,8 @@
     }
 
     const charts = {
-      cpu: buildLineChart(document.getElementById('cpuChart'), '#31c4ff', 'CPU'),
-      ram: buildLineChart(document.getElementById('ramChart'), '#7cffc3', 'RAM'),
+      cpu: buildLineChart(document.getElementById('cpuChart'), '#31c4ff', 'CPU', 100),
+      ram: buildLineChart(document.getElementById('ramChart'), '#7cffc3', 'RAM', 100),
       containers: buildPieChart(document.getElementById('containersChart'), ['#7cffc3', '#ffd54f', '#ff8a7a'], ''),
       images: buildPieChart(document.getElementById('imagesChart'), ['#31c4ff', '#1b2131'], '')
     };
@@ -890,8 +891,8 @@
       const netCanvas = document.getElementById(`stack-${slug}-net`);
       if (!cpuCanvas || !memCanvas || !netCanvas) return;
       stackCharts[slug] = {
-        cpu: buildLineChart(cpuCanvas, '#31c4ff', 'CPU'),
-        mem: buildLineChart(memCanvas, '#7cffc3', 'RAM'),
+        cpu: buildLineChart(cpuCanvas, '#31c4ff', 'CPU', 100),
+        mem: buildLineChart(memCanvas, '#7cffc3', 'RAM', 100),
         net: buildNetChart(netCanvas),
       };
     });
