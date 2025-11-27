@@ -887,6 +887,11 @@ class DockerService:
         networks_overview: List[Dict[str, Any]] = []
 
         for network in self.docker_client.networks.list():
+            # Ensure we have the full inspection data so container counts are accurate
+            try:
+                network.reload()
+            except Exception:
+                self.logger.warning("Unable to reload network %s", getattr(network, "name", ""))
             attrs = network.attrs or {}
             ipam_config = (attrs.get("IPAM", {}) or {}).get("Config") or []
             ipam_entry = ipam_config[0] if ipam_config else {}
