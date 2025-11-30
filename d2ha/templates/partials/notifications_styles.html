@@ -264,6 +264,7 @@
   .clock-settings-modal {
     position: absolute;
     left: 0;
+    right: 0;
     top: calc(100% + 10px);
     width: min(480px, 92vw);
     background: var(--panel);
@@ -354,21 +355,36 @@
     opacity: 0.6;
     pointer-events: none;
   }
-  @media (max-width: 640px) {
-    .clock-settings-dialog { max-height: calc(100vh - 140px); }
-    .clock-settings-status { min-width: 0; }
-  }
   @media (max-width: 780px) {
     .clock-settings-modal {
       position: fixed;
-      top: calc(var(--mobile-topbar-height) + 8px);
+      top: calc(var(--mobile-topbar-height) + 10px);
       left: 12px;
       right: 12px;
       width: auto;
-      max-height: calc(100vh - var(--mobile-topbar-height) - 20px);
+      max-width: min(560px, calc(100vw - 24px));
+      margin: 0 auto;
+      max-height: calc(100vh - var(--mobile-topbar-height) - 24px);
       box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
     }
-    .clock-settings-dialog { max-height: none; }
+    .clock-settings-dialog {
+      max-height: calc(100vh - var(--mobile-topbar-height) - 36px);
+    }
+    .clock-settings-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .clock-settings-status { min-width: 0; }
+  }
+  @media (max-width: 520px) {
+    .clock-settings-modal {
+      left: 10px;
+      right: 10px;
+      max-width: calc(100vw - 20px);
+    }
+    .clock-settings-body { padding: 12px; }
+    .clock-settings-card { padding: 12px 10px; }
   }
   @media (max-width: 900px) {
     .compact-mode .responsive-table tr { margin-bottom: 10px; }
