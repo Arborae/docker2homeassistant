@@ -375,13 +375,6 @@
     .toast-success { border-color: rgba(124,255,195,0.25); }
     .toast-error { border-color: rgba(255,138,122,0.25); }
     .toast-warning { border-color: rgba(255,213,79,0.35); }
-    @media(max-width: 960px) {
-      table, thead, tbody, th, td, tr { display:block; }
-      thead { display:none; }
-      tr { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-      td { display:flex; justify-content: space-between; border-bottom:1px solid var(--border); }
-      td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
-    }
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
@@ -427,7 +420,7 @@
           </div>
         </div>
         <div class="section-card-body stack-content">
-          <table>
+          <table class="responsive-table">
             <colgroup>
               <col class="col-select">
               <col class="col-name">

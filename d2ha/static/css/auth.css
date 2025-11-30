@@ -482,6 +482,26 @@ body.theme-light {
   color: var(--text);
   font-size: 0.95rem;
 }
+.compact-mode .auth-page { padding: 16px; }
+.compact-mode .auth-card { padding: 16px 18px; border-radius: 16px; }
+.compact-mode .auth-card form { gap: 10px; }
+.compact-mode .auth-card .btn { padding: 10px 12px; }
+.compact-mode .auth-card h1 { margin-bottom: 6px; }
+.compact-mode .onboarding-toggle { padding: 8px 10px; }
+.compact-mode .onboarding-menu { top: 48px; right: 10px; }
+@media (max-width: 720px) {
+  .auth-page { padding: 16px 12px; }
+  .auth-card { padding: 18px 16px; }
+  .auth-card h1 { font-size: 1rem; }
+  .auth-card p { margin-bottom: 10px; }
+  .auth-logo img { width: 110px; }
+  .onboarding-toolbar { top: 10px; right: 8px; }
+  .onboarding-toggle { padding: 9px 10px; }
+}
+@media (max-width: 520px) {
+  .auth-card { width: 100%; }
+  .auth-title { font-size: clamp(1.6rem, 1.6rem + 1vw, 2.3rem); letter-spacing: 0.32em; }
+}
 
 .auth-choice {
   display: block;

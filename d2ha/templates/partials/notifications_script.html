@@ -7,6 +7,7 @@
     const notifToggleEl = document.getElementById('notifToggle');
     const settingsPanelEl = document.getElementById('settingsPanel');
     const settingsToggleEl = document.getElementById('settingsToggle');
+    const compactToggleEl = document.getElementById('compactToggle');
     const headerClockEl = document.getElementById('header-clock');
     const backendStatusEl = document.getElementById('backend-status-indicator');
     const backendStatusModalEl = document.getElementById('backend-status-modal');
@@ -20,6 +21,7 @@
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
     const debugModeToggleEl = document.getElementById('debug-mode-toggle');
+    const compactStorageKey = 'd2haCompactMode';
     const safeConfirmState = {
       modal: null,
       message: null,
@@ -45,6 +47,46 @@
     let lastSuccessfulPing = null;
     let consecutiveErrors = 0;
     let backendPingTimer = null;
+
+    function loadCompactPreference() {
+      try {
+        return localStorage.getItem(compactStorageKey) === '1';
+      } catch (err) {
+        console.warn('Unable to read compact preference', err);
+        return false;
+      }
+    }
+
+    function saveCompactPreference(enabled) {
+      try {
+        localStorage.setItem(compactStorageKey, enabled ? '1' : '0');
+      } catch (err) {
+        console.warn('Unable to persist compact preference', err);
+      }
+    }
+
+    function applyCompactMode(enabled) {
+      const isEnabled = !!enabled;
+      document.body.classList.toggle('compact-mode', isEnabled);
+      if (compactToggleEl) {
+        compactToggleEl.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+        compactToggleEl.classList.toggle('active', isEnabled);
+      }
+      document.dispatchEvent(new CustomEvent('compact-mode-changed', { detail: { enabled: isEnabled } }));
+    }
+
+    function initCompactMode() {
+      const initialCompact = loadCompactPreference();
+      applyCompactMode(initialCompact);
+
+      if (compactToggleEl) {
+        compactToggleEl.addEventListener('click', () => {
+          const next = !document.body.classList.contains('compact-mode');
+          applyCompactMode(next);
+          saveCompactPreference(next);
+        });
+      }
+    }
 
     function formatClock(dateObj) {
       const pad = (v) => String(v).padStart(2, '0');
@@ -380,6 +422,7 @@
       });
     }
 
+    initCompactMode();
     startClock();
 
   function saveDismissedNotifications() {

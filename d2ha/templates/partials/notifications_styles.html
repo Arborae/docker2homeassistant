@@ -82,6 +82,7 @@
   body[data-debug-mode="1"] .debug-indicator { display: inline-flex; }
   .notif-toggle,
   .settings-toggle { gap: 8px; }
+  .compact-toggle { min-width: 36px; }
   .notif-icon,
   .settings-icon { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; line-height: 1; }
   .notif-badge {
@@ -102,6 +103,90 @@
     .header-bar { grid-template-columns: 1fr; text-align: center; gap: 10px; }
     .header-left, .header-right { justify-content: center; }
     .header-right { flex-wrap: wrap; }
+  }
+  @media (max-width: 920px) {
+    .header-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .header-title { font-size: 1rem; letter-spacing: 0.12em; }
+    .header-right { flex-wrap: wrap; justify-content: flex-end; }
+    .header-clock { padding: 8px 10px; }
+  }
+  @media (max-width: 640px) {
+    header { padding: 12px 14px !important; }
+    .header-shell { padding: 10px 12px !important; }
+    nav { flex-direction: column; align-items: stretch; }
+    .tab { width: 100%; text-align: center; justify-content: center; }
+    .header-right { justify-content: center; }
+  }
+  .compact-mode header { padding: 10px 12px; }
+  .compact-mode .header-shell { padding: 10px 12px; gap: 8px; }
+  .compact-mode nav { gap: 6px; }
+  .compact-mode .tab { padding: 8px 12px; }
+  .compact-mode .header-title { font-size: 1rem; letter-spacing: 0.12em; }
+  .compact-mode .header-clock { padding: 8px 10px; }
+  .compact-mode .settings-toggle,
+  .compact-mode .notif-toggle,
+  .compact-mode .backend-status { min-width: 36px; height: 36px; padding: 6px 8px; }
+  .compact-mode .section-card,
+  .compact-mode .section-summary-bar,
+  .compact-mode .card { border-radius: 14px; }
+  .compact-mode .section-card-header,
+  .compact-mode .section-card-body,
+  .compact-mode .section-summary-bar { padding: 10px 12px; }
+  .compact-mode .section-card-actions { gap: 8px; }
+  .compact-mode .section-card-badge,
+  .compact-mode .btn,
+  .compact-mode .btn-primary-glow { padding: 8px 10px; }
+  .compact-mode .backend-modal { padding: 14px; }
+  .compact-mode .backend-modal-btn { padding: 7px 12px; }
+  .responsive-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .responsive-table th,
+  .responsive-table td { padding: 10px 12px; text-align: left; }
+  .responsive-table th { text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.85rem; }
+  @media (max-width: 900px) {
+    .responsive-table thead { display: none; }
+    .responsive-table,
+    .responsive-table tbody,
+    .responsive-table tr,
+    .responsive-table td { display: block; width: 100%; }
+    .responsive-table tr {
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--panel-2);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .responsive-table td {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 12px;
+    }
+    .responsive-table td:last-child { border-bottom: none; }
+    .responsive-table td::before {
+      content: attr(data-label);
+      font-weight: 700;
+      color: var(--muted);
+      min-width: 40%;
+      flex-shrink: 0;
+    }
+  }
+  @media (max-width: 900px) {
+    .compact-mode .responsive-table tr { margin-bottom: 10px; }
+    .compact-mode .responsive-table td { padding: 8px 10px; }
+  }
+  @media (max-width: 780px) {
+    .section-card-header,
+    .section-card-body,
+    .section-summary-bar,
+    .card { padding: 10px 12px; }
+    .section-card-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .section-card-actions { width: 100%; justify-content: flex-start; }
   }
   body.theme-light .debug-indicator {
     background: #fffaf3;

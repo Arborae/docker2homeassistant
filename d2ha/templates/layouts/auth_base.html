@@ -12,6 +12,17 @@
   data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
   data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}"
 >
+  <script>
+    (() => {
+      try {
+        if (localStorage.getItem('d2haCompactMode') === '1') {
+          document.body.classList.add('compact-mode');
+        }
+      } catch (err) {
+        console.warn('Unable to restore compact mode', err);
+      }
+    })();
+  </script>
   <div class="auth-page">
     <!-- Auth animated tech background (login + wizard) -->
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
@@ -24,6 +35,7 @@
       {% include 'partials/flash_messages.html' %}
 
       <div class="onboarding-toolbar">
+        <button id="compactToggleAuth" class="onboarding-toggle compact-toggle" type="button" aria-pressed="false" aria-label="{{ t('compact_mode.label') }}" title="{{ t('compact_mode.hint') }}">🗜️</button>
         <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false" aria-controls="onboardingMenu" title="{{ t('settings.title') }}">🌐</button>
         <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">
           <h2>{{ t('settings.title') }}</h2>
@@ -75,6 +87,27 @@
         }
       });
     }
+
+    const compactToggleAuth = document.getElementById('compactToggleAuth');
+    const compactStorageKey = 'd2haCompactMode';
+
+    function applyCompactMode(enabled) {
+      const isEnabled = !!enabled;
+      document.body.classList.toggle('compact-mode', isEnabled);
+      compactToggleAuth?.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
+    }
+
+    function initCompactToggle() {
+      applyCompactMode(localStorage.getItem(compactStorageKey) === '1');
+      if (!compactToggleAuth) return;
+      compactToggleAuth.addEventListener('click', () => {
+        const next = !document.body.classList.contains('compact-mode');
+        applyCompactMode(next);
+        localStorage.setItem(compactStorageKey, next ? '1' : '0');
+      });
+    }
+
+    initCompactToggle();
   </script>
   {% block auth_scripts %}{% endblock %}
 </body>
