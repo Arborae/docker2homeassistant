@@ -165,8 +165,8 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.2s ease, visibility 0.2s ease, left 0.2s ease;
-    z-index: 70;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 110;
     backdrop-filter: blur(10px);
   }
   @media (max-width: 920px) {
@@ -214,7 +214,6 @@
       opacity: 1;
       visibility: visible;
       pointer-events: auto;
-      left: var(--mobile-drawer-width);
     }
   }
   .compact-mode header { padding: 10px 12px; }
