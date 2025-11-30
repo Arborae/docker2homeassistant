@@ -325,6 +325,10 @@
     overflow: hidden;
     z-index: 20;
   }
+  .notif-panel,
+  .settings-panel {
+    max-height: calc(100vh - 70px);
+  }
   .notif-panel.open { display: flex; }
   .notif-header {
     display: flex;
@@ -398,6 +402,21 @@
   .settings-row-toggle { align-items: flex-start; gap: 14px; }
   .settings-row-compact { align-items: center; gap: 14px; }
   .settings-row-toggle .switch { margin-top: 4px; }
+
+  @media (max-width: 780px) {
+    .notif-panel,
+    .settings-panel {
+      position: fixed;
+      top: calc(var(--mobile-topbar-height) + 8px);
+      right: 12px;
+      left: 12px;
+      width: auto;
+      max-width: 100%;
+      max-height: calc(100vh - var(--mobile-topbar-height) - 20px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+    .notif-list { max-height: calc(100vh - var(--mobile-topbar-height) - 120px); }
+  }
   .settings-row strong { color: var(--text); }
   .settings-safe { border-top: 1px solid var(--border); padding-top: 8px; }
   .settings-hint { margin: 4px 0 0; color: var(--muted); font-size: 0.85rem; }
