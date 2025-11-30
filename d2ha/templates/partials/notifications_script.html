@@ -64,6 +64,12 @@
     let clockInterval = null;
     let clockPreferences = null;
     const clockStorageKey = 'd2haClockPrefs';
+    const closeAllFlyouts = () => {
+      toggleNotifications(false);
+      toggleSettings(false);
+      toggleBackendPanel(false);
+      closeClockModal();
+    };
     const handleClockOutsideClick = (evt) => {
       if (!clockModalEl?.classList.contains('visible')) return;
       if (clockModalEl.contains(evt.target) || headerClockEl.contains(evt.target)) return;
@@ -371,6 +377,9 @@
 
     function openClockModal() {
       if (!clockModalEl) return;
+      toggleNotifications(false);
+      toggleSettings(false);
+      toggleBackendPanel(false);
       clockModalEl.classList.add('visible');
       clockModalEl.setAttribute('aria-hidden', 'false');
       headerClockEl?.setAttribute('aria-expanded', 'true');
@@ -412,8 +421,8 @@
       });
 
       document.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Escape' && clockModalEl?.classList.contains('visible')) {
-          closeClockModal();
+        if (evt.key === 'Escape') {
+          closeAllFlyouts();
         }
       });
 
@@ -876,46 +885,59 @@
     updateBadge(visible.length);
   }
 
-  function toggleNotifications(open = null) {
-    if (!notifPanelEl || !notifToggleEl) return;
-    const shouldOpen = open === null ? !notifPanelEl.classList.contains('open') : open;
-    notifPanelEl.classList.toggle('open', shouldOpen);
-    notifToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-    if (shouldOpen && settingsPanelEl) {
-      settingsPanelEl.classList.remove('open');
-      settingsToggleEl?.setAttribute('aria-expanded', 'false');
+    function toggleNotifications(open = null) {
+      if (!notifPanelEl || !notifToggleEl) return;
+      const shouldOpen = open === null ? !notifPanelEl.classList.contains('open') : open;
+      notifPanelEl.classList.toggle('open', shouldOpen);
+      notifToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      if (shouldOpen && settingsPanelEl) {
+        settingsPanelEl.classList.remove('open');
+        settingsToggleEl?.setAttribute('aria-expanded', 'false');
+      }
+      if (shouldOpen && backendPanelEl) {
+        backendPanelEl.classList.remove('open');
+        backendStatusEl?.setAttribute('aria-expanded', 'false');
+      }
+      if (shouldOpen) {
+        closeClockModal();
+      }
     }
-  }
 
-  function toggleSettings(open = null) {
-    if (!settingsPanelEl || !settingsToggleEl) return;
-    const shouldOpen = open === null ? !settingsPanelEl.classList.contains('open') : open;
-    settingsPanelEl.classList.toggle('open', shouldOpen);
-    settingsToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-    if (shouldOpen && notifPanelEl) {
-      notifPanelEl.classList.remove('open');
-      notifToggleEl?.setAttribute('aria-expanded', 'false');
+    function toggleSettings(open = null) {
+      if (!settingsPanelEl || !settingsToggleEl) return;
+      const shouldOpen = open === null ? !settingsPanelEl.classList.contains('open') : open;
+      settingsPanelEl.classList.toggle('open', shouldOpen);
+      settingsToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      if (shouldOpen && notifPanelEl) {
+        notifPanelEl.classList.remove('open');
+        notifToggleEl?.setAttribute('aria-expanded', 'false');
+      }
+      if (shouldOpen && backendPanelEl) {
+        backendPanelEl.classList.remove('open');
+        backendStatusEl?.setAttribute('aria-expanded', 'false');
+      }
+      if (shouldOpen) {
+        closeClockModal();
+      }
     }
-    if (shouldOpen && backendPanelEl) {
-      backendPanelEl.classList.remove('open');
-      backendStatusEl?.setAttribute('aria-expanded', 'false');
-    }
-  }
 
-  function toggleBackendPanel(open = null) {
-    if (!backendPanelEl || !backendStatusEl) return;
-    const shouldOpen = open === null ? !backendPanelEl.classList.contains('open') : open;
-    backendPanelEl.classList.toggle('open', shouldOpen);
-    backendStatusEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-    if (shouldOpen && notifPanelEl) {
-      notifPanelEl.classList.remove('open');
-      notifToggleEl?.setAttribute('aria-expanded', 'false');
+    function toggleBackendPanel(open = null) {
+      if (!backendPanelEl || !backendStatusEl) return;
+      const shouldOpen = open === null ? !backendPanelEl.classList.contains('open') : open;
+      backendPanelEl.classList.toggle('open', shouldOpen);
+      backendStatusEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+      if (shouldOpen && notifPanelEl) {
+        notifPanelEl.classList.remove('open');
+        notifToggleEl?.setAttribute('aria-expanded', 'false');
+      }
+      if (shouldOpen && settingsPanelEl) {
+        settingsPanelEl.classList.remove('open');
+        settingsToggleEl?.setAttribute('aria-expanded', 'false');
+      }
+      if (shouldOpen) {
+        closeClockModal();
+      }
     }
-    if (shouldOpen && settingsPanelEl) {
-      settingsPanelEl.classList.remove('open');
-      settingsToggleEl?.setAttribute('aria-expanded', 'false');
-    }
-  }
 
   function setupNotificationToggle() {
     if (!notifToggleEl) return;
@@ -933,13 +955,13 @@
         settingsPanelEl?.contains(target) ||
         settingsToggleEl?.contains(target) ||
         backendPanelEl?.contains(target) ||
-        backendStatusEl?.contains(target)
+        backendStatusEl?.contains(target) ||
+        clockModalEl?.contains(target) ||
+        headerClockEl?.contains(target)
       ) {
         return;
       }
-      toggleNotifications(false);
-      toggleSettings(false);
-      toggleBackendPanel(false);
+      closeAllFlyouts();
     });
   }
 

@@ -11,6 +11,9 @@
     justify-content: space-between;
     min-height: var(--mobile-topbar-height);
     flex-wrap: nowrap;
+    position: relative;
+    z-index: 180;
+    isolation: isolate;
   }
   .header-section { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .header-left { justify-content: flex-start; flex: 1 1 auto; }
@@ -294,7 +297,8 @@
     border-radius: 14px;
     box-shadow: var(--shadow);
     display: none;
-    z-index: 30;
+    z-index: 260;
+    pointer-events: auto;
   }
   .clock-settings-modal.visible { display: block; }
   .clock-settings-dialog {
@@ -440,8 +444,9 @@
     display: none;
     flex-direction: column;
     overflow: hidden;
-    z-index: 20;
+    z-index: 260;
     max-height: calc(100vh - 70px);
+    pointer-events: auto;
   }
   .notif-panel.open,
   .settings-panel.open,
