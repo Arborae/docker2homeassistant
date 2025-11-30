@@ -11,7 +11,76 @@
 </script>
 <div class="header-bar">
   <div class="header-section header-left">
-    <div class="header-clock" id="header-clock" aria-label="Orologio"></div>
+    <div class="header-clock" id="header-clock" aria-label="{{ t('clock.label') }}" role="button" tabindex="0" aria-expanded="false">
+      <div class="header-clock-time" id="header-clock-time"></div>
+      <div class="header-clock-date" id="header-clock-date"></div>
+
+      <div class="clock-settings-modal" id="clock-settings-modal" aria-hidden="true">
+        <div class="clock-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="clock-settings-title">
+          <div class="clock-settings-header">
+            <div class="clock-settings-heading">
+              <p class="clock-settings-kicker">{{ t('clock.kicker') }}</p>
+              <h3 id="clock-settings-title">{{ t('clock.settings_title') }}</h3>
+              <p class="clock-settings-description">{{ t('clock.description') }}</p>
+            </div>
+            <p class="clock-settings-status" id="clock-settings-status">{{ t('clock.persistence') }}</p>
+          </div>
+
+          <div class="clock-settings-body">
+            <div class="clock-settings-card">
+              <div class="settings-row settings-row-toggle clock-settings-row">
+                <div>
+                  <div class="clock-settings-label">{{ t('clock.timezone.auto') }}</div>
+                  <p class="clock-settings-hint">{{ t('clock.timezone.auto_hint') }}</p>
+                  <p class="clock-settings-hint" id="clock-browser-tz"></p>
+                </div>
+                <div class="switch">
+                  <input type="checkbox" id="clock-timezone-auto" />
+                  <span class="slider"></span>
+                </div>
+              </div>
+
+              <div class="clock-settings-timezone" id="clock-timezone-selects">
+                <div class="clock-settings-input-group">
+                  <label for="clock-region-select">{{ t('clock.timezone.region') }}</label>
+                  <select id="clock-region-select"></select>
+                </div>
+                <div class="clock-settings-input-group">
+                  <label for="clock-zone-select">{{ t('clock.timezone.zone') }}</label>
+                  <select id="clock-zone-select"></select>
+                </div>
+              </div>
+            </div>
+
+            <div class="clock-settings-card">
+              <div class="settings-row settings-row-toggle clock-settings-row">
+                <div>
+                  <div class="clock-settings-label">{{ t('clock.seconds.label') }}</div>
+                  <p class="clock-settings-hint">{{ t('clock.seconds.hint') }}</p>
+                </div>
+                <div class="switch">
+                  <input type="checkbox" id="clock-seconds-toggle" />
+                  <span class="slider"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="clock-settings-card">
+              <div class="settings-row settings-row-toggle clock-settings-row">
+                <div>
+                  <div class="clock-settings-label">{{ t('clock.date.label') }}</div>
+                  <p class="clock-settings-hint">{{ t('clock.date.hint') }}</p>
+                </div>
+                <div class="switch">
+                  <input type="checkbox" id="clock-date-toggle" />
+                  <span class="slider"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="header-section header-center">

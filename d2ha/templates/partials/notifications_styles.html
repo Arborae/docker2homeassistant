@@ -56,6 +56,7 @@
   .backend-status-icon circle { fill: currentColor; }
   @keyframes backend-status-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   .header-clock {
+    position: relative;
     font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     padding: 10px 12px;
     border-radius: 12px;
@@ -64,8 +65,29 @@
     color: var(--text);
     letter-spacing: 0.08em;
     box-shadow: var(--shadow);
-    min-width: 120px;
+    min-width: 140px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  .header-clock:hover,
+  .header-clock:focus-visible {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    transform: translateY(-1px);
+    outline: none;
+  }
+  .header-clock-time {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .header-clock-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.1;
   }
   .notif-area,
   .settings-area { position: relative; display: flex; align-items: center; }
@@ -237,6 +259,116 @@
       min-width: 40%;
       flex-shrink: 0;
     }
+  }
+
+  .clock-settings-modal {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 10px);
+    width: min(480px, 92vw);
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    display: none;
+    z-index: 30;
+  }
+  .clock-settings-modal.visible { display: block; }
+  .clock-settings-dialog {
+    width: 100%;
+    color: var(--text);
+    max-height: calc(100vh - 120px);
+    overflow: hidden;
+    border-radius: inherit;
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+  }
+  .clock-settings-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .clock-settings-heading h3 { margin: 2px 0 0; }
+  .clock-settings-kicker {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .clock-settings-description {
+    margin: 6px 0 0;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .clock-settings-body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  .clock-settings-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--panel-1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .clock-settings-row { align-items: flex-start; }
+  .clock-settings-label { font-weight: 700; }
+  .clock-settings-hint { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+  .clock-settings-status {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+    text-align: right;
+    min-width: 180px;
+  }
+  .clock-settings-timezone {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+  .clock-settings-input-group { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 210px; }
+  .clock-settings-input-group label { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+  .clock-settings-input-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: var(--shadow-subtle, 0 1px 2px rgba(0,0,0,0.15));
+  }
+  .clock-settings-timezone.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  @media (max-width: 640px) {
+    .clock-settings-dialog { max-height: calc(100vh - 140px); }
+    .clock-settings-status { min-width: 0; }
+  }
+  @media (max-width: 780px) {
+    .clock-settings-modal {
+      position: fixed;
+      top: calc(var(--mobile-topbar-height) + 8px);
+      left: 12px;
+      right: 12px;
+      width: auto;
+      max-height: calc(100vh - var(--mobile-topbar-height) - 20px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+    .clock-settings-dialog { max-height: none; }
   }
   @media (max-width: 900px) {
     .compact-mode .responsive-table tr { margin-bottom: 10px; }
