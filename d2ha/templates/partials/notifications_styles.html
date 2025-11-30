@@ -268,8 +268,9 @@
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 18px;
+    padding: 28px 18px;
     z-index: 120;
+    overflow-y: auto;
   }
   .clock-settings-modal.visible { display: flex; }
   .clock-settings-dialog {
@@ -280,6 +281,8 @@
     box-shadow: var(--shadow-strong, 0 20px 60px rgba(0, 0, 0, 0.38));
     padding: 20px;
     color: var(--text);
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
   }
   .clock-settings-header {
     display: flex;
