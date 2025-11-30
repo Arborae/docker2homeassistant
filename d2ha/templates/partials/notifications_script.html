@@ -7,7 +7,7 @@
     const notifToggleEl = document.getElementById('notifToggle');
     const settingsPanelEl = document.getElementById('settingsPanel');
     const settingsToggleEl = document.getElementById('settingsToggle');
-    const compactToggleEl = document.getElementById('compactToggle');
+    const compactToggleEl = document.getElementById('compact-mode-toggle');
     const navEl = document.getElementById('primaryNav');
     const mobileDrawerTab = document.getElementById('mobileDrawerTab');
     const headerClockEl = document.getElementById('header-clock');
@@ -73,8 +73,7 @@
       const isEnabled = !!enabled;
       document.body.classList.toggle('compact-mode', isEnabled);
       if (compactToggleEl) {
-        compactToggleEl.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
-        compactToggleEl.classList.toggle('active', isEnabled);
+        compactToggleEl.checked = isEnabled;
       }
       document.dispatchEvent(new CustomEvent('compact-mode-changed', { detail: { enabled: isEnabled } }));
     }
@@ -145,8 +144,8 @@
       applyCompactMode(initialCompact);
 
       if (compactToggleEl) {
-        compactToggleEl.addEventListener('click', () => {
-          const next = !document.body.classList.contains('compact-mode');
+        compactToggleEl.addEventListener('change', (evt) => {
+          const next = !!evt.target.checked;
           applyCompactMode(next);
           saveCompactPreference(next);
         });

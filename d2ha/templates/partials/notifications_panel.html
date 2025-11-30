@@ -91,15 +91,15 @@
               <span class="slider"></span>
             </div>
           </div>
-          <div class="settings-row settings-row-compact">
+          <div class="settings-row settings-row-toggle">
             <div>
               <span>{{ t('compact_mode.label') }}</span>
-              <p class="settings-hint">Riduce spazi e margini per gli schermi piccoli</p>
+              <p class="settings-hint">{{ t('compact_mode.hint') }}</p>
             </div>
-            <button class="compact-toggle-inline" id="compactToggle" type="button" aria-pressed="false" title="{{ t('compact_mode.hint') }}" aria-label="{{ t('compact_mode.label') }}">
-              <span aria-hidden="true">🗜️</span>
-              <span class="compact-toggle-text">{{ t('compact_mode.label') }}</span>
-            </button>
+            <div class="switch" title="{{ t('compact_mode.hint') }}">
+              <input type="checkbox" id="compact-mode-toggle" />
+              <span class="slider"></span>
+            </div>
           </div>
           <div class="settings-row settings-row-toggle">
             <div>
