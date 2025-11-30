@@ -22,10 +22,9 @@
     const clockDateToggleEl = document.getElementById('clock-date-toggle');
     const clockBrowserHintEl = document.getElementById('clock-browser-tz');
     const backendStatusEl = document.getElementById('backend-status-indicator');
-    const backendStatusModalEl = document.getElementById('backend-status-modal');
+    const backendPanelEl = document.getElementById('backendPanel');
     const backendStatusLastUpdateEl = document.getElementById('backend-status-last-update');
     const backendRefreshBtn = document.getElementById('backend-status-refresh-btn');
-    const backendCloseBtn = document.getElementById('backend-status-close-btn');
     const backendText = {
       lastUpdate: "{{ t('backend_status.last_update') }}",
       noRecent: "{{ t('backend_status.no_recent_update') }}",
@@ -607,17 +606,13 @@
       }
     }
 
-    function updateBackendModalText() {
+    function updateBackendPanelText() {
       if (!backendStatusLastUpdateEl) return;
       if (lastSuccessfulPing) {
         backendStatusLastUpdateEl.textContent = backendText.lastUpdate.replace('{timestamp}', formatClock(new Date(lastSuccessfulPing)));
       } else {
         backendStatusLastUpdateEl.textContent = backendText.noRecent;
       }
-    }
-
-    function closeBackendModal() {
-      backendStatusModalEl?.classList.remove('visible');
     }
 
     async function pingBackend() {
@@ -632,7 +627,7 @@
         lastSuccessfulPing = Date.now();
         consecutiveErrors = 0;
         updateBackendStatus(durationMs);
-        updateBackendModalText();
+        updateBackendPanelText();
       } catch (err) {
         console.error('Backend healthcheck failed', err);
         consecutiveErrors += 1;
@@ -642,22 +637,7 @@
       }
     }
 
-    function setupBackendStatusModal() {
-      if (backendStatusEl) {
-        backendStatusEl.addEventListener('click', () => {
-          updateBackendModalText();
-          backendStatusModalEl?.classList.add('visible');
-        });
-      }
-
-      backendCloseBtn?.addEventListener('click', closeBackendModal);
-
-      backendStatusModalEl?.addEventListener('click', (evt) => {
-        if (evt.target === backendStatusModalEl) {
-          closeBackendModal();
-        }
-      });
-
+    function setupBackendStatusPanel() {
       backendRefreshBtn?.addEventListener('click', async () => {
         await pingBackend();
         try {
@@ -916,6 +896,25 @@
       notifPanelEl.classList.remove('open');
       notifToggleEl?.setAttribute('aria-expanded', 'false');
     }
+    if (shouldOpen && backendPanelEl) {
+      backendPanelEl.classList.remove('open');
+      backendStatusEl?.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  function toggleBackendPanel(open = null) {
+    if (!backendPanelEl || !backendStatusEl) return;
+    const shouldOpen = open === null ? !backendPanelEl.classList.contains('open') : open;
+    backendPanelEl.classList.toggle('open', shouldOpen);
+    backendStatusEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    if (shouldOpen && notifPanelEl) {
+      notifPanelEl.classList.remove('open');
+      notifToggleEl?.setAttribute('aria-expanded', 'false');
+    }
+    if (shouldOpen && settingsPanelEl) {
+      settingsPanelEl.classList.remove('open');
+      settingsToggleEl?.setAttribute('aria-expanded', 'false');
+    }
   }
 
   function setupNotificationToggle() {
@@ -932,12 +931,15 @@
         notifPanelEl.contains(target) ||
         notifToggleEl.contains(target) ||
         settingsPanelEl?.contains(target) ||
-        settingsToggleEl?.contains(target)
+        settingsToggleEl?.contains(target) ||
+        backendPanelEl?.contains(target) ||
+        backendStatusEl?.contains(target)
       ) {
         return;
       }
       toggleNotifications(false);
       toggleSettings(false);
+      toggleBackendPanel(false);
     });
   }
 
@@ -946,6 +948,15 @@
     settingsToggleEl.addEventListener('click', (ev) => {
       ev.stopPropagation();
       toggleSettings();
+    });
+  }
+
+  function setupBackendToggle() {
+    if (!backendStatusEl) return;
+    backendStatusEl.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      updateBackendPanelText();
+      toggleBackendPanel();
     });
   }
 
@@ -1013,9 +1024,10 @@
   renderNotificationList(currentNotifications);
   setupNotificationToggle();
   setupSettingsToggle();
+  setupBackendToggle();
   setupSafeModeToggle();
   setupSafeConfirmations();
-  setupBackendStatusModal();
+  setupBackendStatusPanel();
   startBackendMonitor();
   refreshNotifications();
   setInterval(refreshNotifications, 60000);
