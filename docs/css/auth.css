@@ -46,13 +46,19 @@ body.theme-dark {
   top: 1.8rem;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 2.4rem;
-  letter-spacing: 0.22em;
+  font-size: clamp(1.2rem, 5vw, 2.4rem);
+  letter-spacing: clamp(0.08em, 0.35vw, 0.22em);
   text-transform: uppercase;
   font-weight: 700;
   color: rgba(241, 245, 249, 0.35);
   pointer-events: none;
   z-index: 2;
+  max-width: min(94vw, 1200px);
+  padding-inline: clamp(0.75rem, 2vw, 1.4rem);
+  text-align: center;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-wrap: nowrap;
 }
 
 .auth-logo {
@@ -96,8 +102,8 @@ body.theme-dark {
 
 @media (max-width: 640px) {
   .auth-title {
-    font-size: 1.7rem;
-    letter-spacing: 0.18em;
+    font-size: 1.6rem;
+    letter-spacing: 0.14em;
   }
 
   .auth-logo {
