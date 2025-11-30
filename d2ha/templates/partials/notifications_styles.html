@@ -64,8 +64,29 @@
     color: var(--text);
     letter-spacing: 0.08em;
     box-shadow: var(--shadow);
-    min-width: 120px;
+    min-width: 140px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+  }
+  .header-clock:hover,
+  .header-clock:focus-visible {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    transform: translateY(-1px);
+    outline: none;
+  }
+  .header-clock-time {
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  .header-clock-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.1;
   }
   .notif-area,
   .settings-area { position: relative; display: flex; align-items: center; }
@@ -237,6 +258,115 @@
       min-width: 40%;
       flex-shrink: 0;
     }
+  }
+
+  .clock-settings-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 18px;
+    z-index: 120;
+    overflow-y: auto;
+  }
+  .clock-settings-modal.visible { display: flex; }
+  .clock-settings-dialog {
+    width: min(720px, 100%);
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow-strong, 0 20px 60px rgba(0, 0, 0, 0.38));
+    padding: 20px;
+    color: var(--text);
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  .clock-settings-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .clock-settings-kicker {
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .clock-settings-description {
+    margin: 6px 0 0;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .clock-settings-close {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 10px;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .clock-settings-close:hover,
+  .clock-settings-close:focus-visible { background: var(--control-surface); color: var(--accent); outline: none; }
+  .clock-settings-section {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    background: var(--control-surface);
+    margin-top: 12px;
+  }
+  .clock-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  .clock-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .clock-settings-row-card {
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--panel-1);
+  }
+  .clock-settings-label { font-weight: 700; }
+  .clock-settings-hint { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
+  .clock-settings-input-group { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .clock-settings-input-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--panel-1);
+    color: var(--text);
+  }
+  .clock-settings-timezone { gap: 12px; flex-wrap: wrap; }
+  .clock-settings-timezone .clock-settings-input-group { min-width: 220px; }
+  .clock-settings-footer {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .clock-settings-actions { display: flex; gap: 10px; justify-content: flex-end; flex: 1; }
+  .clock-settings-status { margin: 0; color: var(--muted); font-size: 0.92rem; }
+  @media (max-width: 640px) {
+    .clock-settings-dialog { padding: 14px; }
+    .clock-settings-row { align-items: flex-start; }
+    .clock-settings-actions { width: 100%; justify-content: flex-start; }
   }
   @media (max-width: 900px) {
     .compact-mode .responsive-table tr { margin-bottom: 10px; }
