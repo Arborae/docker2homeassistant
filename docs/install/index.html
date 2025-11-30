@@ -16,16 +16,22 @@
       --tech-glow: 0 18px 48px rgba(56, 189, 248, 0.35);
     }
 
+    body {
+      overflow-x: hidden;
+    }
+
     .auth-overlay {
-      width: min(1180px, 100%);
+      width: 100%;
+      max-width: 1180px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding-inline: clamp(1rem, 3vw, 2rem);
     }
 
     .landing-card {
-      padding: 2.6rem 2.6rem 2.4rem;
+      padding: clamp(1.8rem, 4vw, 2.6rem);
       width: 100%;
       max-width: 1100px;
       position: relative;
@@ -92,7 +98,9 @@
       line-height: 1;
       width: min(100%, 900px);
       text-align: center;
-      white-space: nowrap;
+      white-space: normal;
+      word-break: break-word;
+      text-wrap: balance;
     }
 
     .landing-subtitle {
@@ -110,6 +118,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.8rem;
+      width: 100%;
     }
 
     .landing-btn {
@@ -190,6 +199,7 @@
       grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
       gap: 1.8rem;
       align-items: flex-start;
+      width: 100%;
     }
 
     .install-column {
@@ -399,10 +409,10 @@
       top: 36%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: clamp(3.2rem, 7vw, 4rem);
+      font-size: clamp(2.2rem, 7vw, 3.6rem);
       opacity: 1;
       filter: drop-shadow(0 22px 45px rgba(56, 189, 248, 0.3));
-      letter-spacing: 0.08em;
+      letter-spacing: clamp(0.06em, 0.3vw, 0.12em);
     }
 
     body.landing-intro .auth-logo {
@@ -428,9 +438,9 @@
       top: 1.6rem;
       left: 50%;
       transform: translateX(-50%);
-      font-size: clamp(1.85rem, 3vw, 2.35rem);
+      font-size: clamp(1.2rem, 3vw, 1.9rem);
       opacity: 0.96;
-      letter-spacing: 0.18em;
+      letter-spacing: clamp(0.06em, 0.3vw, 0.16em);
       text-shadow: 0 8px 26px rgba(56, 189, 248, 0.35);
       max-width: min(96vw, 1100px);
       text-align: center;
@@ -451,6 +461,22 @@
     body.landing-ready .landing-card::after {
       opacity: 0.12;
       transform: translateY(0);
+    }
+
+    @media (max-width: 760px) {
+      .landing-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .landing-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .install-steps {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 900px) {
@@ -484,6 +510,11 @@
       }
 
       .landing-actions {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .install-footer {
         flex-direction: column;
         align-items: flex-start;
       }
