@@ -70,6 +70,11 @@
     let clockInterval = null;
     let clockPreferences = null;
     const clockStorageKey = 'd2haClockPrefs';
+    const handleClockOutsideClick = (evt) => {
+      if (!clockModalEl?.classList.contains('visible')) return;
+      if (clockModalEl.contains(evt.target) || headerClockEl.contains(evt.target)) return;
+      closeClockModal();
+    };
     let lastSuccessfulPing = null;
     let consecutiveErrors = 0;
     let backendPingTimer = null;
@@ -379,12 +384,16 @@
       if (!clockModalEl) return;
       clockModalEl.classList.add('visible');
       clockModalEl.setAttribute('aria-hidden', 'false');
+      headerClockEl?.setAttribute('aria-expanded', 'true');
+      document.addEventListener('click', handleClockOutsideClick, true);
     }
 
     function closeClockModal() {
       if (!clockModalEl) return;
       clockModalEl.classList.remove('visible');
       clockModalEl.setAttribute('aria-hidden', 'true');
+      headerClockEl?.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('click', handleClockOutsideClick, true);
     }
 
     function initClockSettings() {
@@ -394,7 +403,14 @@
       updateClockStatus();
       startClock();
 
-      headerClockEl.addEventListener('click', () => openClockModal());
+      headerClockEl.addEventListener('click', (evt) => {
+        evt.stopPropagation();
+        if (clockModalEl?.classList.contains('visible')) {
+          closeClockModal();
+        } else {
+          openClockModal();
+        }
+      });
       headerClockEl.addEventListener('keydown', (evt) => {
         if (evt.key === 'Enter' || evt.key === ' ') {
           evt.preventDefault();
@@ -402,11 +418,6 @@
         }
       });
 
-      clockModalEl?.addEventListener('click', (evt) => {
-        if (evt.target === clockModalEl) {
-          closeClockModal();
-        }
-      });
       [clockModalCloseBtn, clockModalCloseActionBtn].forEach((btn) => {
         btn?.addEventListener('click', closeClockModal);
       });

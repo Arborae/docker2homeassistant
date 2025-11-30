@@ -56,6 +56,7 @@
   .backend-status-icon circle { fill: currentColor; }
   @keyframes backend-status-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   .header-clock {
+    position: relative;
     font-family: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     padding: 10px 12px;
     border-radius: 12px;
@@ -261,28 +262,24 @@
   }
 
   .clock-settings-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(4px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 28px 18px;
-    z-index: 120;
-    overflow-y: auto;
-  }
-  .clock-settings-modal.visible { display: flex; }
-  .clock-settings-dialog {
-    width: min(720px, 100%);
+    position: absolute;
+    left: 0;
+    top: calc(100% + 12px);
+    width: min(720px, 92vw);
     background: var(--panel-2);
     border: 1px solid var(--border);
-    border-radius: 18px;
-    box-shadow: var(--shadow-strong, 0 20px 60px rgba(0, 0, 0, 0.38));
-    padding: 20px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    display: none;
+    z-index: 30;
+  }
+  .clock-settings-modal.visible { display: block; }
+  .clock-settings-dialog {
+    width: 100%;
     color: var(--text);
-    max-height: calc(100vh - 60px);
+    max-height: calc(100vh - 120px);
     overflow-y: auto;
+    padding: 18px;
   }
   .clock-settings-header {
     display: flex;
@@ -367,6 +364,16 @@
     .clock-settings-dialog { padding: 14px; }
     .clock-settings-row { align-items: flex-start; }
     .clock-settings-actions { width: 100%; justify-content: flex-start; }
+  }
+  @media (max-width: 720px) {
+    .clock-settings-modal {
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100vw - 24px);
+    }
+    .clock-settings-dialog {
+      max-height: calc(100vh - 160px);
+    }
   }
   @media (max-width: 900px) {
     .compact-mode .responsive-table tr { margin-bottom: 10px; }
