@@ -31,9 +31,6 @@
       <span class="debug-indicator-icon" aria-hidden="true">🐞</span>
       <span class="debug-indicator-text">{{ t('debug_mode.label') }}</span>
     </div>
-    <button class="settings-toggle compact-toggle" id="compactToggle" type="button" aria-pressed="false" title="{{ t('compact_mode.hint') }}" aria-label="{{ t('compact_mode.label') }}">
-      <span class="settings-icon" aria-hidden="true">🗜️</span>
-    </button>
     <div class="notif-area">
       <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
         <span class="notif-icon" aria-hidden="true">🔔</span>
@@ -94,6 +91,16 @@
               <span class="slider"></span>
             </div>
           </div>
+          <div class="settings-row settings-row-compact">
+            <div>
+              <span>{{ t('compact_mode.label') }}</span>
+              <p class="settings-hint">Riduce spazi e margini per gli schermi piccoli</p>
+            </div>
+            <button class="compact-toggle-inline" id="compactToggle" type="button" aria-pressed="false" title="{{ t('compact_mode.hint') }}" aria-label="{{ t('compact_mode.label') }}">
+              <span aria-hidden="true">🗜️</span>
+              <span class="compact-toggle-text">{{ t('compact_mode.label') }}</span>
+            </button>
+          </div>
           <div class="settings-row settings-row-toggle">
             <div>
               <span>{{ t('debug_mode.label') }}</span>
@@ -153,6 +160,10 @@
     </div>
   </div>
 </div>
+
+<button class="mobile-drawer-tab" id="mobileDrawerTab" type="button" aria-expanded="false" aria-controls="primaryNav" aria-label="Apri o chiudi la barra laterale">
+  <span class="mobile-drawer-tab-icon" aria-hidden="true">☰</span>
+</button>
 
 <div id="backend-status-modal" class="backend-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="backend-status-title">
   <div class="backend-modal" role="document">
