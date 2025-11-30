@@ -227,6 +227,74 @@
   </div>
 </div>
 
+<div class="clock-settings-modal" id="clock-settings-modal" aria-hidden="true">
+  <div class="clock-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="clock-settings-title">
+    <div class="clock-settings-header">
+      <div>
+        <p class="clock-settings-kicker">{{ t('clock.kicker') }}</p>
+        <h3 id="clock-settings-title">{{ t('clock.settings_title') }}</h3>
+        <p class="clock-settings-description">{{ t('clock.description') }}</p>
+      </div>
+      <button type="button" class="clock-settings-close" id="clock-settings-close" aria-label="{{ t('settings.close') }}">×</button>
+    </div>
+
+    <div class="clock-settings-section">
+      <div class="clock-settings-row">
+        <div>
+          <div class="clock-settings-label">{{ t('clock.timezone.auto') }}</div>
+          <p class="clock-settings-hint">{{ t('clock.timezone.auto_hint') }}</p>
+          <p class="clock-settings-hint" id="clock-browser-tz"></p>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="clock-timezone-auto" />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="clock-settings-row clock-settings-timezone" id="clock-timezone-selects">
+        <div class="clock-settings-input-group">
+          <label for="clock-region-select">{{ t('clock.timezone.region') }}</label>
+          <select id="clock-region-select"></select>
+        </div>
+        <div class="clock-settings-input-group">
+          <label for="clock-zone-select">{{ t('clock.timezone.zone') }}</label>
+          <select id="clock-zone-select"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="clock-settings-section clock-settings-grid">
+      <div class="clock-settings-row clock-settings-row-card">
+        <div>
+          <div class="clock-settings-label">{{ t('clock.seconds.label') }}</div>
+          <p class="clock-settings-hint">{{ t('clock.seconds.hint') }}</p>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="clock-seconds-toggle" />
+          <span class="slider"></span>
+        </div>
+      </div>
+      <div class="clock-settings-row clock-settings-row-card">
+        <div>
+          <div class="clock-settings-label">{{ t('clock.date.label') }}</div>
+          <p class="clock-settings-hint">{{ t('clock.date.hint') }}</p>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="clock-date-toggle" />
+          <span class="slider"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="clock-settings-footer">
+      <p class="clock-settings-status" id="clock-settings-status">{{ t('clock.persistence') }}</p>
+      <div class="clock-settings-actions">
+        <button type="button" class="btn" id="clock-settings-close-btn">{{ t('settings.close') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <button class="mobile-drawer-tab" id="mobileDrawerTab" type="button" aria-expanded="false" aria-controls="primaryNav" aria-label="Apri o chiudi la barra laterale">
   <span class="mobile-drawer-tab-icon" aria-hidden="true">☰</span>
 </button>
