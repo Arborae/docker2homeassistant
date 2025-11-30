@@ -1158,8 +1158,13 @@ def events_view():
 @app.route("/updates", methods=["GET"])
 @onboarding_required
 def updates():
-    containers_info = docker_service.collect_containers_info_for_updates()
-    mqtt_manager.publish_autodiscovery_and_state(containers_info)
+    try:
+        containers_info = docker_service.collect_containers_info_for_updates()
+        mqtt_manager.publish_autodiscovery_and_state(containers_info)
+    except Exception:
+        app.logger.exception("Failed to load updates page")
+        flash("Impossibile caricare gli aggiornamenti. Riprova più tardi.", "error")
+        containers_info = []
     stack_map = {}
     for c in containers_info:
         stack_name = c.get("stack", "_no_stack")
