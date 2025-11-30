@@ -158,17 +158,17 @@
   }
   .mobile-drawer-tab-icon { font-size: 1.1rem; line-height: 1; }
   .mobile-drawer-tab:hover { background: var(--control-surface); border-color: var(--accent-border); color: var(--accent); }
-  .mobile-nav-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.35);
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 80;
-    backdrop-filter: blur(10px);
-  }
+    .mobile-nav-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.35);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.2s ease, visibility 0.2s ease;
+      z-index: 70;
+      backdrop-filter: blur(10px);
+    }
   @media (max-width: 920px) {
     .header-bar { gap: 10px; }
     .header-title { font-size: 1rem; letter-spacing: 0.12em; }
@@ -181,12 +181,12 @@
     .header-title { opacity: 0.82; letter-spacing: 0.14em; }
     .header-right { gap: 8px; }
     .mobile-drawer-tab { display: inline-flex; }
-    nav#primaryNav {
-      position: fixed;
-      top: 12px;
-      left: 0;
-      height: auto;
-      max-height: calc(100vh - 24px);
+      nav#primaryNav {
+        position: fixed;
+        top: 12px;
+        left: 0;
+        height: auto;
+        max-height: calc(100vh - 24px);
       width: var(--mobile-drawer-width);
       background: var(--panel-2);
       border-right: 1px solid var(--border);
@@ -194,15 +194,15 @@
       box-shadow: var(--shadow);
       flex-direction: column;
       align-items: stretch;
-      padding: 12px;
-      gap: 10px;
-      transform: translateX(-105%);
-      transition: transform 0.2s ease, visibility 0.2s ease;
-      z-index: 90;
-      overflow-y: auto;
-      background-blend-mode: lighten;
-      backdrop-filter: blur(12px);
-    }
+        padding: 12px;
+        gap: 10px;
+        transform: translateX(-105%);
+        transition: transform 0.2s ease, visibility 0.2s ease;
+        z-index: 120;
+        overflow-y: auto;
+        background-blend-mode: lighten;
+        backdrop-filter: blur(12px);
+      }
     nav#primaryNav .tab {
       width: 100%;
       text-align: left;
