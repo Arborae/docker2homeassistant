@@ -158,17 +158,17 @@
   }
   .mobile-drawer-tab-icon { font-size: 1.1rem; line-height: 1; }
   .mobile-drawer-tab:hover { background: var(--control-surface); border-color: var(--accent-border); color: var(--accent); }
-    .mobile-nav-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.35);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 0.2s ease, visibility 0.2s ease;
-      z-index: 70;
-      backdrop-filter: blur(10px);
-    }
+  .mobile-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease, left 0.2s ease;
+    z-index: 70;
+    backdrop-filter: blur(10px);
+  }
   @media (max-width: 920px) {
     .header-bar { gap: 10px; }
     .header-title { font-size: 1rem; letter-spacing: 0.12em; }
@@ -210,7 +210,12 @@
     }
     body.mobile-drawer-open nav#primaryNav { transform: translateX(0); }
     body.mobile-drawer-open .mobile-drawer-tab { left: 0; opacity: 0; pointer-events: none; }
-    body.mobile-drawer-open .mobile-nav-backdrop { opacity: 1; visibility: visible; pointer-events: auto; }
+    body.mobile-drawer-open .mobile-nav-backdrop {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      left: var(--mobile-drawer-width);
+    }
   }
   .compact-mode header { padding: 10px 12px; }
   .compact-mode .header-shell { padding: 10px 12px; gap: 8px; }
