@@ -131,10 +131,11 @@
       border: 1px solid rgba(79, 195, 247, 0.45);
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 26px rgba(49, 196, 255, 0.28);
       backdrop-filter: blur(12px) saturate(110%);
-      white-space: nowrap;
       letter-spacing: 0.26em;
       max-width: min(96vw, 1080px);
       text-align: center;
+      line-height: 1.1;
+      word-break: break-word;
     }
 
     .landing-btn {
@@ -481,7 +482,7 @@
       transform: translateX(-50%);
       font-size: clamp(1.85rem, 3vw, 2.35rem);
       opacity: 0.96;
-      letter-spacing: 0.18em;
+      letter-spacing: clamp(0.12em, 0.5vw, 0.18em);
       text-shadow: 0 8px 26px rgba(56, 189, 248, 0.35);
       max-width: min(96vw, 1100px);
       text-align: center;

@@ -98,7 +98,9 @@
       line-height: 1;
       width: min(100%, 900px);
       text-align: center;
-      white-space: nowrap;
+      white-space: normal;
+      word-break: break-word;
+      text-wrap: balance;
     }
 
     .landing-subtitle {
@@ -438,7 +440,7 @@
       transform: translateX(-50%);
       font-size: clamp(1.85rem, 3vw, 2.35rem);
       opacity: 0.96;
-      letter-spacing: 0.18em;
+      letter-spacing: clamp(0.12em, 0.5vw, 0.18em);
       text-shadow: 0 8px 26px rgba(56, 189, 248, 0.35);
       max-width: min(96vw, 1100px);
       text-align: center;
