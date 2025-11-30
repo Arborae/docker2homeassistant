@@ -21,7 +21,6 @@
     const clockSecondsToggleEl = document.getElementById('clock-seconds-toggle');
     const clockDateToggleEl = document.getElementById('clock-date-toggle');
     const clockBrowserHintEl = document.getElementById('clock-browser-tz');
-    const clockStatusEl = document.getElementById('clock-settings-status');
     const backendStatusEl = document.getElementById('backend-status-indicator');
     const backendStatusModalEl = document.getElementById('backend-status-modal');
     const backendStatusLastUpdateEl = document.getElementById('backend-status-last-update');
@@ -35,9 +34,6 @@
       browserLabel: "{{ t('clock.timezone.browser_label') }}",
       regionPlaceholder: "{{ t('clock.timezone.choose_region') }}",
       zonePlaceholder: "{{ t('clock.timezone.choose_zone') }}",
-      saved: "{{ t('clock.saved') }}",
-      statusAuto: "{{ t('clock.status.auto') }}",
-      statusManual: "{{ t('clock.status.manual') }}",
     };
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
@@ -304,15 +300,6 @@
       return clockPreferences.timezone || browserTz;
     }
 
-    function updateClockStatus() {
-      if (!clockStatusEl || !clockPreferences) return;
-      const tz = getActiveTimeZone();
-      const statusText = clockPreferences.autoTimezone
-        ? clockText.statusAuto.replace('{tz}', tz)
-        : clockText.statusManual.replace('{tz}', tz);
-      clockStatusEl.textContent = `${clockText.saved} ${statusText}`;
-    }
-
     function updateClockDisplay() {
       if (!headerClockEl) return;
       const timeZone = getActiveTimeZone();
@@ -380,7 +367,6 @@
       if (!options.skipSync) {
         syncClockControls();
       }
-      updateClockStatus();
       startClock();
     }
 
@@ -389,6 +375,7 @@
       clockModalEl.classList.add('visible');
       clockModalEl.setAttribute('aria-hidden', 'false');
       headerClockEl?.setAttribute('aria-expanded', 'true');
+      headerClockEl?.classList.add('settings-open');
       document.addEventListener('click', handleClockOutsideClick, true);
     }
 
@@ -397,6 +384,7 @@
       clockModalEl.classList.remove('visible');
       clockModalEl.setAttribute('aria-hidden', 'true');
       headerClockEl?.setAttribute('aria-expanded', 'false');
+      headerClockEl?.classList.remove('settings-open');
       document.removeEventListener('click', handleClockOutsideClick, true);
     }
 
@@ -404,7 +392,6 @@
       if (!headerClockEl) return;
       clockPreferences = loadClockPreferences();
       syncClockControls();
-      updateClockStatus();
       startClock();
 
       headerClockEl.addEventListener('click', (evt) => {

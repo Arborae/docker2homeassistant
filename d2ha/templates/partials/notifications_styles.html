@@ -80,6 +80,13 @@
     transform: translateY(-1px);
     outline: none;
   }
+  .header-clock.settings-open,
+  .header-clock.settings-open:hover,
+  .header-clock.settings-open:focus-visible {
+    border-color: var(--border);
+    color: var(--text);
+    transform: none;
+  }
   .header-clock-time {
     font-size: 1.05rem;
     font-weight: 700;
@@ -287,25 +294,13 @@
   }
   .clock-settings-header {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+    align-items: center;
+    justify-content: center;
     padding: 12px 14px;
     border-bottom: 1px solid var(--border);
   }
-  .clock-settings-heading h3 { margin: 2px 0 0; }
-  .clock-settings-kicker {
-    margin: 0;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    font-size: 0.85rem;
-  }
-  .clock-settings-description {
-    margin: 6px 0 0;
-    color: var(--muted);
-    line-height: 1.4;
-  }
+  .clock-settings-heading { text-align: center; width: 100%; }
+  .clock-settings-heading h3 { margin: 0; }
   .clock-settings-body {
     padding: 12px 14px 14px;
     display: flex;
@@ -327,13 +322,6 @@
   .clock-settings-row { align-items: flex-start; }
   .clock-settings-label { font-weight: 700; }
   .clock-settings-hint { margin: 4px 0 0; color: var(--muted); font-size: 0.9rem; }
-  .clock-settings-status {
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.92rem;
-    text-align: right;
-    min-width: 180px;
-  }
   .clock-settings-timezone {
     display: flex;
     gap: 12px;
@@ -370,12 +358,6 @@
     .clock-settings-dialog {
       max-height: calc(100vh - var(--mobile-topbar-height) - 36px);
     }
-    .clock-settings-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-    .clock-settings-status { min-width: 0; }
   }
   @media (max-width: 520px) {
     .clock-settings-modal {
