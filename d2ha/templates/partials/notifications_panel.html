@@ -1,3 +1,14 @@
+<script>
+  (() => {
+    try {
+      if (localStorage.getItem('d2haCompactMode') === '1') {
+        document.body.classList.add('compact-mode');
+      }
+    } catch (err) {
+      console.warn('Unable to read compact mode preference', err);
+    }
+  })();
+</script>
 <div class="header-bar">
   <div class="header-section header-left">
     <div class="header-clock" id="header-clock" aria-label="Orologio"></div>
@@ -20,6 +31,9 @@
       <span class="debug-indicator-icon" aria-hidden="true">🐞</span>
       <span class="debug-indicator-text">{{ t('debug_mode.label') }}</span>
     </div>
+    <button class="settings-toggle compact-toggle" id="compactToggle" type="button" aria-pressed="false" title="{{ t('compact_mode.hint') }}" aria-label="{{ t('compact_mode.label') }}">
+      <span class="settings-icon" aria-hidden="true">🗜️</span>
+    </button>
     <div class="notif-area">
       <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
         <span class="notif-icon" aria-hidden="true">🔔</span>
