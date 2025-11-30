@@ -139,7 +139,7 @@
   <header>
     <div class="header-shell">
       {% include 'partials/notifications_panel.html' %}
-      <nav>
+      <nav id="primaryNav" role="navigation">
         <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
         <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
         <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>

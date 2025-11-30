@@ -8,6 +8,8 @@
     const settingsPanelEl = document.getElementById('settingsPanel');
     const settingsToggleEl = document.getElementById('settingsToggle');
     const compactToggleEl = document.getElementById('compactToggle');
+    const navEl = document.getElementById('primaryNav');
+    const mobileDrawerTab = document.getElementById('mobileDrawerTab');
     const headerClockEl = document.getElementById('header-clock');
     const backendStatusEl = document.getElementById('backend-status-indicator');
     const backendStatusModalEl = document.getElementById('backend-status-modal');
@@ -22,6 +24,8 @@
     const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
     const debugModeToggleEl = document.getElementById('debug-mode-toggle');
     const compactStorageKey = 'd2haCompactMode';
+    let mobileNavBackdrop = null;
+    let mobileDrawerOpen = false;
     const safeConfirmState = {
       modal: null,
       message: null,
@@ -73,6 +77,67 @@
         compactToggleEl.classList.toggle('active', isEnabled);
       }
       document.dispatchEvent(new CustomEvent('compact-mode-changed', { detail: { enabled: isEnabled } }));
+    }
+
+    function ensureMobileBackdrop() {
+      if (mobileNavBackdrop) return;
+      mobileNavBackdrop = document.createElement('div');
+      mobileNavBackdrop.className = 'mobile-nav-backdrop';
+      document.body.appendChild(mobileNavBackdrop);
+      mobileNavBackdrop.addEventListener('click', () => setMobileDrawerState(false));
+    }
+
+    function setMobileDrawerState(open) {
+      const next = !!open;
+      mobileDrawerOpen = next;
+      if (mobileDrawerTab) {
+        mobileDrawerTab.setAttribute('aria-expanded', next ? 'true' : 'false');
+      }
+      ensureMobileBackdrop();
+      document.body.classList.toggle('mobile-drawer-open', next);
+    }
+
+    function toggleMobileDrawer() {
+      if (!window.matchMedia('(max-width: 760px)').matches) return;
+      setMobileDrawerState(!mobileDrawerOpen);
+    }
+
+    function initMobileDrawer() {
+      if (!navEl || !mobileDrawerTab) return;
+      ensureMobileBackdrop();
+      mobileDrawerTab.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggleMobileDrawer();
+      });
+
+      mobileNavBackdrop?.addEventListener('click', () => setMobileDrawerState(false));
+
+      navEl.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          if (window.matchMedia('(max-width: 760px)').matches) {
+            setMobileDrawerState(false);
+          }
+        });
+      });
+
+      document.addEventListener('click', (evt) => {
+        if (!mobileDrawerOpen) return;
+        if (!navEl.contains(evt.target) && evt.target !== mobileDrawerTab) {
+          setMobileDrawerState(false);
+        }
+      });
+
+      document.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Escape' && mobileDrawerOpen) {
+          setMobileDrawerState(false);
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 800 && mobileDrawerOpen) {
+          setMobileDrawerState(false);
+        }
+      });
     }
 
     function initCompactMode() {
@@ -424,6 +489,7 @@
 
     initCompactMode();
     startClock();
+    initMobileDrawer();
 
   function saveDismissedNotifications() {
     localStorage.setItem('d2haDismissedNotifications', JSON.stringify(dismissedNotifications));
