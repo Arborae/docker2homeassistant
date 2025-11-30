@@ -409,10 +409,10 @@
       top: 36%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: clamp(2.2rem, 7vw, 3.6rem);
+      font-size: clamp(2rem, 6vw, 3rem);
       opacity: 1;
       filter: drop-shadow(0 22px 45px rgba(56, 189, 248, 0.3));
-      letter-spacing: clamp(0.06em, 0.3vw, 0.12em);
+      letter-spacing: clamp(0.055em, 0.26vw, 0.1em);
     }
 
     body.landing-intro .auth-logo {
@@ -464,6 +464,12 @@
     }
 
     @media (max-width: 760px) {
+      body.landing-intro .auth-title {
+        font-size: clamp(1.45rem, 6vw, 2.1rem);
+        letter-spacing: clamp(0.04em, 0.16vw, 0.08em);
+        padding-inline: clamp(0.5rem, 2vw, 0.9rem);
+      }
+
       .landing-actions {
         flex-direction: column;
         align-items: stretch;
