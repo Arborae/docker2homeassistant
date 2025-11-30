@@ -125,14 +125,14 @@
 
     .auth-title {
       z-index: 3;
-      padding: clamp(0.45rem, 1vw, 0.6rem) clamp(0.9rem, 2vw, 1.4rem);
+      padding: clamp(0.55rem, 1.6vw, 1.2rem) clamp(0.85rem, 2vw, 1.35rem);
       border-radius: 999px;
       background: radial-gradient(circle at 20% 20%, rgba(49, 196, 255, 0.16), rgba(12, 17, 28, 0.86));
       border: 1px solid rgba(79, 195, 247, 0.45);
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 26px rgba(49, 196, 255, 0.28);
       backdrop-filter: blur(12px) saturate(110%);
-      letter-spacing: clamp(0.08em, 0.35vw, 0.2em);
-      max-width: min(94vw, 1080px);
+      letter-spacing: clamp(0.06em, 0.3vw, 0.18em);
+      max-width: min(96vw, 1080px);
       text-align: center;
       line-height: 1.1;
       white-space: nowrap;
@@ -481,9 +481,9 @@
       top: 1.6rem;
       left: 50%;
       transform: translateX(-50%);
-      font-size: clamp(1.55rem, 3.4vw, 2.35rem);
+      font-size: clamp(1.2rem, 3vw, 1.9rem);
       opacity: 0.96;
-      letter-spacing: clamp(0.08em, 0.4vw, 0.18em);
+      letter-spacing: clamp(0.06em, 0.3vw, 0.16em);
       text-shadow: 0 8px 26px rgba(56, 189, 248, 0.35);
       max-width: min(94vw, 1100px);
       text-align: center;
@@ -508,7 +508,9 @@
 
     @media (max-width: 640px) {
       body.landing-ready .auth-title {
-        font-size: 1.8rem;
+        font-size: clamp(1.05rem, 3.8vw, 1.35rem);
+        letter-spacing: clamp(0.05em, 0.18vw, 0.1em);
+        padding-inline: clamp(0.55rem, 2vw, 1rem);
       }
 
       .landing-card {
