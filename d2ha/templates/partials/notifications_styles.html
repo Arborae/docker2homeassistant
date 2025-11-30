@@ -169,6 +169,15 @@
     z-index: 110;
     backdrop-filter: blur(10px);
   }
+  header {
+    z-index: 160;
+    isolation: isolate;
+  }
+  nav#primaryNav {
+    position: relative;
+    z-index: 170;
+    isolation: isolate;
+  }
   @media (max-width: 920px) {
     .header-bar { gap: 10px; }
     .header-title { font-size: 1rem; letter-spacing: 0.12em; }
@@ -198,7 +207,7 @@
         gap: 10px;
         transform: translateX(-105%);
         transition: transform 0.2s ease, visibility 0.2s ease;
-        z-index: 120;
+        z-index: 210;
         overflow-y: auto;
         background-blend-mode: lighten;
         backdrop-filter: blur(12px);
