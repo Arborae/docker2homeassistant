@@ -14,11 +14,10 @@
     const headerClockTimeEl = document.getElementById('header-clock-time');
     const headerClockDateEl = document.getElementById('header-clock-date');
     const clockModalEl = document.getElementById('clock-settings-modal');
-    const clockModalCloseBtn = document.getElementById('clock-settings-close');
-    const clockModalCloseActionBtn = document.getElementById('clock-settings-close-btn');
     const clockAutoToggleEl = document.getElementById('clock-timezone-auto');
     const clockRegionSelectEl = document.getElementById('clock-region-select');
     const clockZoneSelectEl = document.getElementById('clock-zone-select');
+    const clockTimezoneSelectsEl = document.getElementById('clock-timezone-selects');
     const clockSecondsToggleEl = document.getElementById('clock-seconds-toggle');
     const clockDateToggleEl = document.getElementById('clock-date-toggle');
     const clockBrowserHintEl = document.getElementById('clock-browser-tz');
@@ -239,9 +238,11 @@
       }, {});
     }
 
+    const timeZoneGroups = groupTimeZonesByRegion();
+
     function populateRegionSelect(selectedRegion) {
       if (!clockRegionSelectEl) return;
-      const regions = Object.keys(groupTimeZonesByRegion()).sort();
+      const regions = Object.keys(timeZoneGroups).sort();
       clockRegionSelectEl.innerHTML = '';
       const placeholder = document.createElement('option');
       placeholder.value = '';
@@ -259,8 +260,7 @@
 
     function populateZoneSelect(region, selectedZone) {
       if (!clockZoneSelectEl) return;
-      const grouped = groupTimeZonesByRegion();
-      const zones = grouped[region] || [];
+      const zones = timeZoneGroups[region] || [];
       clockZoneSelectEl.innerHTML = '';
       const placeholder = document.createElement('option');
       placeholder.value = '';
@@ -368,6 +368,10 @@
           el.disabled = disableManual;
         }
       });
+      if (clockTimezoneSelectsEl) {
+        clockTimezoneSelectsEl.classList.toggle('disabled', disableManual);
+        clockTimezoneSelectsEl.setAttribute('aria-disabled', disableManual ? 'true' : 'false');
+      }
     }
 
     function applyClockPreference(partial, options = {}) {
@@ -404,6 +408,9 @@
       startClock();
 
       headerClockEl.addEventListener('click', (evt) => {
+        if (clockModalEl?.contains(evt.target)) {
+          return;
+        }
         evt.stopPropagation();
         if (clockModalEl?.classList.contains('visible')) {
           closeClockModal();
@@ -416,10 +423,6 @@
           evt.preventDefault();
           openClockModal();
         }
-      });
-
-      [clockModalCloseBtn, clockModalCloseActionBtn].forEach((btn) => {
-        btn?.addEventListener('click', closeClockModal);
       });
 
       document.addEventListener('keydown', (evt) => {
@@ -435,8 +438,7 @@
       clockRegionSelectEl?.addEventListener('change', (evt) => {
         const region = evt.target.value;
         if (!region) return;
-        const grouped = groupTimeZonesByRegion();
-        const nextZone = grouped[region]?.[0] || '';
+        const nextZone = timeZoneGroups[region]?.[0] || '';
         populateZoneSelect(region, nextZone);
         applyClockPreference({ autoTimezone: false, timezone: nextZone });
       });
