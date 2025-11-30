@@ -166,7 +166,7 @@
     visibility: hidden;
     pointer-events: none;
     transition: opacity 0.2s ease, visibility 0.2s ease;
-    z-index: 5;
+    z-index: 80;
     backdrop-filter: blur(10px);
   }
   @media (max-width: 920px) {
@@ -183,10 +183,10 @@
     .mobile-drawer-tab { display: inline-flex; }
     nav#primaryNav {
       position: fixed;
-      top: calc(var(--mobile-topbar-height) - 6px);
+      top: 12px;
       left: 0;
       height: auto;
-      max-height: calc(100vh - var(--mobile-topbar-height) - 20px);
+      max-height: calc(100vh - 24px);
       width: var(--mobile-drawer-width);
       background: var(--panel-2);
       border-right: 1px solid var(--border);
