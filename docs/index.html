@@ -25,16 +25,22 @@
       --tech-glow: 0 18px 48px rgba(56, 189, 248, 0.35);
     }
 
+    body {
+      overflow-x: hidden;
+    }
+
     .auth-overlay {
-      width: min(1180px, 100%);
+      width: 100%;
+      max-width: 1180px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding-inline: clamp(1rem, 3vw, 2rem);
     }
 
     .landing-card {
-      padding: 2.6rem 2.6rem 2.4rem;
+      padding: clamp(1.8rem, 4vw, 2.6rem);
       width: 100%;
       max-width: 1100px;
       position: relative;
@@ -61,6 +67,7 @@
 
     .landing-header {
       margin-bottom: 1.6rem;
+      width: 100%;
     }
 
     .landing-title {
@@ -109,6 +116,7 @@
       flex-wrap: wrap;
       gap: 0.8rem;
       margin-bottom: 0.4rem;
+      width: 100%;
     }
 
     .auth-logo {
@@ -123,10 +131,11 @@
       border: 1px solid rgba(79, 195, 247, 0.45);
       box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 26px rgba(49, 196, 255, 0.28);
       backdrop-filter: blur(12px) saturate(110%);
-      white-space: nowrap;
       letter-spacing: 0.26em;
       max-width: min(96vw, 1080px);
       text-align: center;
+      line-height: 1.1;
+      word-break: break-word;
     }
 
     .landing-btn {
@@ -180,11 +189,28 @@
       grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
       gap: 1.8rem;
       margin-top: 1.6rem;
+      width: 100%;
     }
 
     @media (max-width: 820px) {
       .landing-body {
         grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .landing-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .landing-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .landing-qs-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -456,7 +482,7 @@
       transform: translateX(-50%);
       font-size: clamp(1.85rem, 3vw, 2.35rem);
       opacity: 0.96;
-      letter-spacing: 0.18em;
+      letter-spacing: clamp(0.12em, 0.5vw, 0.18em);
       text-shadow: 0 8px 26px rgba(56, 189, 248, 0.35);
       max-width: min(96vw, 1100px);
       text-align: center;
@@ -485,7 +511,7 @@
       }
 
       .landing-card {
-        padding: 2.1rem 1.6rem 2.1rem;
+        padding: 1.6rem 1.4rem 1.8rem;
       }
     }
   </style>

@@ -53,6 +53,13 @@ body.theme-dark {
   color: rgba(241, 245, 249, 0.35);
   pointer-events: none;
   z-index: 2;
+  max-width: min(92vw, 1200px);
+  padding-inline: 1rem;
+  text-align: center;
+  line-height: 1.1;
+  white-space: normal;
+  word-break: break-word;
+  text-wrap: balance;
 }
 
 .auth-logo {
@@ -96,8 +103,8 @@ body.theme-dark {
 
 @media (max-width: 640px) {
   .auth-title {
-    font-size: 1.7rem;
-    letter-spacing: 0.18em;
+    font-size: 1.6rem;
+    letter-spacing: 0.14em;
   }
 
   .auth-logo {
