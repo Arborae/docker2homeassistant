@@ -11,6 +11,18 @@
     const navEl = document.getElementById('primaryNav');
     const mobileDrawerTab = document.getElementById('mobileDrawerTab');
     const headerClockEl = document.getElementById('header-clock');
+    const headerClockTimeEl = document.getElementById('header-clock-time');
+    const headerClockDateEl = document.getElementById('header-clock-date');
+    const clockModalEl = document.getElementById('clock-settings-modal');
+    const clockModalCloseBtn = document.getElementById('clock-settings-close');
+    const clockModalCloseActionBtn = document.getElementById('clock-settings-close-btn');
+    const clockAutoToggleEl = document.getElementById('clock-timezone-auto');
+    const clockRegionSelectEl = document.getElementById('clock-region-select');
+    const clockZoneSelectEl = document.getElementById('clock-zone-select');
+    const clockSecondsToggleEl = document.getElementById('clock-seconds-toggle');
+    const clockDateToggleEl = document.getElementById('clock-date-toggle');
+    const clockBrowserHintEl = document.getElementById('clock-browser-tz');
+    const clockStatusEl = document.getElementById('clock-settings-status');
     const backendStatusEl = document.getElementById('backend-status-indicator');
     const backendStatusModalEl = document.getElementById('backend-status-modal');
     const backendStatusLastUpdateEl = document.getElementById('backend-status-last-update');
@@ -19,6 +31,14 @@
     const backendText = {
       lastUpdate: "{{ t('backend_status.last_update') }}",
       noRecent: "{{ t('backend_status.no_recent_update') }}",
+    };
+    const clockText = {
+      browserLabel: "{{ t('clock.timezone.browser_label') }}",
+      regionPlaceholder: "{{ t('clock.timezone.choose_region') }}",
+      zonePlaceholder: "{{ t('clock.timezone.choose_zone') }}",
+      saved: "{{ t('clock.saved') }}",
+      statusAuto: "{{ t('clock.status.auto') }}",
+      statusManual: "{{ t('clock.status.manual') }}",
     };
     const safeModeToggleEl = document.getElementById('safeModeToggle');
     const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
@@ -48,6 +68,13 @@
     let currentNotifications = initialNotifications;
     let dismissedNotifications = {};
     let clockInterval = null;
+    let clockPreferences = null;
+    const clockStorageKey = 'd2haClockPrefs';
+    const handleClockOutsideClick = (evt) => {
+      if (!clockModalEl?.classList.contains('visible')) return;
+      if (clockModalEl.contains(evt.target) || headerClockEl.contains(evt.target)) return;
+      closeClockModal();
+    };
     let lastSuccessfulPing = null;
     let consecutiveErrors = 0;
     let backendPingTimer = null;
@@ -152,22 +179,281 @@
       }
     }
 
-    function formatClock(dateObj) {
-      const pad = (v) => String(v).padStart(2, '0');
-      return `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:${pad(dateObj.getSeconds())}`;
+    function getBrowserTimeZone() {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+      } catch (err) {
+        console.warn('Unable to detect browser timezone', err);
+        return 'UTC';
+      }
+    }
+
+    function loadClockPreferences() {
+      const defaults = { autoTimezone: true, timezone: '', showSeconds: true, showDate: true };
+      try {
+        const saved = JSON.parse(localStorage.getItem(clockStorageKey) || '{}');
+        return { ...defaults, ...saved };
+      } catch (err) {
+        console.warn('Unable to parse clock preferences', err);
+        return { ...defaults };
+      }
+    }
+
+    function saveClockPreferences(next) {
+      try {
+        localStorage.setItem(clockStorageKey, JSON.stringify(next));
+      } catch (err) {
+        console.warn('Unable to persist clock preferences', err);
+      }
+    }
+
+    function getSupportedTimeZones() {
+      if (typeof Intl.supportedValuesOf === 'function') {
+        return Intl.supportedValuesOf('timeZone');
+      }
+      return [
+        'UTC',
+        'Europe/Rome',
+        'Europe/Berlin',
+        'Europe/Madrid',
+        'Europe/London',
+        'America/New_York',
+        'America/Los_Angeles',
+        'America/Sao_Paulo',
+        'Asia/Tokyo',
+        'Asia/Shanghai',
+        'Asia/Dubai',
+        'Australia/Sydney',
+        'Africa/Johannesburg',
+      ];
+    }
+
+    function groupTimeZonesByRegion() {
+      const allZones = getSupportedTimeZones();
+      return allZones.reduce((acc, tz) => {
+        const [region, city] = tz.split('/');
+        if (!city) return acc;
+        if (!acc[region]) acc[region] = [];
+        acc[region].push(tz);
+        return acc;
+      }, {});
+    }
+
+    function populateRegionSelect(selectedRegion) {
+      if (!clockRegionSelectEl) return;
+      const regions = Object.keys(groupTimeZonesByRegion()).sort();
+      clockRegionSelectEl.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = `— ${clockText.regionPlaceholder} —`;
+      clockRegionSelectEl.appendChild(placeholder);
+
+      regions.forEach((region) => {
+        const opt = document.createElement('option');
+        opt.value = region;
+        opt.textContent = region;
+        if (region === selectedRegion) opt.selected = true;
+        clockRegionSelectEl.appendChild(opt);
+      });
+    }
+
+    function populateZoneSelect(region, selectedZone) {
+      if (!clockZoneSelectEl) return;
+      const grouped = groupTimeZonesByRegion();
+      const zones = grouped[region] || [];
+      clockZoneSelectEl.innerHTML = '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = `— ${clockText.zonePlaceholder} —`;
+      clockZoneSelectEl.appendChild(placeholder);
+
+      zones.forEach((zone) => {
+        const [, city] = zone.split('/');
+        const opt = document.createElement('option');
+        opt.value = zone;
+        opt.textContent = city?.replace(/_/g, ' ') || zone;
+        if (zone === selectedZone) opt.selected = true;
+        clockZoneSelectEl.appendChild(opt);
+      });
+    }
+
+    function formatClock(dateObj, { timeZone = getBrowserTimeZone(), showSeconds = true } = {}) {
+      const options = {
+        hour: '2-digit',
+        minute: '2-digit',
+        ...(showSeconds ? { second: '2-digit' } : {}),
+        hour12: false,
+        timeZone,
+      };
+      return new Intl.DateTimeFormat(undefined, options).format(dateObj);
+    }
+
+    function formatDate(dateObj, timeZone) {
+      return new Intl.DateTimeFormat('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        timeZone,
+      }).format(dateObj);
+    }
+
+    function getActiveTimeZone() {
+      const browserTz = getBrowserTimeZone();
+      if (!clockPreferences) return browserTz;
+      if (clockPreferences.autoTimezone) return browserTz;
+      return clockPreferences.timezone || browserTz;
+    }
+
+    function updateClockStatus() {
+      if (!clockStatusEl || !clockPreferences) return;
+      const tz = getActiveTimeZone();
+      const statusText = clockPreferences.autoTimezone
+        ? clockText.statusAuto.replace('{tz}', tz)
+        : clockText.statusManual.replace('{tz}', tz);
+      clockStatusEl.textContent = `${clockText.saved} ${statusText}`;
+    }
+
+    function updateClockDisplay() {
+      if (!headerClockEl) return;
+      const timeZone = getActiveTimeZone();
+      const now = new Date();
+      const timeStr = formatClock(now, { timeZone, showSeconds: !!clockPreferences?.showSeconds });
+      const dateStr = formatDate(now, timeZone);
+
+      if (headerClockTimeEl) {
+        headerClockTimeEl.textContent = timeStr;
+      } else {
+        headerClockEl.textContent = timeStr;
+      }
+
+      if (headerClockDateEl) {
+        if (clockPreferences?.showDate) {
+          headerClockDateEl.textContent = dateStr;
+          headerClockDateEl.style.display = 'block';
+        } else {
+          headerClockDateEl.style.display = 'none';
+        }
+      }
     }
 
     function startClock() {
       if (!headerClockEl) return;
       clearInterval(clockInterval);
+      updateClockDisplay();
+      const intervalMs = clockPreferences?.showSeconds ? 1000 : 10000;
+      clockInterval = setInterval(updateClockDisplay, intervalMs);
+    }
 
-      const updateClock = () => {
-        const now = new Date();
-        headerClockEl.textContent = formatClock(now);
-      };
+    function syncClockControls() {
+      if (!clockPreferences) return;
 
-      updateClock();
-      clockInterval = setInterval(updateClock, 1000);
+      const browserTz = getBrowserTimeZone();
+      const manualTz = clockPreferences.timezone || getActiveTimeZone();
+      const [manualRegion] = (manualTz || '').split('/');
+
+      if (clockBrowserHintEl) {
+        clockBrowserHintEl.textContent = `${clockText.browserLabel} ${browserTz}`;
+      }
+
+      if (clockAutoToggleEl) clockAutoToggleEl.checked = !!clockPreferences.autoTimezone;
+      if (clockSecondsToggleEl) clockSecondsToggleEl.checked = !!clockPreferences.showSeconds;
+      if (clockDateToggleEl) clockDateToggleEl.checked = !!clockPreferences.showDate;
+
+      populateRegionSelect(manualRegion);
+      populateZoneSelect(manualRegion, clockPreferences.timezone);
+
+      const disableManual = !!clockPreferences.autoTimezone;
+      [clockRegionSelectEl, clockZoneSelectEl].forEach((el) => {
+        if (el) {
+          el.disabled = disableManual;
+        }
+      });
+    }
+
+    function applyClockPreference(partial, options = {}) {
+      clockPreferences = { ...clockPreferences, ...partial };
+      saveClockPreferences(clockPreferences);
+      if (!options.skipSync) {
+        syncClockControls();
+      }
+      updateClockStatus();
+      startClock();
+    }
+
+    function openClockModal() {
+      if (!clockModalEl) return;
+      clockModalEl.classList.add('visible');
+      clockModalEl.setAttribute('aria-hidden', 'false');
+      headerClockEl?.setAttribute('aria-expanded', 'true');
+      document.addEventListener('click', handleClockOutsideClick, true);
+    }
+
+    function closeClockModal() {
+      if (!clockModalEl) return;
+      clockModalEl.classList.remove('visible');
+      clockModalEl.setAttribute('aria-hidden', 'true');
+      headerClockEl?.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('click', handleClockOutsideClick, true);
+    }
+
+    function initClockSettings() {
+      if (!headerClockEl) return;
+      clockPreferences = loadClockPreferences();
+      syncClockControls();
+      updateClockStatus();
+      startClock();
+
+      headerClockEl.addEventListener('click', (evt) => {
+        evt.stopPropagation();
+        if (clockModalEl?.classList.contains('visible')) {
+          closeClockModal();
+        } else {
+          openClockModal();
+        }
+      });
+      headerClockEl.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Enter' || evt.key === ' ') {
+          evt.preventDefault();
+          openClockModal();
+        }
+      });
+
+      [clockModalCloseBtn, clockModalCloseActionBtn].forEach((btn) => {
+        btn?.addEventListener('click', closeClockModal);
+      });
+
+      document.addEventListener('keydown', (evt) => {
+        if (evt.key === 'Escape' && clockModalEl?.classList.contains('visible')) {
+          closeClockModal();
+        }
+      });
+
+      clockAutoToggleEl?.addEventListener('change', () => {
+        applyClockPreference({ autoTimezone: !!clockAutoToggleEl.checked });
+      });
+
+      clockRegionSelectEl?.addEventListener('change', (evt) => {
+        const region = evt.target.value;
+        if (!region) return;
+        const grouped = groupTimeZonesByRegion();
+        const nextZone = grouped[region]?.[0] || '';
+        populateZoneSelect(region, nextZone);
+        applyClockPreference({ autoTimezone: false, timezone: nextZone });
+      });
+
+      clockZoneSelectEl?.addEventListener('change', (evt) => {
+        const zone = evt.target.value;
+        if (!zone) return;
+        applyClockPreference({ autoTimezone: false, timezone: zone });
+      });
+
+      clockSecondsToggleEl?.addEventListener('change', () => {
+        applyClockPreference({ showSeconds: !!clockSecondsToggleEl.checked });
+      });
+
+      clockDateToggleEl?.addEventListener('change', () => {
+        applyClockPreference({ showDate: !!clockDateToggleEl.checked });
+      });
     }
 
     function syncPerformanceToggle(enabled) {
@@ -487,7 +773,7 @@
     }
 
     initCompactMode();
-    startClock();
+    initClockSettings();
     initMobileDrawer();
 
   function saveDismissedNotifications() {
