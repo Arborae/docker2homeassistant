@@ -147,9 +147,9 @@
     position: fixed;
     top: calc(var(--mobile-topbar-height) / 2 - 22px);
     left: 0;
-    width: 34px;
-    height: 44px;
-    border-radius: 0 12px 12px 0;
+    width: 28px;
+    height: 40px;
+    border-radius: 0 10px 10px 0;
     background: var(--panel-2);
     border: 1px solid var(--border);
     border-left: none;
@@ -459,6 +459,21 @@
     border-bottom: 1px solid var(--border);
     font-weight: 700;
     gap: 10px;
+  }
+
+  @media (max-width: 540px) {
+    .notif-panel,
+    .settings-panel,
+    .backend-panel {
+      position: fixed;
+      top: calc(var(--mobile-topbar-height) + 8px);
+      left: 12px;
+      right: 12px;
+      width: auto;
+      max-height: calc(100vh - var(--mobile-topbar-height) - 20px);
+      margin: 0;
+      border-radius: 14px;
+    }
   }
   .notif-list {
     max-height: 320px;
