@@ -325,7 +325,7 @@ class DockerService:
 
     def _fetch_remote_info(self, image_ref: str) -> Dict[str, Any]:
         try:
-            pulled = self.docker_client.images.pull(image_ref)
+            distribution = self.docker_api.inspect_distribution(image_ref)
         except Exception:
             return {
                 "remote_id": None,
@@ -335,26 +335,24 @@ class DockerService:
                 "remote_breaking": None,
             }
 
-        img = pulled[0] if isinstance(pulled, list) else pulled
+        descriptor = distribution.get("Descriptor") or {}
+        annotations = descriptor.get("annotations") or {}
 
-        labels = (
-            getattr(img, "labels", None)
-            or img.attrs.get("Config", {}).get("Labels", {})
-            or {}
+        remote_id = descriptor.get("digest") or distribution.get("Digest")
+        remote_short = remote_id.split(":")[-1][:12] if remote_id else None
+
+        remote_version = (
+            annotations.get("org.opencontainers.image.version")
+            or annotations.get("version")
+            or remote_short
         )
-
-        remote_id = img.id
-        remote_short = remote_id.split(":")[-1][:12]
-        remote_version = self._extract_version(labels) or remote_short
-        changelog_remote = self._extract_changelog(labels)
-        breaking_remote = self._extract_breaking(labels)
 
         return {
             "remote_id": remote_id,
             "remote_id_short": remote_short,
             "remote_version": remote_version,
-            "remote_changelog": changelog_remote,
-            "remote_breaking": breaking_remote,
+            "remote_changelog": annotations.get("org.opencontainers.image.changelog"),
+            "remote_breaking": annotations.get("org.opencontainers.image.breaking_changes"),
         }
 
     def get_remote_info(self, image_ref: str) -> Dict[str, Any]:
