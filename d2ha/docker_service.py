@@ -12,6 +12,7 @@ from typing import Any, Dict, Iterable, List, Optional
 import docker
 from docker.models.containers import Container
 from docker.types import IPAMConfig, IPAMPool
+from docker.utils import parse_repository_tag
 
 try:
     import paho.mqtt.client as mqtt  # type: ignore
@@ -197,7 +198,7 @@ class DockerService:
         self.overview_cache: List[Dict[str, Any]] = []
         self.overview_cache_ts: float = 0.0
         self._overview_thread: Optional[threading.Thread] = None
-        self.update_preferences: Dict[str, int] = {}
+        self.update_preferences: Dict[str, Dict[str, Any]] = {}
         self.compose_path = os.path.join(os.path.dirname(__file__), "docker-compose.yml")
         self.host_name = self._load_host_name()
 
@@ -346,6 +347,45 @@ class DockerService:
             "local_breaking": breaking_local,
         }
 
+    def _build_check_reference(self, image_ref: str, preferred_tag: Optional[str]) -> str:
+        if not preferred_tag:
+            return image_ref
+
+        repository, _ = parse_repository_tag(image_ref)
+        if not repository:
+            return image_ref
+
+        base_repo = repository.split("@", 1)[0]
+        return f"{base_repo}:{preferred_tag}"
+
+    def _merge_remote_with_installed(
+        self, installed_info: Dict[str, Any], remote_info: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        remote_id = remote_info.get("remote_id")
+        remote_id_short = remote_info.get("remote_id_short")
+        remote_version = remote_info.get("remote_version")
+
+        installed_digest = installed_info.get("installed_digest")
+        installed_version = installed_info.get("installed_version")
+
+        if not remote_id and installed_digest:
+            remote_id = installed_digest
+            remote_id_short = installed_info.get("installed_digest_short")
+
+        if remote_id and not remote_id_short:
+            remote_id_short = remote_id.split(":")[-1][:12]
+
+        if not remote_version:
+            remote_version = installed_version
+
+        return {
+            "remote_id": remote_id,
+            "remote_id_short": remote_id_short,
+            "remote_version": remote_version,
+            "remote_changelog": remote_info.get("remote_changelog"),
+            "remote_breaking": remote_info.get("remote_breaking"),
+        }
+
     def _fetch_remote_info(self, image_ref: str) -> Dict[str, Any]:
         try:
             distribution = self.docker_api.inspect_distribution(image_ref)
@@ -391,6 +431,17 @@ class DockerService:
             self.remote_cache[image_ref] = remote_info
             self.remote_cache_ts[image_ref] = now
         return remote_info
+
+    def _get_update_config(self, container_id: str) -> Dict[str, Any]:
+        pref = self.update_preferences.get(container_id) or {}
+        frequency = int(pref.get("frequency", 60) or 60)
+        frequency = max(5, min(frequency, 24 * 60))
+
+        track = pref.get("track")
+        track = track.strip() if isinstance(track, str) else None
+        track = track or None
+
+        return {"frequency": frequency, "track": track}
 
     def get_container_stats(self, container: Container):
         now = time.time()
@@ -1053,6 +1104,9 @@ class DockerService:
             installed_info = self._get_installed_image_info(c)
             image_ref = installed_info["image_ref"]
 
+            update_config = self._get_update_config(c.id)
+            check_ref = self._build_check_reference(image_ref, update_config["track"])
+
             ports = self._get_container_ports(c)
 
             if c.image.tags:
@@ -1060,7 +1114,9 @@ class DockerService:
             else:
                 image_name = c.image.short_id
 
-            remote_info = self.get_remote_info(image_ref)
+            remote_info = self._merge_remote_with_installed(
+                installed_info, self.get_remote_info(check_ref)
+            )
             remote_id = remote_info["remote_id"]
             remote_version = remote_info["remote_version"]
 
@@ -1101,6 +1157,7 @@ class DockerService:
                     "changelog": changelog,
                     "breaking_changes": breaking,
                     "ports": ports,
+                    "check_tag": update_config["track"],
                 }
             )
 
@@ -1118,11 +1175,16 @@ class DockerService:
         installed_info = self._get_installed_image_info(container)
         image_ref = installed_info["image_ref"]
 
+        update_config = self._get_update_config(container_id)
+        check_ref = self._build_check_reference(image_ref, update_config["track"])
+
         if force_refresh:
             with self._lock:
-                self.remote_cache_ts[image_ref] = 0
+                self.remote_cache_ts[check_ref] = 0
 
-        remote_info = self.get_remote_info(image_ref)
+        remote_info = self._merge_remote_with_installed(
+            installed_info, self.get_remote_info(check_ref)
+        )
         remote_id = remote_info.get("remote_id")
 
         installed_digest = installed_info.get("installed_digest")
@@ -1139,7 +1201,7 @@ class DockerService:
         if image_ref and "/" in image_ref:
             repo_link = f"https://hub.docker.com/r/{image_ref.split(':')[0]}"
 
-        frequency = self.update_preferences.get(container_id, 60)
+        frequency = update_config.get("frequency", 60)
 
         return {
             "name": container.name,
@@ -1152,13 +1214,27 @@ class DockerService:
             or installed_info.get("installed_id_short"),
             "repo_link": repo_link,
             "frequency_minutes": frequency,
+            "check_tag": update_config.get("track"),
         }
 
     def set_update_frequency(self, container_id: str, minutes: int) -> int:
         minutes = max(5, min(minutes, 24 * 60))
         with self._lock:
-            self.update_preferences[container_id] = minutes
+            prefs = self.update_preferences.get(container_id, {})
+            prefs["frequency"] = minutes
+            self.update_preferences[container_id] = prefs
         return minutes
+
+    def set_update_track(self, container_id: str, tag: Optional[str]) -> Optional[str]:
+        clean_tag = tag.strip() if isinstance(tag, str) else None
+        clean_tag = clean_tag or None
+
+        with self._lock:
+            prefs = self.update_preferences.get(container_id, {})
+            prefs["track"] = clean_tag
+            self.update_preferences[container_id] = prefs
+
+        return clean_tag
 
     def get_container_logs(self, container_id: str, tail: Optional[int] = 100) -> str:
         try:
