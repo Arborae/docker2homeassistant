@@ -310,6 +310,27 @@ class DockerService:
         else:
             image_ref = container.attrs.get("Config", {}).get("Image") or installed_id
 
+        ref_repo = image_ref.split("@")[0].rsplit(":", 1)[0] if image_ref else None
+        repo_digests = installed_image.attrs.get("RepoDigests", []) or []
+
+        installed_digest = None
+        for digest_ref in repo_digests:
+            if "@" not in digest_ref:
+                continue
+            repo, digest = digest_ref.split("@", 1)
+            if ref_repo and repo == ref_repo:
+                installed_digest = digest
+                break
+
+        if not installed_digest and repo_digests:
+            fallback = repo_digests[0]
+            if "@" in fallback:
+                installed_digest = fallback.split("@", 1)[1]
+
+        installed_digest_short = (
+            installed_digest.split(":")[-1][:12] if installed_digest else None
+        )
+
         installed_version = self._extract_version(labels) or installed_short
         changelog_local = self._extract_changelog(labels)
         breaking_local = self._extract_breaking(labels)
@@ -318,6 +339,8 @@ class DockerService:
             "image_ref": image_ref,
             "installed_id": installed_id,
             "installed_id_short": installed_short,
+            "installed_digest": installed_digest,
+            "installed_digest_short": installed_digest_short,
             "installed_version": installed_version,
             "local_changelog": changelog_local,
             "local_breaking": breaking_local,
@@ -1041,12 +1064,15 @@ class DockerService:
             remote_id = remote_info["remote_id"]
             remote_version = remote_info["remote_version"]
 
+            installed_digest = installed_info.get("installed_digest")
+            installed_compare_ref = installed_digest or installed_info["installed_id"]
+
             if remote_id is None:
                 update_state = "unknown"
             else:
                 update_state = (
                     "up_to_date"
-                    if remote_id == installed_info["installed_id"]
+                    if remote_id == installed_compare_ref
                     else "update_available"
                 )
 
@@ -1066,7 +1092,8 @@ class DockerService:
                     "status": status,
                     "uptime": uptime_str,
                     "image_ref": image_ref,
-                    "installed_id_short": installed_info["installed_id_short"],
+                    "installed_id_short": installed_info.get("installed_digest_short")
+                    or installed_info["installed_id_short"],
                     "installed_version": installed_info["installed_version"],
                     "remote_id_short": remote_info["remote_id_short"],
                     "remote_version": remote_version,
@@ -1098,9 +1125,12 @@ class DockerService:
         remote_info = self.get_remote_info(image_ref)
         remote_id = remote_info.get("remote_id")
 
+        installed_digest = installed_info.get("installed_digest")
+        installed_compare_ref = installed_digest or installed_info.get("installed_id")
+
         if remote_id is None:
             update_state = "unknown"
-        elif remote_id == installed_info.get("installed_id"):
+        elif installed_compare_ref and remote_id == installed_compare_ref:
             update_state = "up_to_date"
         else:
             update_state = "update_available"
@@ -1118,7 +1148,8 @@ class DockerService:
             "remote_version": remote_info.get("remote_version"),
             "update_state": update_state,
             "remote_id_short": remote_info.get("remote_id_short"),
-            "installed_id_short": installed_info.get("installed_id_short"),
+            "installed_id_short": installed_info.get("installed_digest_short")
+            or installed_info.get("installed_id_short"),
             "repo_link": repo_link,
             "frequency_minutes": frequency,
         }
