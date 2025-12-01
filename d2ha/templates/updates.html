@@ -397,26 +397,17 @@
                     {% endif %}
                     <div class="status-meta">
                       <span class="{{ status_class }}" data-status-pill>{{ status_label }}</span>
-                      <div class="small" data-status-hint>
-                        {% if c.installed_version and c.remote_version %}
-                          {{ c.installed_version }} → {{ c.remote_version }}
-                        {% elif c.remote_version %}
-                          Remota: {{ c.remote_version }}
-                        {% else %}
-                          In attesa di dati dal registry
-                        {% endif %}
-                      </div>
                     </div>
                   </td>
                   <td data-label="Vers. installata">
                     <div class="pill-row">
-                      <span class="badge" data-installed-version>{{ c.installed_version or 'n/d' }}</span>
+                      <span class="badge" data-installed-tag>{{ c.installed_tag or c.installed_version or 'n/d' }}</span>
                       <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
                     </div>
                   </td>
                   <td data-label="Vers. remota">
                     <div class="pill-row">
-                      <span class="badge {% if not c.remote_version %}badge-null{% endif %}" data-remote-version>{{ c.remote_version or 'n/d' }}</span>
+                      <span class="badge {% if not c.remote_tag %}badge-null{% endif %}" data-remote-tag>{{ c.remote_tag or c.remote_version or 'n/d' }}</span>
                       <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{ c.remote_id_short or '' }}</span>
                     </div>
                   </td>
@@ -633,18 +624,18 @@
         const data = await res.json();
         applyStatus(row, data.update_state);
 
-        const installedEl = row.querySelector('[data-installed-version]');
+        const installedEl = row.querySelector('[data-installed-tag]');
         const installedIdEl = row.querySelector('[data-installed-id]');
-        const remoteEl = row.querySelector('[data-remote-version]');
+        const remoteEl = row.querySelector('[data-remote-tag]');
         const remoteIdEl = row.querySelector('[data-remote-id]');
-        const statusHint = row.querySelector('[data-status-hint]');
 
-        if (installedEl) installedEl.textContent = data.installed_version || 'n/d';
+        if (installedEl) installedEl.textContent = data.installed_tag || data.installed_version || 'n/d';
         if (installedIdEl) installedIdEl.textContent = data.installed_id_short || '';
 
         if (remoteEl) {
-          remoteEl.textContent = data.remote_version || 'n/d';
-          remoteEl.classList.toggle('badge-null', !data.remote_version);
+          const remoteTag = data.remote_tag || data.remote_version;
+          remoteEl.textContent = remoteTag || 'n/d';
+          remoteEl.classList.toggle('badge-null', !remoteTag);
         }
 
         if (remoteIdEl) {
@@ -654,16 +645,6 @@
           } else {
             remoteIdEl.textContent = '';
             remoteIdEl.style.display = 'none';
-          }
-        }
-
-        if (statusHint) {
-          if (data.installed_version && data.remote_version) {
-            statusHint.textContent = `${data.installed_version} → ${data.remote_version}`;
-          } else if (data.remote_version) {
-            statusHint.textContent = `Remota: ${data.remote_version}`;
-          } else {
-            statusHint.textContent = 'In attesa di dati dal registry';
           }
         }
 
