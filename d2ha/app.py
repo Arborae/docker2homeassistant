@@ -1691,6 +1691,20 @@ def api_container_updates_frequency(container_id):
     return jsonify({"minutes": minutes})
 
 
+@app.route("/api/containers/<container_id>/updates/track", methods=["POST"])
+@onboarding_required
+def api_container_updates_track(container_id):
+    data = request.get_json(force=True, silent=True) or {}
+    tag = data.get("tag")
+    tag = docker_service.set_update_track(container_id, tag)
+
+    info = docker_service.get_container_update_info(container_id, force_refresh=True)
+    if not info:
+        return jsonify({"error": "Container non trovato"}), 404
+
+    return jsonify({"tag": tag, "update_state": info.get("update_state")})
+
+
 @app.route("/api/containers/<container_id>/compose", methods=["GET", "POST"])
 @onboarding_required
 def api_container_compose(container_id):
