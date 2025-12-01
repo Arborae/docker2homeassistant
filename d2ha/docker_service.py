@@ -245,6 +245,18 @@ class DockerService:
                 return val
         return None
 
+    def _extract_tag(self, image_ref: Optional[str]) -> Optional[str]:
+        if not image_ref:
+            return None
+
+        if "@" in image_ref:
+            ref_part = image_ref.split("@", 1)[0]
+        else:
+            ref_part = image_ref
+
+        repository, tag = parse_repository_tag(ref_part)
+        return tag
+
     def _extract_changelog(self, labels: dict) -> Optional[str]:
         for key in (
             "org.opencontainers.image.changelog",
@@ -311,6 +323,7 @@ class DockerService:
         else:
             image_ref = container.attrs.get("Config", {}).get("Image") or installed_id
 
+        reference_tag = self._extract_tag(image_ref)
         ref_repo = image_ref.split("@")[0].rsplit(":", 1)[0] if image_ref else None
         repo_digests = installed_image.attrs.get("RepoDigests", []) or []
 
@@ -332,7 +345,7 @@ class DockerService:
             installed_digest.split(":")[-1][:12] if installed_digest else None
         )
 
-        installed_version = self._extract_version(labels) or installed_short
+        installed_version = self._extract_version(labels) or reference_tag or installed_short
         changelog_local = self._extract_changelog(labels)
         breaking_local = self._extract_breaking(labels)
 
@@ -387,6 +400,7 @@ class DockerService:
         }
 
     def _fetch_remote_info(self, image_ref: str) -> Dict[str, Any]:
+        reference_tag = self._extract_tag(image_ref)
         try:
             distribution = self.docker_api.inspect_distribution(image_ref)
         except Exception:
@@ -407,6 +421,7 @@ class DockerService:
         remote_version = (
             annotations.get("org.opencontainers.image.version")
             or annotations.get("version")
+            or reference_tag
             or remote_short
         )
 
