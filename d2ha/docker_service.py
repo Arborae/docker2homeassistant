@@ -356,6 +356,7 @@ class DockerService:
             "installed_digest": installed_digest,
             "installed_digest_short": installed_digest_short,
             "installed_version": installed_version,
+            "installed_tag": reference_tag,
             "local_changelog": changelog_local,
             "local_breaking": breaking_local,
         }
@@ -377,9 +378,11 @@ class DockerService:
         remote_id = remote_info.get("remote_id")
         remote_id_short = remote_info.get("remote_id_short")
         remote_version = remote_info.get("remote_version")
+        remote_tag = remote_info.get("remote_tag")
 
         installed_digest = installed_info.get("installed_digest")
         installed_version = installed_info.get("installed_version")
+        installed_tag = installed_info.get("installed_tag")
 
         if not remote_id and installed_digest:
             remote_id = installed_digest
@@ -391,10 +394,14 @@ class DockerService:
         if not remote_version:
             remote_version = installed_version
 
+        if not remote_tag:
+            remote_tag = installed_tag
+
         return {
             "remote_id": remote_id,
             "remote_id_short": remote_id_short,
             "remote_version": remote_version,
+            "remote_tag": remote_tag,
             "remote_changelog": remote_info.get("remote_changelog"),
             "remote_breaking": remote_info.get("remote_breaking"),
         }
@@ -429,6 +436,7 @@ class DockerService:
             "remote_id": remote_id,
             "remote_id_short": remote_short,
             "remote_version": remote_version,
+            "remote_tag": reference_tag,
             "remote_changelog": annotations.get("org.opencontainers.image.changelog"),
             "remote_breaking": annotations.get("org.opencontainers.image.breaking_changes"),
         }
@@ -1166,8 +1174,10 @@ class DockerService:
                     "installed_id_short": installed_info.get("installed_digest_short")
                     or installed_info["installed_id_short"],
                     "installed_version": installed_info["installed_version"],
+                    "installed_tag": installed_info.get("installed_tag"),
                     "remote_id_short": remote_info["remote_id_short"],
                     "remote_version": remote_version,
+                    "remote_tag": remote_info.get("remote_tag"),
                     "update_state": update_state,
                     "changelog": changelog,
                     "breaking_changes": breaking,
@@ -1222,7 +1232,9 @@ class DockerService:
             "name": container.name,
             "image_ref": image_ref,
             "installed_version": installed_info.get("installed_version"),
+            "installed_tag": installed_info.get("installed_tag"),
             "remote_version": remote_info.get("remote_version"),
+            "remote_tag": remote_info.get("remote_tag"),
             "update_state": update_state,
             "remote_id_short": remote_info.get("remote_id_short"),
             "installed_id_short": installed_info.get("installed_digest_short")
