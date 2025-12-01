@@ -439,17 +439,32 @@
                       <form class="full-update-form" data-container-name="{{ c.name }}" data-container-id="{{ c.id }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
                         <button class="btn-primary-glow" type="submit">Aggiorna immagine</button>
                       </form>
+                      <div class="field" style="margin-top: 8px;">
+                        <label class="small" for="track-{{ c.id }}">Tag da monitorare</label>
+                        <div class="input-row">
+                          <input id="track-{{ c.id }}" class="input" type="text" list="track-options" data-update-track="{{ c.id }}" value="{{ c.check_tag or '' }}" placeholder="Es: latest, nightly" />
+                          <button type="button" class="inline-btn" data-save-track data-container-id="{{ c.id }}">Salva</button>
+                        </div>
+                        <div class="small" data-track-feedback="{{ c.id }}">{{ 'Controllo su "' ~ c.check_tag ~ '"' if c.check_tag else 'Usa il tag configurato nel container' }}</div>
+                      </div>
                       <div class="small">ID: <code>{{ c.id }}</code></div>
                     </div>
                   </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    {% endfor %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endfor %}
   </main>
+
+  <datalist id="track-options">
+    <option value="latest"></option>
+    <option value="stable"></option>
+    <option value="dev"></option>
+    <option value="nightly"></option>
+  </datalist>
 
   <div class="debug-overlay" id="debug-overlay" aria-hidden="true">
     <div class="debug-panel">
@@ -596,6 +611,8 @@
       });
     });
 
+    const trackButtons = Array.from(document.querySelectorAll('[data-save-track]'));
+
     function applyStatus(row, state) {
       const pill = row.querySelector('[data-status-pill]');
       if (!pill) return;
@@ -647,6 +664,15 @@
             statusHint.textContent = `Remota: ${data.remote_version}`;
           } else {
             statusHint.textContent = 'In attesa di dati dal registry';
+          }
+        }
+
+        const feedback = row.querySelector('[data-track-feedback]');
+        if (feedback) {
+          if (data.check_tag) {
+            feedback.textContent = `Controllo su "${data.check_tag}"`;
+          } else {
+            feedback.textContent = 'Usa il tag configurato nel container';
           }
         }
       } catch (e) {
@@ -748,6 +774,31 @@
       form.addEventListener('submit', (evt) => {
         evt.preventDefault();
         openConfirm(form);
+      });
+    });
+
+    trackButtons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.containerId;
+        const input = document.querySelector(`[data-update-track="${id}"]`);
+        const feedback = document.querySelector(`[data-track-feedback="${id}"]`);
+        if (!id || !input) return;
+
+        const tag = input.value.trim();
+        if (feedback) feedback.textContent = 'Salvataggio...';
+
+        try {
+          const res = await fetch(`/api/containers/${id}/updates/track`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tag }),
+          });
+
+          if (!res.ok) throw new Error('failed');
+          await refreshRow(btn.closest('.container-row'));
+        } catch (err) {
+          if (feedback) feedback.textContent = 'Errore nel salvataggio';
+        }
       });
     });
 

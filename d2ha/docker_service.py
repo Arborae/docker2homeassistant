@@ -12,6 +12,7 @@ from typing import Any, Dict, Iterable, List, Optional
 import docker
 from docker.models.containers import Container
 from docker.types import IPAMConfig, IPAMPool
+from docker.utils import parse_repository_tag
 
 try:
     import paho.mqtt.client as mqtt  # type: ignore
@@ -197,7 +198,7 @@ class DockerService:
         self.overview_cache: List[Dict[str, Any]] = []
         self.overview_cache_ts: float = 0.0
         self._overview_thread: Optional[threading.Thread] = None
-        self.update_preferences: Dict[str, int] = {}
+        self.update_preferences: Dict[str, Dict[str, Any]] = {}
         self.compose_path = os.path.join(os.path.dirname(__file__), "docker-compose.yml")
         self.host_name = self._load_host_name()
 
@@ -243,6 +244,18 @@ class DockerService:
             if val:
                 return val
         return None
+
+    def _extract_tag(self, image_ref: Optional[str]) -> Optional[str]:
+        if not image_ref:
+            return None
+
+        if "@" in image_ref:
+            ref_part = image_ref.split("@", 1)[0]
+        else:
+            ref_part = image_ref
+
+        repository, tag = parse_repository_tag(ref_part)
+        return tag
 
     def _extract_changelog(self, labels: dict) -> Optional[str]:
         for key in (
@@ -310,7 +323,29 @@ class DockerService:
         else:
             image_ref = container.attrs.get("Config", {}).get("Image") or installed_id
 
-        installed_version = self._extract_version(labels) or installed_short
+        reference_tag = self._extract_tag(image_ref)
+        ref_repo = image_ref.split("@")[0].rsplit(":", 1)[0] if image_ref else None
+        repo_digests = installed_image.attrs.get("RepoDigests", []) or []
+
+        installed_digest = None
+        for digest_ref in repo_digests:
+            if "@" not in digest_ref:
+                continue
+            repo, digest = digest_ref.split("@", 1)
+            if ref_repo and repo == ref_repo:
+                installed_digest = digest
+                break
+
+        if not installed_digest and repo_digests:
+            fallback = repo_digests[0]
+            if "@" in fallback:
+                installed_digest = fallback.split("@", 1)[1]
+
+        installed_digest_short = (
+            installed_digest.split(":")[-1][:12] if installed_digest else None
+        )
+
+        installed_version = self._extract_version(labels) or reference_tag or installed_short
         changelog_local = self._extract_changelog(labels)
         breaking_local = self._extract_breaking(labels)
 
@@ -318,14 +353,56 @@ class DockerService:
             "image_ref": image_ref,
             "installed_id": installed_id,
             "installed_id_short": installed_short,
+            "installed_digest": installed_digest,
+            "installed_digest_short": installed_digest_short,
             "installed_version": installed_version,
             "local_changelog": changelog_local,
             "local_breaking": breaking_local,
         }
 
+    def _build_check_reference(self, image_ref: str, preferred_tag: Optional[str]) -> str:
+        if not preferred_tag:
+            return image_ref
+
+        repository, _ = parse_repository_tag(image_ref)
+        if not repository:
+            return image_ref
+
+        base_repo = repository.split("@", 1)[0]
+        return f"{base_repo}:{preferred_tag}"
+
+    def _merge_remote_with_installed(
+        self, installed_info: Dict[str, Any], remote_info: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        remote_id = remote_info.get("remote_id")
+        remote_id_short = remote_info.get("remote_id_short")
+        remote_version = remote_info.get("remote_version")
+
+        installed_digest = installed_info.get("installed_digest")
+        installed_version = installed_info.get("installed_version")
+
+        if not remote_id and installed_digest:
+            remote_id = installed_digest
+            remote_id_short = installed_info.get("installed_digest_short")
+
+        if remote_id and not remote_id_short:
+            remote_id_short = remote_id.split(":")[-1][:12]
+
+        if not remote_version:
+            remote_version = installed_version
+
+        return {
+            "remote_id": remote_id,
+            "remote_id_short": remote_id_short,
+            "remote_version": remote_version,
+            "remote_changelog": remote_info.get("remote_changelog"),
+            "remote_breaking": remote_info.get("remote_breaking"),
+        }
+
     def _fetch_remote_info(self, image_ref: str) -> Dict[str, Any]:
+        reference_tag = self._extract_tag(image_ref)
         try:
-            pulled = self.docker_client.images.pull(image_ref)
+            distribution = self.docker_api.inspect_distribution(image_ref)
         except Exception:
             return {
                 "remote_id": None,
@@ -335,26 +412,25 @@ class DockerService:
                 "remote_breaking": None,
             }
 
-        img = pulled[0] if isinstance(pulled, list) else pulled
+        descriptor = distribution.get("Descriptor") or {}
+        annotations = descriptor.get("annotations") or {}
 
-        labels = (
-            getattr(img, "labels", None)
-            or img.attrs.get("Config", {}).get("Labels", {})
-            or {}
+        remote_id = descriptor.get("digest") or distribution.get("Digest")
+        remote_short = remote_id.split(":")[-1][:12] if remote_id else None
+
+        remote_version = (
+            annotations.get("org.opencontainers.image.version")
+            or annotations.get("version")
+            or reference_tag
+            or remote_short
         )
-
-        remote_id = img.id
-        remote_short = remote_id.split(":")[-1][:12]
-        remote_version = self._extract_version(labels) or remote_short
-        changelog_remote = self._extract_changelog(labels)
-        breaking_remote = self._extract_breaking(labels)
 
         return {
             "remote_id": remote_id,
             "remote_id_short": remote_short,
             "remote_version": remote_version,
-            "remote_changelog": changelog_remote,
-            "remote_breaking": breaking_remote,
+            "remote_changelog": annotations.get("org.opencontainers.image.changelog"),
+            "remote_breaking": annotations.get("org.opencontainers.image.breaking_changes"),
         }
 
     def get_remote_info(self, image_ref: str) -> Dict[str, Any]:
@@ -370,6 +446,17 @@ class DockerService:
             self.remote_cache[image_ref] = remote_info
             self.remote_cache_ts[image_ref] = now
         return remote_info
+
+    def _get_update_config(self, container_id: str) -> Dict[str, Any]:
+        pref = self.update_preferences.get(container_id) or {}
+        frequency = int(pref.get("frequency", 60) or 60)
+        frequency = max(5, min(frequency, 24 * 60))
+
+        track = pref.get("track")
+        track = track.strip() if isinstance(track, str) else None
+        track = track or None
+
+        return {"frequency": frequency, "track": track}
 
     def get_container_stats(self, container: Container):
         now = time.time()
@@ -1032,6 +1119,9 @@ class DockerService:
             installed_info = self._get_installed_image_info(c)
             image_ref = installed_info["image_ref"]
 
+            update_config = self._get_update_config(c.id)
+            check_ref = self._build_check_reference(image_ref, update_config["track"])
+
             ports = self._get_container_ports(c)
 
             if c.image.tags:
@@ -1039,16 +1129,21 @@ class DockerService:
             else:
                 image_name = c.image.short_id
 
-            remote_info = self.get_remote_info(image_ref)
+            remote_info = self._merge_remote_with_installed(
+                installed_info, self.get_remote_info(check_ref)
+            )
             remote_id = remote_info["remote_id"]
             remote_version = remote_info["remote_version"]
+
+            installed_digest = installed_info.get("installed_digest")
+            installed_compare_ref = installed_digest or installed_info["installed_id"]
 
             if remote_id is None:
                 update_state = "unknown"
             else:
                 update_state = (
                     "up_to_date"
-                    if remote_id == installed_info["installed_id"]
+                    if remote_id == installed_compare_ref
                     else "update_available"
                 )
 
@@ -1068,7 +1163,8 @@ class DockerService:
                     "status": status,
                     "uptime": uptime_str,
                     "image_ref": image_ref,
-                    "installed_id_short": installed_info["installed_id_short"],
+                    "installed_id_short": installed_info.get("installed_digest_short")
+                    or installed_info["installed_id_short"],
                     "installed_version": installed_info["installed_version"],
                     "remote_id_short": remote_info["remote_id_short"],
                     "remote_version": remote_version,
@@ -1076,6 +1172,7 @@ class DockerService:
                     "changelog": changelog,
                     "breaking_changes": breaking,
                     "ports": ports,
+                    "check_tag": update_config["track"],
                 }
             )
 
@@ -1093,16 +1190,24 @@ class DockerService:
         installed_info = self._get_installed_image_info(container)
         image_ref = installed_info["image_ref"]
 
+        update_config = self._get_update_config(container_id)
+        check_ref = self._build_check_reference(image_ref, update_config["track"])
+
         if force_refresh:
             with self._lock:
-                self.remote_cache_ts[image_ref] = 0
+                self.remote_cache_ts[check_ref] = 0
 
-        remote_info = self.get_remote_info(image_ref)
+        remote_info = self._merge_remote_with_installed(
+            installed_info, self.get_remote_info(check_ref)
+        )
         remote_id = remote_info.get("remote_id")
+
+        installed_digest = installed_info.get("installed_digest")
+        installed_compare_ref = installed_digest or installed_info.get("installed_id")
 
         if remote_id is None:
             update_state = "unknown"
-        elif remote_id == installed_info.get("installed_id"):
+        elif installed_compare_ref and remote_id == installed_compare_ref:
             update_state = "up_to_date"
         else:
             update_state = "update_available"
@@ -1111,7 +1216,7 @@ class DockerService:
         if image_ref and "/" in image_ref:
             repo_link = f"https://hub.docker.com/r/{image_ref.split(':')[0]}"
 
-        frequency = self.update_preferences.get(container_id, 60)
+        frequency = update_config.get("frequency", 60)
 
         return {
             "name": container.name,
@@ -1120,16 +1225,31 @@ class DockerService:
             "remote_version": remote_info.get("remote_version"),
             "update_state": update_state,
             "remote_id_short": remote_info.get("remote_id_short"),
-            "installed_id_short": installed_info.get("installed_id_short"),
+            "installed_id_short": installed_info.get("installed_digest_short")
+            or installed_info.get("installed_id_short"),
             "repo_link": repo_link,
             "frequency_minutes": frequency,
+            "check_tag": update_config.get("track"),
         }
 
     def set_update_frequency(self, container_id: str, minutes: int) -> int:
         minutes = max(5, min(minutes, 24 * 60))
         with self._lock:
-            self.update_preferences[container_id] = minutes
+            prefs = self.update_preferences.get(container_id, {})
+            prefs["frequency"] = minutes
+            self.update_preferences[container_id] = prefs
         return minutes
+
+    def set_update_track(self, container_id: str, tag: Optional[str]) -> Optional[str]:
+        clean_tag = tag.strip() if isinstance(tag, str) else None
+        clean_tag = clean_tag or None
+
+        with self._lock:
+            prefs = self.update_preferences.get(container_id, {})
+            prefs["track"] = clean_tag
+            self.update_preferences[container_id] = prefs
+
+        return clean_tag
 
     def get_container_logs(self, container_id: str, tail: Optional[int] = 100) -> str:
         try:
