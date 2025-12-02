@@ -1397,9 +1397,18 @@
         const data = await fetchJSON(url, force ? { method: 'POST' } : {});
         document.getElementById('updates-image').textContent = data.image_ref;
         document.getElementById('updates-repo').href = data.repo_link || '#';
-        document.getElementById('updates-installed').textContent = data.installed_tag || data.installed_version || '-';
-        const remoteTag = data.remote_tag || data.remote_version;
-        document.getElementById('updates-remote').textContent = remoteTag || '-';
+        const installedDisplay =
+          data.installed_display_version ||
+          data.installed_version ||
+          data.installed_tag ||
+          data.installed_id_short;
+        document.getElementById('updates-installed').textContent = installedDisplay || '-';
+        const remoteDisplay =
+          data.remote_display_version ||
+          data.remote_version ||
+          data.remote_tag ||
+          data.remote_id_short;
+        document.getElementById('updates-remote').textContent = remoteDisplay || '-';
         document.getElementById('updates-state').textContent = data.update_state;
         updatesFrequency.value = data.frequency_minutes?.toString() || '60';
         updatesFeedback.textContent = '';

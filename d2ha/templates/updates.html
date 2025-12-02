@@ -377,6 +377,8 @@
             <tbody>
               {% for c in stack.containers %}
                 <tr class="container-row" data-container-id="{{ c.id }}">
+                  {% set installed_display = c.installed_display_version or c.installed_version or c.installed_tag or c.installed_id_short %}
+                  {% set remote_display = c.remote_display_version or c.remote_version or c.remote_tag or c.remote_id_short %}
                   <td data-label="Container">
                     <div><strong>{{ c.name }}</strong></div>
                     <div class="small">{{ c.image_ref }}</div>
@@ -401,13 +403,13 @@
                   </td>
                   <td data-label="Vers. installata">
                     <div class="pill-row">
-                      <span class="badge" data-installed-tag>{{ c.installed_tag or c.installed_version or 'n/d' }}</span>
+                      <span class="badge" data-installed-tag>{{ installed_display or 'n/d' }}</span>
                       <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
                     </div>
                   </td>
                   <td data-label="Vers. remota">
                     <div class="pill-row">
-                      <span class="badge {% if not c.remote_tag %}badge-null{% endif %}" data-remote-tag>{{ c.remote_tag or c.remote_version or 'n/d' }}</span>
+                      <span class="badge {% if not remote_display %}badge-null{% endif %}" data-remote-tag>{{ remote_display or 'n/d' }}</span>
                       <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{ c.remote_id_short or '' }}</span>
                     </div>
                   </td>
@@ -629,13 +631,24 @@
         const remoteEl = row.querySelector('[data-remote-tag]');
         const remoteIdEl = row.querySelector('[data-remote-id]');
 
-        if (installedEl) installedEl.textContent = data.installed_tag || data.installed_version || 'n/d';
+        if (installedEl) {
+          const installedDisplay =
+            data.installed_display_version ||
+            data.installed_version ||
+            data.installed_tag ||
+            data.installed_id_short;
+          installedEl.textContent = installedDisplay || 'n/d';
+        }
         if (installedIdEl) installedIdEl.textContent = data.installed_id_short || '';
 
         if (remoteEl) {
-          const remoteTag = data.remote_tag || data.remote_version;
-          remoteEl.textContent = remoteTag || 'n/d';
-          remoteEl.classList.toggle('badge-null', !remoteTag);
+          const remoteDisplay =
+            data.remote_display_version ||
+            data.remote_version ||
+            data.remote_tag ||
+            data.remote_id_short;
+          remoteEl.textContent = remoteDisplay || 'n/d';
+          remoteEl.classList.toggle('badge-null', !remoteDisplay);
         }
 
         if (remoteIdEl) {
