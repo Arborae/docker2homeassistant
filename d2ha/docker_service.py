@@ -278,6 +278,33 @@ class DockerService:
                 return val
         return None
 
+    @staticmethod
+    def _format_display_version(
+        channel: Optional[str], version: Optional[str], digest_short: Optional[str]
+    ) -> Optional[str]:
+        """Return a human-friendly version string for UI display."""
+
+        channel = (channel or "").strip()
+        version = (version or "").strip()
+        digest_short = (digest_short or "").strip()
+
+        if channel and version and channel != version:
+            return f"{channel} {version}"
+
+        if version:
+            return version
+
+        if channel and digest_short:
+            return f"{channel} {digest_short}"
+
+        if channel:
+            return channel
+
+        if digest_short:
+            return digest_short
+
+        return None
+
     def _get_container_ports(self, container: Container) -> Dict[str, Any]:
         attrs = container.attrs or {}
         host_config = attrs.get("HostConfig", {}) or {}
@@ -1160,6 +1187,17 @@ class DockerService:
 
             stable_id = build_stable_id({"stack": stack_name, "name": c.name})
 
+            installed_display_version = self._format_display_version(
+                installed_info.get("installed_tag"),
+                installed_info.get("installed_version"),
+                installed_info.get("installed_digest_short"),
+            )
+            remote_display_version = self._format_display_version(
+                remote_info.get("remote_tag"),
+                remote_info.get("remote_version"),
+                remote_info.get("remote_id_short"),
+            )
+
             containers_info.append(
                 {
                     "id": c.id,
@@ -1174,9 +1212,11 @@ class DockerService:
                     "installed_id_short": installed_info.get("installed_digest_short")
                     or installed_info["installed_id_short"],
                     "installed_version": installed_info["installed_version"],
+                    "installed_display_version": installed_display_version,
                     "installed_tag": installed_info.get("installed_tag"),
                     "remote_id_short": remote_info["remote_id_short"],
                     "remote_version": remote_version,
+                    "remote_display_version": remote_display_version,
                     "remote_tag": remote_info.get("remote_tag"),
                     "update_state": update_state,
                     "changelog": changelog,
@@ -1228,12 +1268,25 @@ class DockerService:
 
         frequency = update_config.get("frequency", 60)
 
+        installed_display_version = self._format_display_version(
+            installed_info.get("installed_tag"),
+            installed_info.get("installed_version"),
+            installed_info.get("installed_digest_short"),
+        )
+        remote_display_version = self._format_display_version(
+            remote_info.get("remote_tag"),
+            remote_info.get("remote_version"),
+            remote_info.get("remote_id_short"),
+        )
+
         return {
             "name": container.name,
             "image_ref": image_ref,
             "installed_version": installed_info.get("installed_version"),
+            "installed_display_version": installed_display_version,
             "installed_tag": installed_info.get("installed_tag"),
             "remote_version": remote_info.get("remote_version"),
+            "remote_display_version": remote_display_version,
             "remote_tag": remote_info.get("remote_tag"),
             "update_state": update_state,
             "remote_id_short": remote_info.get("remote_id_short"),
