@@ -1,5 +1,6 @@
 import json
 import os
+import platform
 import shutil
 import threading
 import logging
@@ -205,9 +206,9 @@ class DockerService:
     def _load_host_name(self) -> str:
         try:
             info = self.docker_client.info()
-            return info.get("Name") or os.uname().nodename
+            return info.get("Name") or platform.node()
         except Exception:
-            return os.uname().nodename
+            return platform.node()
 
     def is_engine_running(self) -> bool:
         try:
