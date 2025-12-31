@@ -236,6 +236,7 @@ class DockerService:
 
     def _extract_version(self, labels: dict) -> Optional[str]:
         for key in (
+            "io.hass.version",
             "org.opencontainers.image.version",
             "version",
             "org.opencontainers.image.revision",
@@ -453,8 +454,10 @@ class DockerService:
         remote_short = remote_id.split(":")[-1][:12] if remote_id else None
 
         remote_version = (
-            annotations.get("org.opencontainers.image.version")
+            annotations.get("io.hass.version")
+            or annotations.get("org.opencontainers.image.version")
             or annotations.get("version")
+            or annotations.get("org.opencontainers.image.revision")
             or reference_tag
             or remote_short
         )
