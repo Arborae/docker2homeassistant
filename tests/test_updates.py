@@ -28,6 +28,19 @@ def load_app_module():
     return app_module
 
 
+def create_docker_service():
+    sys.path.append(str(PROJECT_ROOT / "d2ha"))
+
+    mock_client = mock.MagicMock()
+    mock_client.api = mock.MagicMock()
+    mock_client.info.return_value = {}
+
+    with mock.patch("docker.from_env", return_value=mock_client):
+        import docker_service
+
+        return docker_service.DockerService()
+
+
 def test_updates_page_handles_docker_errors_gracefully():
     app_module = load_app_module()
 
@@ -48,4 +61,32 @@ def test_updates_page_handles_docker_errors_gracefully():
 
     assert response == "OK"
     assert ("error", "Impossibile caricare gli aggiornamenti. Riprova più tardi.") in flashes
+
+
+def test_extract_version_supports_home_assistant_labels():
+    service = create_docker_service()
+
+    version = service._extract_version({
+        "io.hass.version": "2025.12.5",
+        "org.opencontainers.image.version": "2024.1.0",
+    })
+
+    assert version == "2025.12.5"
+
+
+def test_fetch_remote_info_prefers_home_assistant_annotations():
+    service = create_docker_service()
+    service.docker_api.inspect_distribution.return_value = {
+        "Descriptor": {
+            "annotations": {
+                "io.hass.version": "2025.12.5",
+                "org.opencontainers.image.version": "2024.1.0",
+            }
+        },
+        "Digest": "sha256:deadbeef",
+    }
+
+    info = service._fetch_remote_info("ghcr.io/homeassistant/home-assistant:latest")
+
+    assert info.get("remote_version") == "2025.12.5"
 
