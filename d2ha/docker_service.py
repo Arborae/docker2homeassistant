@@ -292,17 +292,17 @@ class DockerService:
         if channel and version and channel != version:
             return f"{channel} {version}"
 
-        if version:
+        if version and version != channel:
             return version
 
-        if channel and digest_short:
-            return f"{channel} {digest_short}"
+        # If we have a digest and (no version OR version is same as channel like 'latest')
+        if digest_short:
+            if channel:
+                return f"{channel} ({digest_short})"
+            return digest_short
 
         if channel:
             return channel
-
-        if digest_short:
-            return digest_short
 
         return None
 
@@ -471,11 +471,13 @@ class DockerService:
             "remote_breaking": annotations.get("org.opencontainers.image.breaking_changes"),
         }
 
-    def get_remote_info(self, image_ref: str) -> Dict[str, Any]:
+    def get_remote_info(self, image_ref: str, ttl: Optional[float] = None) -> Dict[str, Any]:
         now = time.time()
+        effective_ttl = ttl if ttl is not None else self.remote_cache_ttl
+
         with self._lock:
             cached_ts = self.remote_cache_ts.get(image_ref, 0)
-            if now - cached_ts <= self.remote_cache_ttl and image_ref in self.remote_cache:
+            if now - cached_ts <= effective_ttl and image_ref in self.remote_cache:
                 return self.remote_cache[image_ref]
 
         remote_info = self._fetch_remote_info(image_ref)
@@ -1168,7 +1170,8 @@ class DockerService:
                 image_name = c.image.short_id
 
             remote_info = self._merge_remote_with_installed(
-                installed_info, self.get_remote_info(check_ref)
+                installed_info,
+                self.get_remote_info(check_ref, ttl=update_config["frequency"] * 60),
             )
             remote_id = remote_info["remote_id"]
             remote_version = remote_info["remote_version"]
@@ -1251,7 +1254,8 @@ class DockerService:
                 self.remote_cache_ts[check_ref] = 0
 
         remote_info = self._merge_remote_with_installed(
-            installed_info, self.get_remote_info(check_ref)
+            installed_info,
+            self.get_remote_info(check_ref, ttl=0 if force_refresh else update_config["frequency"] * 60),
         )
         remote_id = remote_info.get("remote_id")
 
