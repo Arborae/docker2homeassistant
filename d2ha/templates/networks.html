@@ -7,6 +7,7 @@
   <title>D2HA – {{ t('nav.networks') }}</title>
   {% include 'partials/notifications_styles.html' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
 </head>
 
 <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
@@ -18,7 +19,8 @@
       <nav id="primaryNav" role="navigation">
         <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">{{ t("nav.home")
           }}</a>
-        <a href="{{ url_for('ui.containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
+        <a href="{{ url_for('ui.containers_view') }}"
+          class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
           t("nav.containers") }}</a>
         <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
           t("nav.images") }}</a>

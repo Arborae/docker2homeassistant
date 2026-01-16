@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Immagini</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
   {% include 'partials/notifications_styles.html' %}
 </head>
 
@@ -17,7 +18,8 @@
       {% include 'partials/notifications_panel.html' %}
       <nav id="primaryNav" role="navigation">
         <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('ui.containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
+        <a href="{{ url_for('ui.containers_view') }}"
+          class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
           t("nav.containers") }}</a>
         <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
           t("nav.images") }}</a>

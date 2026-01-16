@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="{{ get_current_lang() }}">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}D2HA{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
 </head>
-<body
-  class="theme-{{ get_current_theme() }}"
-  data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
   data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
-  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}"
->
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <script>
     (() => {
       try {
@@ -35,8 +35,10 @@
       {% include 'partials/flash_messages.html' %}
 
       <div class="onboarding-toolbar">
-        <button id="compactToggleAuth" class="onboarding-toggle compact-toggle" type="button" aria-pressed="false" aria-label="{{ t('compact_mode.label') }}" title="{{ t('compact_mode.hint') }}">🗜️</button>
-        <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false" aria-controls="onboardingMenu" title="{{ t('settings.title') }}">🌐</button>
+        <button id="compactToggleAuth" class="onboarding-toggle compact-toggle" type="button" aria-pressed="false"
+          aria-label="{{ t('compact_mode.label') }}" title="{{ t('compact_mode.hint') }}">🗜️</button>
+        <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false"
+          aria-controls="onboardingMenu" title="{{ t('settings.title') }}">🌐</button>
         <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">
           <h2>{{ t('settings.title') }}</h2>
           <form method="post" action="{{ url_for('auth.set_language') }}">
@@ -44,7 +46,7 @@
             <label for="onboarding-lang">{{ t('language.label') }}</label>
             <select id="onboarding-lang" name="lang" onchange="this.form.submit()">
               {% for lang_code in SUPPORTED_LANGS %}
-              <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
+              <option value="{{ lang_code }}" {% if get_current_lang()==lang_code %}selected{% endif %}>
                 {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
               </option>
               {% endfor %}
@@ -55,7 +57,8 @@
             <label for="onboarding-theme">{{ t('theme.label') }}</label>
             <select id="onboarding-theme" name="theme" onchange="this.form.submit()">
               {% for theme in SUPPORTED_THEMES %}
-              <option value="{{ theme }}" {% if get_current_theme() == theme %}selected{% endif %}>{{ t('theme.' + theme) }}</option>
+              <option value="{{ theme }}" {% if get_current_theme()==theme %}selected{% endif %}>{{ t('theme.' + theme)
+                }}</option>
               {% endfor %}
             </select>
           </form>
@@ -111,4 +114,5 @@
   </script>
   {% block auth_scripts %}{% endblock %}
 </body>
+
 </html>

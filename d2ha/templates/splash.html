@@ -5,7 +5,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA - Loading</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
 </head>
 
 <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
@@ -37,7 +38,7 @@
   <script>
     window.d2haSplashConfig = {
       targetUrl: {{ target_url | tojson }},
-      healthUrl: {{ url_for('health_check_override') | tojson }}
+    healthUrl: { { url_for('health_check_override') | tojson } }
     };
   </script>
   <script src="{{ url_for('static', filename='js/auth_background.js') }}"></script>
