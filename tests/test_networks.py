@@ -1,12 +1,12 @@
 import unittest
 from unittest import mock
 
-import os
 import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1] / "d2ha"))
-import docker_service  # noqa: E402
+from services.docker import DockerService
+import services.docker as docker_module
 
 
 class DummyNetwork:
@@ -30,11 +30,11 @@ class DockerServiceNetworkTests(unittest.TestCase):
         self.client = mock.MagicMock()
         self.client.networks = mock.MagicMock()
         self.client.containers = mock.MagicMock()
-        patcher = mock.patch.object(docker_service, "docker", autospec=True)
+        patcher = mock.patch.object(docker_module, "docker", autospec=True)
         self.addCleanup(patcher.stop)
         self.mock_docker = patcher.start()
         self.mock_docker.from_env.return_value = self.client
-        self.service = docker_service.DockerService()
+        self.service = DockerService()
 
     def test_list_networks_overview_collects_basic_fields(self):
         network = DummyNetwork(

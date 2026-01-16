@@ -11,72 +11,10 @@
 </script>
 <div class="header-bar">
   <div class="header-section header-left">
-    <div class="header-clock" id="header-clock" aria-label="{{ t('clock.label') }}" role="button" tabindex="0" aria-expanded="false">
+    <div class="header-clock" id="header-clock" aria-label="{{ t('clock.label') }}" role="button" tabindex="0"
+      aria-expanded="false">
       <div class="header-clock-time" id="header-clock-time"></div>
       <div class="header-clock-date" id="header-clock-date"></div>
-
-      <div class="clock-settings-modal" id="clock-settings-modal" aria-hidden="true">
-        <div class="clock-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="clock-settings-title">
-          <div class="clock-settings-header">
-            <div class="clock-settings-heading" role="presentation">
-              <h3 id="clock-settings-title">{{ t('clock.settings_title') }}</h3>
-            </div>
-          </div>
-
-          <div class="clock-settings-body">
-            <div class="clock-settings-card">
-              <div class="settings-row settings-row-toggle clock-settings-row">
-                <div>
-                  <div class="clock-settings-label">{{ t('clock.timezone.auto') }}</div>
-                  <p class="clock-settings-hint">{{ t('clock.timezone.auto_hint') }}</p>
-                  <p class="clock-settings-hint" id="clock-browser-tz"></p>
-                </div>
-                <div class="switch">
-                  <input type="checkbox" id="clock-timezone-auto" />
-                  <span class="slider"></span>
-                </div>
-              </div>
-
-              <div class="clock-settings-timezone" id="clock-timezone-selects">
-                <div class="clock-settings-input-group">
-                  <label for="clock-region-select">{{ t('clock.timezone.region') }}</label>
-                  <select id="clock-region-select"></select>
-                </div>
-                <div class="clock-settings-input-group">
-                  <label for="clock-zone-select">{{ t('clock.timezone.zone') }}</label>
-                  <select id="clock-zone-select"></select>
-                </div>
-              </div>
-            </div>
-
-            <div class="clock-settings-card">
-              <div class="settings-row settings-row-toggle clock-settings-row">
-                <div>
-                  <div class="clock-settings-label">{{ t('clock.seconds.label') }}</div>
-                  <p class="clock-settings-hint">{{ t('clock.seconds.hint') }}</p>
-                </div>
-                <div class="switch">
-                  <input type="checkbox" id="clock-seconds-toggle" />
-                  <span class="slider"></span>
-                </div>
-              </div>
-            </div>
-
-            <div class="clock-settings-card">
-              <div class="settings-row settings-row-toggle clock-settings-row">
-                <div>
-                  <div class="clock-settings-label">{{ t('clock.date.label') }}</div>
-                  <p class="clock-settings-hint">{{ t('clock.date.hint') }}</p>
-                </div>
-                <div class="switch">
-                  <input type="checkbox" id="clock-date-toggle" />
-                  <span class="slider"></span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -86,23 +24,30 @@
 
   <div class="header-section header-right">
     <div class="backend-area">
-      <button id="backend-status-indicator" class="backend-status backend-status-ok" title="{{ t('settings.backend_status') }}" aria-label="{{ t('settings.backend_status') }}" aria-expanded="false" aria-controls="backendPanel" type="button">
+      <button id="backend-status-indicator" class="backend-status backend-status-ok"
+        title="{{ t('settings.backend_status') }}" aria-label="{{ t('settings.backend_status') }}" aria-expanded="false"
+        aria-controls="backendPanel" type="button">
         <svg class="backend-status-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path d="M3 10.5c5.5-5.5 12.5-5.5 18 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M6.5 14c3.25-3.25 7.75-3.25 11 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-          <path d="M10 17.5c1.1-1.1 2.9-1.1 4 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M3 10.5c5.5-5.5 12.5-5.5 18 0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M6.5 14c3.25-3.25 7.75-3.25 11 0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M10 17.5c1.1-1.1 2.9-1.1 4 0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
           <circle cx="12" cy="20" r="1.25" fill="currentColor" />
         </svg>
       </button>
       <div class="backend-panel" id="backendPanel" role="region" aria-label="{{ t('settings.backend_status') }}">
         <div class="backend-panel-header">
           <span>{{ t('settings.backend_status') }}</span>
-          <button type="button" class="backend-refresh-btn" id="backend-status-refresh-btn">{{ t('settings.refresh') }}</button>
+          <button type="button" class="backend-refresh-btn" id="backend-status-refresh-btn">{{ t('settings.refresh')
+            }}</button>
         </div>
         <p id="backend-status-last-update" class="backend-panel-text">{{ t('backend_status.no_recent_update') }}</p>
       </div>
     </div>
-    <div class="debug-indicator" data-debug-indicator title="{{ t('debug_mode.label') }}" aria-label="{{ t('debug_mode.label') }}">
+    <div class="debug-indicator" data-debug-indicator title="{{ t('debug_mode.label') }}"
+      aria-label="{{ t('debug_mode.label') }}">
       <span class="debug-indicator-icon" aria-hidden="true">🐞</span>
       <span class="debug-indicator-text">{{ t('debug_mode.label') }}</span>
     </div>
@@ -149,10 +94,13 @@
               <span>{{ t('nav.security') }}</span>
               <p class="settings-hint">{{ t('settings.security_hint') }}</p>
             </div>
-            <a class="settings-link settings-link-icon" href="{{ url_for('security_settings') }}" aria-label="Apri impostazioni di sicurezza">
+            <a class="settings-link settings-link-icon" href="{{ url_for('auth.security_settings') }}"
+              aria-label="Apri impostazioni di sicurezza">
               <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 3l7 4v5c0 4.97-3.58 9.36-7 9.97-3.42-.61-7-5-7-9.97V7l7-4z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
-                <path d="M9.5 12.5l2 2 3-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 3l7 4v5c0 4.97-3.58 9.36-7 9.97-3.42-.61-7-5-7-9.97V7l7-4z" fill="none"
+                  stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                <path d="M9.5 12.5l2 2 3-3.5" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" />
               </svg>
             </a>
           </div>
@@ -203,11 +151,11 @@
               <span>{{ t('theme.label') }}</span>
               <p class="settings-hint">{{ t('theme.switch_label') }}</p>
             </div>
-            <form method="post" action="{{ url_for('set_theme') }}">
+            <form method="post" action="{{ url_for('auth.set_theme') }}">
               <input type="hidden" name="next" value="{{ request.path }}">
               <select name="theme" onchange="this.form.submit()">
                 {% for theme in SUPPORTED_THEMES %}
-                <option value="{{ theme }}" {% if get_current_theme() == theme %}selected{% endif %}>
+                <option value="{{ theme }}" {% if get_current_theme()==theme %}selected{% endif %}>
                   {{ t('theme.' + theme) }}
                 </option>
                 {% endfor %}
@@ -219,11 +167,11 @@
               <span>{{ t('language.label') }}</span>
               <p class="settings-hint">{{ t('wizard.step1.title') }}</p>
             </div>
-            <form method="post" action="{{ url_for('set_language') }}">
+            <form method="post" action="{{ url_for('auth.set_language') }}">
               <input type="hidden" name="next" value="{{ request.path }}">
               <select name="lang" onchange="this.form.submit()">
                 {% for lang_code in SUPPORTED_LANGS %}
-                <option value="{{ lang_code }}" {% if get_current_lang() == lang_code %}selected{% endif %}>
+                <option value="{{ lang_code }}" {% if get_current_lang()==lang_code %}selected{% endif %}>
                   {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
                 </option>
                 {% endfor %}
@@ -236,75 +184,9 @@
   </div>
 </div>
 
-<div class="clock-settings-modal" id="clock-settings-modal" aria-hidden="true">
-  <div class="clock-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="clock-settings-title">
-    <div class="clock-settings-header">
-      <div>
-        <p class="clock-settings-kicker">{{ t('clock.kicker') }}</p>
-        <h3 id="clock-settings-title">{{ t('clock.settings_title') }}</h3>
-        <p class="clock-settings-description">{{ t('clock.description') }}</p>
-      </div>
-      <button type="button" class="clock-settings-close" id="clock-settings-close" aria-label="{{ t('settings.close') }}">×</button>
-    </div>
 
-    <div class="clock-settings-section">
-      <div class="clock-settings-row">
-        <div>
-          <div class="clock-settings-label">{{ t('clock.timezone.auto') }}</div>
-          <p class="clock-settings-hint">{{ t('clock.timezone.auto_hint') }}</p>
-          <p class="clock-settings-hint" id="clock-browser-tz"></p>
-        </div>
-        <div class="switch">
-          <input type="checkbox" id="clock-timezone-auto" />
-          <span class="slider"></span>
-        </div>
-      </div>
 
-      <div class="clock-settings-row clock-settings-timezone" id="clock-timezone-selects">
-        <div class="clock-settings-input-group">
-          <label for="clock-region-select">{{ t('clock.timezone.region') }}</label>
-          <select id="clock-region-select"></select>
-        </div>
-        <div class="clock-settings-input-group">
-          <label for="clock-zone-select">{{ t('clock.timezone.zone') }}</label>
-          <select id="clock-zone-select"></select>
-        </div>
-      </div>
-    </div>
-
-    <div class="clock-settings-section clock-settings-grid">
-      <div class="clock-settings-row clock-settings-row-card">
-        <div>
-          <div class="clock-settings-label">{{ t('clock.seconds.label') }}</div>
-          <p class="clock-settings-hint">{{ t('clock.seconds.hint') }}</p>
-        </div>
-        <div class="switch">
-          <input type="checkbox" id="clock-seconds-toggle" />
-          <span class="slider"></span>
-        </div>
-      </div>
-      <div class="clock-settings-row clock-settings-row-card">
-        <div>
-          <div class="clock-settings-label">{{ t('clock.date.label') }}</div>
-          <p class="clock-settings-hint">{{ t('clock.date.hint') }}</p>
-        </div>
-        <div class="switch">
-          <input type="checkbox" id="clock-date-toggle" />
-          <span class="slider"></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="clock-settings-footer">
-      <p class="clock-settings-status" id="clock-settings-status">{{ t('clock.persistence') }}</p>
-      <div class="clock-settings-actions">
-        <button type="button" class="btn" id="clock-settings-close-btn">{{ t('settings.close') }}</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<button class="mobile-drawer-tab" id="mobileDrawerTab" type="button" aria-expanded="false" aria-controls="primaryNav" aria-label="Apri o chiudi la barra laterale">
+<button class="mobile-drawer-tab" id="mobileDrawerTab" type="button" aria-expanded="false" aria-controls="primaryNav"
+  aria-label="Apri o chiudi la barra laterale">
   <span class="mobile-drawer-tab-icon" aria-hidden="true">☰</span>
 </button>
-

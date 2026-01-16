@@ -1,163 +1,37 @@
 <!DOCTYPE html>
 <html lang="{{ get_current_lang() }}">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Eventi</title>
-  <style>
-    :root {
-      --bg-base: #0b1020;
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0,255,255,0.05), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(124,255,195,0.06), transparent 24%),
-                    linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
-      --bg-card: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
-                  linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
-                  rgba(17, 22, 36, 0.92);
-      --bg-card-alt: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)),
-                     rgba(26, 34, 52, 0.86);
-      --accent-primary: #31c4ff;
-      --accent: var(--accent-primary);
-      --accent-2: #7cffc3;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
-      --text: #e7ecf4;
-      --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
-      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-      --control-surface: #0f141f;
-      --bg: var(--bg-base);
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-
-    body.theme-light {
-      --bg-base: linear-gradient(135deg, #fff3e0, #ffe0c2);
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
-                    var(--bg-base);
-      --bg-card: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.78)),
-                  linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
-                  #ffffff;
-      --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.84)),
-                     #fff7ed;
-      --accent-primary: #f97316;
-      --accent: var(--accent-primary);
-      --accent-2: #fb923c;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.28);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
-      --text: #1f2937;
-      --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
-      --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
-      --control-surface: #fffaf3;
-      --auth-bg-1: #ffe9d6;
-      --auth-bg-2: #ffd0a1;
-      --bg: #fff7ed;
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: var(--bg-primary);
-      color: var(--text);
-    }
-    a { color: inherit; text-decoration: none; }
-    header {
-      background: var(--bg-primary);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 18px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(6px);
-    }
-    .header-shell {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 12px 14px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    nav {
-      margin-top: 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 4px 2px 0;
-      align-items: center;
-    }
-    .tab { padding:9px 14px; border-radius:10px; background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); color: var(--muted); font-weight:700; border:1px solid rgba(255,255,255,0.08); transition: all 0.15s ease; box-shadow:0 6px 18px rgba(0,0,0,0.28); }
-    .tab:hover { color: var(--text); border-color: var(--accent-border-soft); background: rgba(255,255,255,0.06); }
-    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 10px 26px var(--accent-glow); border-color: var(--accent-border); }
-    .logout-link { margin-left:auto; background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06)); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.35); border-color: var(--border); }
-    main { padding: 18px; display: flex; flex-direction: column; gap: 14px; }
-    .card { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:14px 16px; box-shadow: var(--shadow); }
-    .filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-    .select, .input { background: var(--control-surface); color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:0.9rem; }
-    .btn { border:none; border-radius:10px; padding:9px 14px; font-weight:700; cursor:pointer; background: var(--accent-gradient); color:#0c121e; box-shadow:0 6px 18px var(--accent-glow); }
-    .table-card { padding:0; overflow:hidden; }
-    .table-head { display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid var(--border); background: var(--bg-card-alt); flex-wrap:wrap; gap:10px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding:10px 12px; text-align:left; font-size:0.85rem; border-bottom:1px solid var(--border); }
-    th { color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
-    tr:last-child td { border-bottom:none; }
-    tr:hover { background: rgba(255,255,255,0.03); }
-    .sev-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-weight:700; text-transform: uppercase; font-size:0.75rem; }
-    .sev-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
-    .sev-info { background: var(--accent-surface); color: #31c4ff; }
-    .sev-info .sev-dot { background:#31c4ff; }
-    .sev-warning { background: rgba(255,213,79,0.16); color: #ffd54f; }
-    .sev-warning .sev-dot { background:#ffd54f; }
-    .sev-error { background: rgba(255,138,122,0.15); color: #ff8a7a; }
-    .sev-error .sev-dot { background:#ff8a7a; }
-    .meta { color: var(--muted); font-size:0.9rem; }
-    .muted { color: var(--muted); font-size:0.85rem; }
-    .badge { padding:4px 8px; border-radius:8px; background: rgba(255,255,255,0.05); border:1px solid var(--border); font-size:0.8rem; }
-    .empty { padding:18px; text-align:center; color: var(--muted); }
-    @media (max-width: 960px) {
-      table, thead, tbody, th, td, tr { display:block; }
-      thead { display:none; }
-      tr { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-      td { display:flex; justify-content: space-between; border-bottom:1px solid var(--border); }
-      td::before { content: attr(data-label); font-weight:700; color: var(--muted); margin-right: 10px; }
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
+
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <header>
     <div class="header-shell">
       {% include 'partials/notifications_panel.html' %}
       <nav id="primaryNav" role="navigation">
-        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-        <a href="{{ url_for('volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{ t("nav.volumes") }}</a>
-        <a href="{{ url_for('networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{ t("nav.networks") }}</a>
-        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+        <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+        <a href="{{ url_for('ui.containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
+          t("nav.containers") }}</a>
+        <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
+          t("nav.images") }}</a>
+        <a href="{{ url_for('ui.volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{
+          t("nav.volumes") }}</a>
+        <a href="{{ url_for('ui.networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{
+          t("nav.networks") }}</a>
+        <a href="{{ url_for('ui.updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{
+          t("nav.updates") }}</a>
+        <a href="{{ url_for('ui.events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{
+          t("nav.events") }}</a>
+        <a href="{{ url_for('ui.autodiscovery_view') }}"
+          class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('auth.logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
       </nav>
     </div>
   </header>
@@ -171,17 +45,17 @@
           <span class="muted">Intervallo</span><br />
           <select name="hours" class="select">
             {% for opt in [1,6,12,24,72,168] %}
-              <option value="{{ opt }}" {% if selected_hours == opt %}selected{% endif %}>Ultime {{ opt }} ore</option>
+            <option value="{{ opt }}" {% if selected_hours==opt %}selected{% endif %}>Ultime {{ opt }} ore</option>
             {% endfor %}
           </select>
         </label>
         <label>
           <span class="muted">Severità</span><br />
           <select name="severity" class="select">
-            <option value="all" {% if selected_severity == 'all' %}selected{% endif %}>Tutte</option>
-            <option value="info" {% if selected_severity == 'info' %}selected{% endif %}>Info</option>
-            <option value="warning" {% if selected_severity == 'warning' %}selected{% endif %}>Warning</option>
-            <option value="error" {% if selected_severity == 'error' %}selected{% endif %}>Errori</option>
+            <option value="all" {% if selected_severity=='all' %}selected{% endif %}>Tutte</option>
+            <option value="info" {% if selected_severity=='info' %}selected{% endif %}>Info</option>
+            <option value="warning" {% if selected_severity=='warning' %}selected{% endif %}>Warning</option>
+            <option value="error" {% if selected_severity=='error' %}selected{% endif %}>Errori</option>
           </select>
         </label>
         <button class="btn" type="submit">Aggiorna</button>
@@ -194,7 +68,8 @@
           <div class="meta">{{ events|length }} eventi trovati</div>
           <div class="muted">Host: {{ events[0].host if events else '-' }}</div>
         </div>
-        <div class="badge">{{ selected_hours }}h di cronologia · Severità: {{ 'Tutte' if selected_severity == 'all' else selected_severity|title }}</div>
+        <div class="badge">{{ selected_hours }}h di cronologia · Severità: {{ 'Tutte' if selected_severity == 'all' else
+          selected_severity|title }}</div>
       </div>
       <table aria-label="Registro eventi di sistema">
         <thead>
@@ -209,27 +84,28 @@
         </thead>
         <tbody>
           {% if events %}
-            {% for ev in events %}
-              <tr>
-                <td data-label="Data">{{ ev.timestamp_local.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-                <td data-label="Categoria">{{ ev.type|title }}</td>
-                <td data-label="Severità">
-                  <span class="sev-pill {% if ev.severity == 'error' %}sev-error{% elif ev.severity == 'warning' %}sev-warning{% else %}sev-info{% endif %}">
-                    <span class="sev-dot"></span>{{ ev.severity|title }}
-                  </span>
-                </td>
-                <td data-label="Dettagli">
-                  <div>{{ ev.detail }}</div>
-                  <div class="muted">{{ ev.source }}</div>
-                </td>
-                <td data-label="Container">{{ ev.name }} <span class="muted">({{ ev.id }})</span></td>
-                <td data-label="Host">{{ ev.host }}</td>
-              </tr>
-            {% endfor %}
+          {% for ev in events %}
+          <tr>
+            <td data-label="Data">{{ ev.timestamp_local.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+            <td data-label="Categoria">{{ ev.type|title }}</td>
+            <td data-label="Severità">
+              <span
+                class="sev-pill {% if ev.severity == 'error' %}sev-error{% elif ev.severity == 'warning' %}sev-warning{% else %}sev-info{% endif %}">
+                <span class="sev-dot"></span>{{ ev.severity|title }}
+              </span>
+            </td>
+            <td data-label="Dettagli">
+              <div>{{ ev.detail }}</div>
+              <div class="muted">{{ ev.source }}</div>
+            </td>
+            <td data-label="Container">{{ ev.name }} <span class="muted">({{ ev.id }})</span></td>
+            <td data-label="Host">{{ ev.host }}</td>
+          </tr>
+          {% endfor %}
           {% else %}
-            <tr>
-              <td colspan="6" class="empty">Nessun evento disponibile per l'intervallo selezionato.</td>
-            </tr>
+          <tr>
+            <td colspan="6" class="empty">Nessun evento disponibile per l'intervallo selezionato.</td>
+          </tr>
           {% endif %}
         </tbody>
       </table>
@@ -237,4 +113,5 @@
   </main>
   {% include 'partials/notifications_script.html' %}
 </body>
+
 </html>

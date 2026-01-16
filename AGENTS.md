@@ -2,11 +2,28 @@
 
 Short guide for AI/code assistants working on Docker to Home Assistant (Flask-based web dashboard with optional MQTT/Home Assistant integration).
 
-## Project Structure
-- `d2ha/` – Flask app entrypoint (`app.py`), Docker integration (`docker_service.py`), auth store, i18n/theme helpers, static assets, and Jinja templates. Includes deployment files (`Dockerfile`, `docker-compose.yml`, `requirements.txt`, `version.py`).
-- `docs/` – Static marketing/docs assets (HTML, CSS, JS, GIFs) plus install guide.
-- `tests/` – Python unit tests (unittest/pytest compatible).
-- `.github/workflows/` – CI pipelines to build/publish Docker images (stable + nightly).
+## Standard Development Workflow
+1.  **Plan**: Understand the goal. If refactoring or adding complex features, outline a plan first.
+2.  **Implement**: Make changes following the modular structure (see below).
+3.  **Update Tests**: Ensure `tests/` reflect your changes. Use unit tests to verify logic.
+4.  **Verify**: Run `python -m unittest discover tests` and perform manual checks (start app with `python d2ha/app.py`).
+
+## Project Structure (Modular)
+- `d2ha/` – Core application.
+    - `app.py`: Application entry point, service initialization, blueprint registration.
+    - `services/`: Core logic and business rules.
+        - `docker.py`: `DockerService` for all Docker interactions.
+        - `preferences.py`: `AutodiscoveryPreferences` for HA config.
+        - `utils.py`: Shared utilities.
+    - `mqtt/`: All MQTT-related logic (`manager.py`).
+    - `routes/`: Flask Blueprints:
+        - `ui.py`: Frontend routes and view logic.
+        - `api.py`: JSON API endpoints (`/api/overview`, `/api/networks`, `/api/notifications`, etc.).
+        - `auth.py`: Authentication and onboarding flows.
+    - `templates/`, `static/`: Frontend assets.
+- `docs/` – Static marketing/docs assets.
+- `tests/` – Python unit tests.
+- `.github/workflows/` – CI pipelines.
 
 ## Local Development
 1. Create a virtualenv and install deps:
@@ -24,11 +41,7 @@ Short guide for AI/code assistants working on Docker to Home Assistant (Flask-ba
 ## Running Tests & Quality Checks
 - Unit tests (from repo root):
   ```bash
-  python -m pytest
-  ```
-  or
-  ```bash
-  python -m unittest discover -s tests
+  python -m unittest discover tests
   ```
 - No dedicated linters/formatters are configured in this repo; follow existing style.
 
@@ -43,29 +56,22 @@ Short guide for AI/code assistants working on Docker to Home Assistant (Flask-ba
   ```
 - Published images:
   - Stable/Release: `ghcr.io/arborae/docker2homeassistant:latest` or `:X.Y.Z`
-  - Nightly: `ghcr.io/arborae/docker2homeassistant:nightly` (or `:nightly-<commit_sha>`)
-- CI builds/pushes images via GitHub Actions (`publish-docker.yml` on releases; `nightly-docker.yml` on `main`).
+  - Nightly: `ghcr.io/arborae/docker2homeassistant:nightly`
+- CI builds/pushes images via GitHub Actions.
 
 ## Configuration & Secrets
-- Environment variables: `D2HA_SECRET_KEY`, `MQTT_*` (broker, port, username/password, topics/prefix, node id, state interval), `D2HA_AUTH_CONFIG_PATH`.
-- Docker socket is required (`/var/run/docker.sock` bind mount). Persist data in `./data` for auth and MQTT autodiscovery preferences.
-- Never commit secrets/tokens. Use `.env` locally and repository secrets in CI. Redaction of sensitive values is implemented in logging.
+- Environment variables: `D2HA_SECRET_KEY`, `MQTT_*`, `D2HA_AUTH_CONFIG_PATH`.
+- Docker socket is required (`/var/run/docker.sock`).
+- Never commit secrets/tokens.
 
 ## Style & Conventions
-- Language: English for code, comments, docs (unless a file is clearly Italian).
-- Follow existing Flask/Jinja structure; keep functions clear over dense one-liners.
-- Avoid adding new dependencies unless necessary and justified.
-- YAML (Compose/GitHub Actions): preserve indentation and current patterns. Do not alter network/volume settings unless required.
+- **Modular Code**: Logic goes in `services/`, routes in `routes/`, MQTT in `mqtt/`. **Do not add logic to `app.py` directly.**
+- **Documentation**: If adding new API endpoints, **always update the README.md** to include them.
+- Language: English for code/comments.
+- Follow existing Flask/Jinja structure.
+- Avoid new dependencies unless necessary.
 
 ## Pull Requests
-- Keep diffs focused and well-scoped; describe context, solution, and any manual steps (e.g., migrations, rebuilds).
-- Update docs if behavior, endpoints, or configs change.
-- Add or update tests when altering logic.
-
-## Testing Targets
-- For logic changes, ensure `tests/` still pass via `python -m pytest`.
-- If you change Docker build behavior, verify local `docker build` or `docker compose` as appropriate.
-
-## Other Notes
-- App defaults to `admin`/`admin`; onboarding wizard forces password change and optional 2FA.
-- Running without MQTT is supported; MQTT features auto-disable if not configured.
+- Keep diffs focused.
+- Update docs if behavior changes.
+- **Always update tests** when altering logic.

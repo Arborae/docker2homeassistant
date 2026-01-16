@@ -1,321 +1,38 @@
 <!DOCTYPE html>
 <html lang="{{ get_current_lang() }}">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Aggiornamenti</title>
-  <style>
-    :root {
-      --bg-base: #0b1020;
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0,255,255,0.05), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(124,255,195,0.06), transparent 24%),
-                    linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
-      --bg-card: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
-                  linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
-                  rgba(17, 22, 36, 0.92);
-      --bg-card-alt: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)),
-                     rgba(26, 34, 52, 0.86);
-      --accent-primary: #31c4ff;
-      --accent: var(--accent-primary);
-      --accent-2: #7cffc3;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
-      --text: #e7ecf4;
-      --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
-      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-      --control-surface: #0f141f;
-      --bg: var(--bg-base);
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-
-    body.theme-light {
-      --bg-base: linear-gradient(135deg, #fff3e0, #ffe0c2);
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
-                    var(--bg-base);
-      --bg-card: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.78)),
-                  linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
-                  #ffffff;
-      --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.84)),
-                     #fff7ed;
-      --accent-primary: #f97316;
-      --accent: var(--accent-primary);
-      --accent-2: #fb923c;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.28);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
-      --text: #1f2937;
-      --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
-      --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
-      --control-surface: #fffaf3;
-      --auth-bg-1: #ffe9d6;
-      --auth-bg-2: #ffd0a1;
-      --bg: #fff7ed;
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-primary); color: var(--text); }
-    a { color: inherit; text-decoration: none; }
-    :root {
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --shadow-strong: 0 16px 40px rgba(0,0,0,0.45);
-      --shadow-soft: 0 10px 28px rgba(0,0,0,0.32);
-    }
-
-    .section-summary-bar {
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
-        linear-gradient(120deg, var(--accent-surface), rgba(124, 255, 195, 0.06)),
-        var(--panel);
-      border: 1px solid var(--accent-border-soft);
-      box-shadow: var(--shadow-strong);
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    .section-summary-bar h3 { margin: 0; text-transform: uppercase; letter-spacing: 0.08em; font-size: 1rem; }
-    .section-summary-bar .meta { color: var(--muted); font-weight: 700; letter-spacing: 0.01em; }
-
-    .section-card {
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
-        linear-gradient(140deg, var(--accent-surface), rgba(124, 255, 195, 0.04)),
-        var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-strong);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .section-card + .section-card { margin-top: 12px; }
-
-    .section-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
-      background: var(--stack-header-bg);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-card-header .title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .section-card-body { padding: 12px 14px 16px; background: var(--panel-2); }
-    .section-card-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-    .section-card-badge {
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: var(--accent-surface);
-      color: var(--accent);
-      border: 1px solid var(--accent-border);
-      font-weight: 800;
-      letter-spacing: 0.04em;
-    }
-
-    .section-toggle { cursor: pointer; }
-    .section-toggle-btn {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 6px 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 32px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-    .section-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
-    .section-toggle-btn .chevron { display: inline-block; width: 10px; text-align: center; }
-    .section-card-body.collapsed { display: none; }
-
-    .btn-primary-glow {
-      background: var(--accent-gradient);
-      border: 1px solid var(--accent-border-strong);
-      color: #0b111c;
-      border-radius: 14px;
-      padding: 10px 16px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      cursor: pointer;
-      box-shadow: 0 10px 26px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.18);
-      transition: transform 0.1s ease, box-shadow 0.2s ease;
-    }
-    .btn-primary-glow:hover { transform: translateY(-1px); box-shadow: 0 12px 30px var(--accent-glow); }
-
-    .btn-chip {
-      border: 1px solid var(--accent-border);
-      background: rgba(255,255,255,0.04);
-      color: var(--accent);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      cursor: pointer;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px var(--accent-glow-soft);
-      transition: all 0.15s ease;
-    }
-    .btn-chip:hover { background: var(--accent-surface); color: var(--text); }
-    header {
-      background: var(--bg-primary);
-      border-bottom:1px solid var(--border);
-      padding:16px 18px;
-      box-shadow: var(--shadow);
-      position:sticky;
-      top:0;
-      z-index:10;
-      backdrop-filter: blur(6px);
-    }
-    .header-shell {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 12px 14px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 4px 2px 0;
-      align-items: center;
-    }
-    .tab { padding:9px 14px; border-radius:10px; background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); color: var(--muted); font-weight:700; border:1px solid rgba(255,255,255,0.08); transition: all 0.15s ease; box-shadow:0 6px 18px rgba(0,0,0,0.28); }
-    .tab:hover { color: var(--text); border-color: var(--accent-border-soft); background: rgba(255,255,255,0.06); }
-    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 10px 26px var(--accent-glow); border-color: var(--accent-border); }
-    .logout-link { margin-left:auto; background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06)); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.35); border-color: var(--border); }
-    main { padding: 18px; display:flex; flex-direction:column; gap:14px; }
-    .card { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:14px 16px; box-shadow: var(--shadow); }
-    table { width:100%; border-collapse: collapse; background: var(--bg-card-alt); border-radius:14px; overflow:hidden; table-layout: fixed; }
-    body.theme-dark .section-card-body > table { background: transparent; border-radius: 0; overflow: visible; }
-    th, td { padding:12px 12px; font-size:0.88rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; line-height: 1.4; }
-    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: rgba(255,255,255,0.03); }
-    .stack-tag { display:inline-flex; align-items:center; padding:2px 8px; border-radius:999px; background: rgba(156, 204, 101, 0.12); color: #c5e1a5; font-size: 0.78rem; }
-    .stack-tag.nostack { background: rgba(158, 158, 158, 0.12); color: #e0e0e0; }
-    .status-pill { display:inline-flex; align-items:center; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; }
-    .status-up-to-date { background: rgba(76, 175, 80, 0.15); color: #81c784; }
-    .status-update-available { background: rgba(255, 193, 7, 0.18); color: #ffeb3b; }
-    .status-unknown { background: rgba(158, 158, 158, 0.15); color: #eeeeee; }
-    .changelog, .breaking { max-height: 80px; overflow-y: auto; font-size: 0.82rem; line-height: 1.35; padding-right: 4px; }
-    .changelog::-webkit-scrollbar, .breaking::-webkit-scrollbar { width: 4px; }
-    .changelog::-webkit-scrollbar-thumb, .breaking::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 999px; }
-    .badge { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.06); font-size: 0.78rem; color: #ccc; }
-    .badge-null { opacity: 0.6; }
-    .actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-    .actions-cell { text-align: right; }
-    .col-name { width: 240px; }
-    .col-status { width: 170px; }
-    .col-version { width: 160px; }
-    .col-log, .col-breaking { width: 200px; }
-    .col-actions { width: 180px; }
-    .btn { border: 1px solid var(--border); border-radius: 12px; padding: 8px 14px; font-size: 0.85rem; cursor: pointer; background: var(--control-surface); color: var(--text); transition: transform 0.08s ease, box-shadow 0.2s ease, filter 0.2s ease; text-align: center; box-shadow: 0 8px 18px var(--shadow); }
-    .btn:hover { transform: translateY(-1px); filter: brightness(1.02); box-shadow: 0 10px 22px var(--accent-glow-soft); color: var(--accent); border-color: var(--accent-border); }
-    .btn-full-update { background: var(--accent-gradient); color:#04101c; font-weight: 800; letter-spacing: 0.01em; border-color: var(--accent-border); box-shadow: 0 10px 22px var(--accent-glow); }
-    .btn-full-update:hover { filter: brightness(1.05); color: #0b111c; }
-    .small { font-size: 0.82rem; color: #adb7c7; }
-    .performance-hint { display:none; margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border:1px dashed var(--border); align-items: center; gap: 12px; }
-    .performance-hint.visible { display: flex; justify-content: space-between; flex-wrap: wrap; }
-    .performance-hint .hint-title { font-weight: 800; margin-bottom: 4px; display: block; }
-    code { font-family: "JetBrains Mono", "Fira Code", Consolas, monospace; font-size: 0.75rem; }
-    .stack-card { margin-bottom: 12px; display:flex; flex-direction:column; gap:10px; }
-    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--border); border-radius:12px; background: var(--stack-header-bg); cursor:pointer; box-shadow: var(--shadow); }
-    .stack-left { display:flex; align-items:center; gap:10px; min-width:0; }
-    .stack-heading { display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .stack-title { font-weight:800; font-size:1rem; letter-spacing:0.08em; text-transform: uppercase; }
-    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.06); color: var(--muted); font-size:0.85rem; font-weight:700; text-transform: uppercase; letter-spacing:0.05em; }
-    .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:10px; padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; min-height:32px; }
-    .stack-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
-    .chevron { transition: transform 0.2s ease; font-size: 0.95rem; color: var(--muted); display:inline-block; width:12px; text-align:center; }
-    .collapsed .chevron { transform: rotate(-90deg); }
-    .stack-body { margin-top: 10px; display:block; }
-    .collapsed .stack-body { display:none; }
-    .status-meta { display:flex; flex-direction:column; gap:4px; }
-    .pill-row { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
-    .confirm-backdrop { position:fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index:50; padding:18px; }
-    .confirm-backdrop.visible { display:flex; }
-    .confirm-modal { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:18px; width:min(420px, 100%); box-shadow: var(--shadow); display:flex; flex-direction:column; gap:12px; }
-    .confirm-title { margin:0; font-size:1rem; }
-    .confirm-actions { display:flex; justify-content:flex-end; gap:8px; }
-    .btn-ghost { background: var(--control-surface); color: var(--text); border-color: var(--border); }
-    .debug-overlay { position:fixed; inset:0; padding:18px; display:none; align-items:center; justify-content:center; background:rgba(5,8,15,0.78); z-index:70; backdrop-filter: blur(4px); }
-    .debug-overlay.visible { display:flex; }
-    .debug-panel { width:min(1100px, 100%); background: var(--panel); border:1px solid var(--accent-border-soft); border-radius: 18px; box-shadow: var(--shadow-strong); overflow:hidden; display:flex; flex-direction:column; gap:0; }
-    .debug-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background: var(--stack-header-bg); border-bottom: 1px solid var(--border); }
-    .debug-eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; color: var(--muted); }
-    .debug-title { font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em; }
-    .debug-actions { display:flex; gap:8px; align-items:center; }
-    .debug-body { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px; padding:14px 16px 18px; background: var(--panel-2); }
-    .debug-column { background: rgba(255,255,255,0.02); border:1px solid var(--border); border-radius: 14px; padding:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); display:flex; flex-direction:column; gap:10px; min-height: 260px; }
-    .debug-subtitle { font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.8rem; color: var(--muted); }
-    .debug-list, .debug-log { flex:1; overflow-y:auto; background: var(--control-surface); border-radius: 10px; padding:10px; border:1px dashed var(--accent-border-soft); font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.9rem; }
-    .debug-log-line { padding:6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); display:flex; gap:8px; align-items:flex-start; }
-    .debug-log-line:last-child { border-bottom:none; }
-    .debug-log-line .tag { padding:2px 6px; border-radius:8px; font-size:0.75rem; background: var(--accent-surface); color: var(--accent); border:1px solid var(--accent-border-soft); }
-    .debug-log-line .text { flex:1; word-break: break-word; }
-    .debug-list .command { padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.06); color: var(--text); }
-    .debug-list .command:last-child { border-bottom:none; }
-    .debug-overlay [class*='inline-btn'] { background: var(--accent-surface); border-color: var(--accent-border); color: var(--accent); }
-    @media(max-width: 1100px) {
-      table, thead, tbody, th, td, tr { display:block; }
-      thead { display:none; }
-      table { border-radius: 0; }
-      tr { margin-bottom:12px; border-radius:10px; overflow:hidden; border:1px solid var(--border); }
-      td { border-bottom:1px solid var(--border); display:flex; justify-content: space-between; }
-      td::before { content: attr(data-label); font-weight: 700; color: var(--muted); margin-right: 10px; }
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
+
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <header>
     <div class="header-shell">
       {% include 'partials/notifications_panel.html' %}
       <nav id="primaryNav" role="navigation">
-        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-        <a href="{{ url_for('volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{ t("nav.volumes") }}</a>
-        <a href="{{ url_for('networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{ t("nav.networks") }}</a>
-        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+        <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+        <a href="{{ url_for('ui.containers_view') }}"
+          class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
+          t("nav.containers") }}</a>
+        <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
+          t("nav.images") }}</a>
+        <a href="{{ url_for('ui.volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{
+          t("nav.volumes") }}</a>
+        <a href="{{ url_for('ui.networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{
+          t("nav.networks") }}</a>
+        <a href="{{ url_for('ui.updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{
+          t("nav.updates") }}</a>
+        <a href="{{ url_for('ui.events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{
+          t("nav.events") }}</a>
+        <a href="{{ url_for('ui.autodiscovery_view') }}"
+          class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('auth.logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
       </nav>
     </div>
   </header>
@@ -333,123 +50,144 @@
         <div class="performance-hint" id="updates-performance-hint">
           <div>
             <span class="hint-title">Modalità prestazioni attiva</span>
-            <p class="small">Per ridurre il carico, la scansione automatica è disattivata. Avvia manualmente quando serve.</p>
+            <p class="small">Per ridurre il carico, la scansione automatica è disattivata. Avvia manualmente quando
+              serve.</p>
           </div>
           <button class="btn-chip" type="button" id="updates-scan-btn">Scansiona aggiornamenti</button>
         </div>
       </div>
     </section>
     {% for stack in stacks %}
-      <section class="section-card" data-stack="{{ stack.name }}">
-        <div class="section-card-header section-toggle" data-stack-toggle>
-          <div class="title">
-            <button class="section-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
-              <span class="chevron">▾</span>
-            </button>
-            <span class="stack-title">{{ ('Senza stack' if stack.name == '_no_stack' else stack.name) | upper }}</span>
-          </div>
-          <div class="section-card-actions">
-            <div class="section-card-badge">{{ stack.containers|length }} container</div>
-          </div>
+    <section class="section-card" data-stack="{{ stack.name }}">
+      <div class="section-card-header section-toggle" data-stack-toggle>
+        <div class="title">
+          <button class="section-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
+            <span class="chevron">▾</span>
+          </button>
+          <span class="stack-title">{{ ('Senza stack' if stack.name == '_no_stack' else stack.name) | upper }}</span>
         </div>
-        <div class="section-card-body stack-body">
-          <table class="responsive-table">
-            <colgroup>
-              <col class="col-name">
-              <col class="col-status">
-              <col class="col-version">
-              <col class="col-version">
-              <col class="col-log">
-              <col class="col-breaking">
-              <col class="col-actions">
-            </colgroup>
-            <thead>
-              <tr>
-                <th>{{ t("nav.containers") }}</th>
-                <th>Stato</th>
-                <th>Vers. installata</th>
-                <th>Vers. remota</th>
-                <th>Change log</th>
-                <th>Breaking</th>
-                <th>Azioni</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for c in stack.containers %}
-                <tr class="container-row" data-container-id="{{ c.id }}">
-                  {% set installed_display = c.installed_display_version or c.installed_version or c.installed_tag or c.installed_id_short %}
-                  {% set remote_display = c.remote_display_version or c.remote_version or c.remote_tag or c.remote_id_short %}
-                  <td data-label="Container">
-                    <div><strong>{{ c.name }}</strong></div>
-                    <div class="small">{{ c.image_ref }}</div>
-                    <div class="small">Stack: {{ 'no stack' if c.stack == '_no_stack' else c.stack }}</div>
-                  </td>
-                  <td data-label="Stato">
-                    {% set state = c.update_state %}
-                    {% set status_class = "status-pill " %}
-                    {% if state == 'update_available' %}
-                      {% set status_class = status_class + 'status-update-available' %}
-                      {% set status_label = 'Update disponibile' %}
-                    {% elif state == 'up_to_date' %}
-                      {% set status_class = status_class + 'status-up-to-date' %}
-                      {% set status_label = 'Aggiornato' %}
-                    {% else %}
-                      {% set status_class = status_class + 'status-unknown' %}
-                      {% set status_label = 'Sconosciuto' %}
-                    {% endif %}
-                    <div class="status-meta">
-                      <span class="{{ status_class }}" data-status-pill>{{ status_label }}</span>
+        <div class="section-card-actions">
+          <div class="section-card-badge">{{ stack.containers|length }} container</div>
+        </div>
+      </div>
+      <div class="section-card-body stack-body">
+        <table class="responsive-table">
+          <colgroup>
+            <col class="col-name">
+            <col class="col-status">
+            <col class="col-version">
+            <col class="col-version">
+            <col class="col-log">
+            <col class="col-breaking">
+            <col class="col-actions">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>{{ t("nav.containers") }}</th>
+              <th>Stato</th>
+              <th>Vers. installata</th>
+              <th>Vers. remota</th>
+              <th>Change log</th>
+              <th>Breaking</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in stack.containers %}
+            <tr class="container-row" data-container-id="{{ c.id }}">
+              {% set installed_display = c.installed_display_version or c.installed_version or c.installed_tag or
+              c.installed_id_short %}
+              {% set remote_display = c.remote_display_version or c.remote_version or c.remote_tag or c.remote_id_short
+              %}
+              <td data-label="Container">
+                <div><strong>{{ c.name }}</strong></div>
+                <div class="small">{{ c.image_ref }}</div>
+                <div class="small">Stack: {{ 'no stack' if c.stack == '_no_stack' else c.stack }}</div>
+              </td>
+              <td data-label="Stato">
+                {% set state = c.update_state %}
+                {% set status_class = "status-pill " %}
+                {% if state == 'update_available' %}
+                {% set status_class = status_class + 'status-update-available' %}
+                {% set status_label = 'Update disponibile' %}
+                {% elif state == 'up_to_date' %}
+                {% set status_class = status_class + 'status-up-to-date' %}
+                {% set status_label = 'Aggiornato' %}
+                {% else %}
+                {% set status_class = status_class + 'status-unknown' %}
+                {% set status_label = 'Sconosciuto' %}
+                {% endif %}
+                <div class="status-meta">
+                  <span class="{{ status_class }}" data-status-pill>{{ status_label }}</span>
+                </div>
+              </td>
+              <td data-label="Vers. installata">
+                <div class="pill-row">
+                  <span class="badge" data-installed-tag>{{ installed_display or 'n/d' }}</span>
+                  <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
+                </div>
+              </td>
+              <td data-label="Vers. remota">
+                <div class="pill-row">
+                  <span class="badge {% if not remote_display %}badge-null{% endif %}" data-remote-tag>{{ remote_display
+                    or 'n/d' }}</span>
+                  <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{
+                    c.remote_id_short or '' }}</span>
+                </div>
+              </td>
+              <td data-label="Change log">
+                {% if c.changelog %}
+                <div class="changelog-container" data-changelog-container>
+                  <div class="changelog-preview" data-changelog>{{ c.changelog[:500] }}{% if c.changelog|length > 500
+                    %}...{% endif %}</div>
+                  {% if c.changelog_url %}
+                  <a href="{{ c.changelog_url }}" target="_blank" rel="noopener" class="changelog-link small">Vedi
+                    release notes ↗</a>
+                  {% endif %}
+                </div>
+                {% else %}
+                <span class="small" data-changelog>Nessuna nota</span>
+                {% endif %}
+              </td>
+              <td data-label="Breaking">
+                {% if c.breaking_changes %}
+                <div class="breaking-container" data-breaking-container>
+                  <div class="breaking" data-breaking>{{ c.breaking_changes[:500] }}{% if c.breaking_changes|length >
+                    500 %}...{% endif %}</div>
+                </div>
+                {% else %}
+                <span class="small" data-breaking>Nessuna info</span>
+                {% endif %}
+              </td>
+              <td class="actions-cell" data-label="Azioni">
+                <div class="actions">
+                  <form class="full-update-form" data-container-name="{{ c.name }}" data-container-id="{{ c.id }}"
+                    method="post" action="#" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?"
+                    data-safe-modal="external">
+                    <button class="btn-primary-glow" type="submit">Aggiorna immagine</button>
+                  </form>
+                  <div class="field" style="margin-top: 8px;">
+                    <label class="small" for="track-{{ c.id }}">Tag da monitorare</label>
+                    <div class="input-row">
+                      <input id="track-{{ c.id }}" class="input" type="text" list="track-options"
+                        data-update-track="{{ c.id }}" value="{{ c.check_tag or '' }}"
+                        placeholder="Es: latest, nightly" />
+                      <button type="button" class="inline-btn" data-save-track
+                        data-container-id="{{ c.id }}">Salva</button>
                     </div>
-                  </td>
-                  <td data-label="Vers. installata">
-                    <div class="pill-row">
-                      <span class="badge" data-installed-tag>{{ installed_display or 'n/d' }}</span>
-                      <span class="small" data-installed-id>{{ c.installed_id_short }}</span>
-                    </div>
-                  </td>
-                  <td data-label="Vers. remota">
-                    <div class="pill-row">
-                      <span class="badge {% if not remote_display %}badge-null{% endif %}" data-remote-tag>{{ remote_display or 'n/d' }}</span>
-                      <span class="small" data-remote-id style="{% if not c.remote_id_short %}display:none{% endif %}">{{ c.remote_id_short or '' }}</span>
-                    </div>
-                  </td>
-                  <td data-label="Change log">
-                    {% if c.changelog %}
-                      <div class="changelog" data-changelog>{{ c.changelog }}</div>
-                    {% else %}
-                      <span class="small" data-changelog>Nessuna nota</span>
-                    {% endif %}
-                  </td>
-                  <td data-label="Breaking">
-                    {% if c.breaking_changes %}
-                      <div class="breaking" data-breaking>{{ c.breaking_changes }}</div>
-                    {% else %}
-                      <span class="small" data-breaking>Nessuna info</span>
-                    {% endif %}
-                  </td>
-                  <td class="actions-cell" data-label="Azioni">
-                    <div class="actions">
-                      <form class="full-update-form" data-container-name="{{ c.name }}" data-container-id="{{ c.id }}" method="post" action="{{ url_for('container_full_update', container_id=c.id) }}" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?" data-safe-modal="external">
-                        <button class="btn-primary-glow" type="submit">Aggiorna immagine</button>
-                      </form>
-                      <div class="field" style="margin-top: 8px;">
-                        <label class="small" for="track-{{ c.id }}">Tag da monitorare</label>
-                        <div class="input-row">
-                          <input id="track-{{ c.id }}" class="input" type="text" list="track-options" data-update-track="{{ c.id }}" value="{{ c.check_tag or '' }}" placeholder="Es: latest, nightly" />
-                          <button type="button" class="inline-btn" data-save-track data-container-id="{{ c.id }}">Salva</button>
-                        </div>
-                        <div class="small" data-track-feedback="{{ c.id }}">{{ 'Controllo su "' ~ c.check_tag ~ '"' if c.check_tag else 'Usa il tag configurato nel container' }}</div>
-                      </div>
-                      <div class="small">ID: <code>{{ c.id }}</code></div>
-                    </div>
-                  </td>
-              </tr>
+                    <div class="small" data-track-feedback="{{ c.id }}">{{ 'Controllo su "' ~ c.check_tag ~ '"' if
+                      c.check_tag else 'Usa il tag configurato nel container' }}</div>
+                  </div>
+                  <div class="small">ID: <code>{{ c.id }}</code></div>
+                </div>
+              </td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </section>
-  {% endfor %}
+    {% endfor %}
   </main>
 
   <datalist id="track-options">
@@ -484,16 +222,23 @@
     </div>
   </div>
 
-  <div class="confirm-backdrop" id="confirm-modal">
-    <div class="confirm-modal">
-      <h3 class="confirm-title">Aggiornare l'immagine?</h3>
-      <p id="confirm-message" class="small"></p>
-      <div class="confirm-actions">
-        <button type="button" class="btn btn-ghost" id="cancel-confirm">Annulla</button>
-        <button type="button" class="btn btn-full-update" id="confirm-continue">Procedi</button>
+  <div class="safe-confirm-backdrop" id="confirm-modal">
+    <div class="safe-confirm-modal">
+      <h3 class="safe-confirm-title" id="confirm-title">Aggiornare l'immagine?</h3>
+      <p id="confirm-message" class="safe-confirm-message small"></p>
+      <div id="confirm-loading" class="confirm-loading" style="display: none;">
+        <div class="spinner"></div>
+        <p class="loading-text">Aggiornamento in corso...</p>
+        <p class="loading-hint small">Pull immagine, rimozione e ricreazione container</p>
+      </div>
+      <p id="confirm-result" class="confirm-result small" style="display: none;"></p>
+      <div class="safe-confirm-actions" id="confirm-actions">
+        <button type="button" class="btn btn-secondary" id="cancel-confirm">Annulla</button>
+        <button type="button" class="btn btn-accent" id="confirm-continue" data-safe-confirm="true">Procedi</button>
       </div>
     </div>
   </div>
+
 
   {% include 'partials/notifications_script.html' %}
   <script>
@@ -750,10 +495,45 @@
     const messageEl = document.getElementById('confirm-message');
     const cancelBtn = document.getElementById('cancel-confirm');
     const confirmBtn = document.getElementById('confirm-continue');
+    const confirmTitle = document.getElementById('confirm-title');
+    const confirmLoading = document.getElementById('confirm-loading');
+    const confirmResult = document.getElementById('confirm-result');
+    const confirmActions = document.getElementById('confirm-actions');
     let pendingForm = null;
+
+    function resetModalState() {
+      messageEl.style.display = 'block';
+      confirmLoading.style.display = 'none';
+      confirmResult.style.display = 'none';
+      confirmActions.style.display = 'flex';
+      confirmResult.className = 'confirm-result small';
+      confirmTitle.textContent = "Aggiornare l'immagine?";
+    }
+
+    function showModalLoading() {
+      messageEl.style.display = 'none';
+      confirmLoading.style.display = 'block';
+      confirmResult.style.display = 'none';
+      confirmActions.style.display = 'none';
+      confirmTitle.textContent = 'Aggiornamento in corso';
+    }
+
+    function showModalResult(success, message) {
+      confirmLoading.style.display = 'none';
+      confirmResult.style.display = 'block';
+      confirmResult.className = `confirm-result small ${success ? 'success' : 'error'}`;
+      confirmResult.textContent = message;
+      confirmActions.style.display = 'flex';
+      cancelBtn.textContent = 'Chiudi';
+      confirmBtn.style.display = 'none';
+      confirmTitle.textContent = success ? 'Aggiornamento completato' : 'Errore';
+    }
 
     function openConfirm(form) {
       pendingForm = form;
+      resetModalState();
+      cancelBtn.textContent = 'Annulla';
+      confirmBtn.style.display = 'inline-flex';
       const name = form.dataset.containerName || 'questo container';
       messageEl.textContent = `Vuoi aggiornare l'immagine di "${name}"?`;
       modal.classList.add('visible');
@@ -813,19 +593,43 @@
       const containerId = pendingForm.dataset.containerId;
       const containerName = pendingForm.dataset.containerName || 'container';
 
+      // Show loading state
+      showModalLoading();
+
       if (debugStreamSupported && containerId) {
         try {
           await startUpdateDebugStream(containerId, containerName);
           closeConfirm();
           return;
         } catch (err) {
-          console.warn('Stream debug non disponibile, procedo con submit', err);
+          console.warn('Stream debug non disponibile, procedo con API POST', err);
         }
       }
 
-      pendingForm.submit();
-      closeConfirm();
+      // Fallback: use POST API endpoint
+      if (containerId) {
+        try {
+          const res = await fetch(`/api/containers/${containerId}/full_update`, { method: 'POST' });
+          const data = await res.json();
+
+          const row = document.querySelector(`[data-container-id="${containerId}"]`);
+
+          if (data.success) {
+            if (row) refreshRow(row);
+            showModalResult(true, `Container "${containerName}" aggiornato con successo!`);
+          } else {
+            console.error('Update failed:', data.error);
+            showModalResult(false, data.error || 'Errore durante l\'aggiornamento');
+          }
+        } catch (err) {
+          console.error('Update request failed:', err);
+          showModalResult(false, 'Errore di connessione al server');
+        }
+      } else {
+        showModalResult(false, 'ID container non valido');
+      }
     });
   </script>
 </body>
+
 </html>

@@ -1,684 +1,768 @@
+<div class="modal-backdrop" id="clock-settings-modal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="clock-settings-title"
+    style="width: min(520px, 94vw); height: auto; max-height: 85vh;">
+    <div class="modal-header">
+      <div style="flex:1; padding-right:10px;">
+        <div class="meta"
+          style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin-bottom:4px;">
+          {{ t('clock.kicker') }}</div>
+        <div class="modal-title" id="clock-settings-title" style="font-size:1.15rem;">{{ t('clock.settings_title') }}
+        </div>
+        <div class="meta" style="margin-top:4px; line-height:1.4;">{{ t('clock.description') }}</div>
+      </div>
+
+    </div>
+
+    <div class="modal-body" style="gap:16px;">
+      <!-- Auto Timezone -->
+      <div class="form-control"
+        style="flex-direction:row; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="flex:1;">
+          <div style="font-weight:700;">{{ t('clock.timezone.auto') }}</div>
+          <div class="helper">{{ t('clock.timezone.auto_hint') }}</div>
+          <div class="helper" id="clock-browser-tz" style="color:var(--accent); margin-top:4px; font-family:monospace;">
+          </div>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="clock-timezone-auto" />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <!-- Manual Timezone -->
+      <div id="clock-timezone-selects" class="form-row">
+        <div class="form-control">
+          <label for="clock-region-select">{{ t('clock.timezone.region') }}</label>
+          <select id="clock-region-select"></select>
+        </div>
+        <div class="form-control">
+          <label for="clock-zone-select">{{ t('clock.timezone.zone') }}</label>
+          <select id="clock-zone-select"></select>
+        </div>
+      </div>
+
+      <!-- Show Seconds -->
+      <div class="form-control"
+        style="flex-direction:row; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="flex:1;">
+          <div style="font-weight:700;">{{ t('clock.seconds.label') }}</div>
+          <div class="helper">{{ t('clock.seconds.hint') }}</div>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="clock-seconds-toggle" />
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <!-- Show Date -->
+      <div class="form-control"
+        style="flex-direction:row; align-items:center; justify-content:space-between; gap:12px;">
+        <div style="flex:1;">
+          <div style="font-weight:700;">{{ t('clock.date.label') }}</div>
+          <div class="helper">{{ t('clock.date.hint') }}</div>
+        </div>
+        <div class="switch">
+          <input type="checkbox" id="clock-date-toggle" />
+          <span class="slider"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer override to match design -->
+    <div
+      style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:var(--stack-header-bg); border-top:1px solid var(--border);">
+      <div class="helper" style="font-style:italic;">{{ t('clock.persistence') }}</div>
+      <button type="button" class="btn" id="clock-settings-close-btn">{{ t('settings.close') }}</button>
+    </div>
+  </div>
+</div>
 <script>
-(() => {
-    const initialNotifications = {{ notifications|default({})|tojson }} || {};
-    const notifListEl = document.getElementById('notifList');
-    const notifBadgeEl = document.getElementById('notifBadge');
-    const notifPanelEl = document.getElementById('notifPanel');
-    const notifToggleEl = document.getElementById('notifToggle');
-    const settingsPanelEl = document.getElementById('settingsPanel');
-    const settingsToggleEl = document.getElementById('settingsToggle');
-    const compactToggleEl = document.getElementById('compact-mode-toggle');
-    const navEl = document.getElementById('primaryNav');
-    const mobileDrawerTab = document.getElementById('mobileDrawerTab');
-    const headerClockEl = document.getElementById('header-clock');
-    const headerClockTimeEl = document.getElementById('header-clock-time');
-    const headerClockDateEl = document.getElementById('header-clock-date');
-    const clockModalEl = document.getElementById('clock-settings-modal');
-    const clockAutoToggleEl = document.getElementById('clock-timezone-auto');
-    const clockRegionSelectEl = document.getElementById('clock-region-select');
-    const clockZoneSelectEl = document.getElementById('clock-zone-select');
-    const clockTimezoneSelectsEl = document.getElementById('clock-timezone-selects');
-    const clockSecondsToggleEl = document.getElementById('clock-seconds-toggle');
-    const clockDateToggleEl = document.getElementById('clock-date-toggle');
-    const clockBrowserHintEl = document.getElementById('clock-browser-tz');
-    const backendStatusEl = document.getElementById('backend-status-indicator');
-    const backendPanelEl = document.getElementById('backendPanel');
-    const backendStatusLastUpdateEl = document.getElementById('backend-status-last-update');
-    const backendRefreshBtn = document.getElementById('backend-status-refresh-btn');
-    const backendText = {
-      lastUpdate: "{{ t('backend_status.last_update') }}",
-      noRecent: "{{ t('backend_status.no_recent_update') }}",
-    };
-    const clockText = {
-      browserLabel: "{{ t('clock.timezone.browser_label') }}",
-      regionPlaceholder: "{{ t('clock.timezone.choose_region') }}",
-      zonePlaceholder: "{{ t('clock.timezone.choose_zone') }}",
-    };
-    const safeModeToggleEl = document.getElementById('safeModeToggle');
-    const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
-    const debugModeToggleEl = document.getElementById('debug-mode-toggle');
-    const compactStorageKey = 'd2haCompactMode';
-    let mobileNavBackdrop = null;
-    let mobileDrawerOpen = false;
-    const safeConfirmState = {
-      modal: null,
-      message: null,
-      confirmBtn: null,
-      cancelBtn: null,
-      pendingForm: null,
-      resolver: null,
-    };
-    let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
-    const initialPerformanceMode = (document.body?.dataset?.performanceMode || '0') === '1';
-    const initialDebugMode = (document.body?.dataset?.debugMode || '0') === '1';
-    const existingSettings = window.d2haSettings || {};
-    window.d2haSettings = {
-      ...existingSettings,
-      performanceMode: existingSettings.performanceMode ?? initialPerformanceMode,
-      debugMode: existingSettings.debugMode ?? initialDebugMode,
-    };
-    window.d2haRuntime = window.d2haRuntime || { performanceHandlers: [] };
-    const performanceState = window.d2haSettings;
-    let currentNotifications = initialNotifications;
-    let dismissedNotifications = {};
-    let clockInterval = null;
-    let clockPreferences = null;
-    const clockStorageKey = 'd2haClockPrefs';
-    const closeAllFlyouts = () => {
-      toggleNotifications(false);
-      toggleSettings(false);
-      toggleBackendPanel(false);
-      closeClockModal();
-    };
-    const handleClockOutsideClick = (evt) => {
-      if (!clockModalEl?.classList.contains('visible')) return;
-      if (clockModalEl.contains(evt.target) || headerClockEl.contains(evt.target)) return;
-      closeClockModal();
-    };
-    let lastSuccessfulPing = null;
-    let consecutiveErrors = 0;
-    let backendPingTimer = null;
+  (() => {
+    const initialNotifications = {{ notifications|default ({}) | tojson
+  }} || {};
+  const notifListEl = document.getElementById('notifList');
+  const notifBadgeEl = document.getElementById('notifBadge');
+  const notifPanelEl = document.getElementById('notifPanel');
+  const notifToggleEl = document.getElementById('notifToggle');
+  const settingsPanelEl = document.getElementById('settingsPanel');
+  const settingsToggleEl = document.getElementById('settingsToggle');
+  const compactToggleEl = document.getElementById('compact-mode-toggle');
+  const navEl = document.getElementById('primaryNav');
+  const mobileDrawerTab = document.getElementById('mobileDrawerTab');
+  const headerClockEl = document.getElementById('header-clock');
+  const headerClockTimeEl = document.getElementById('header-clock-time');
+  const headerClockDateEl = document.getElementById('header-clock-date');
+  const clockModalEl = document.getElementById('clock-settings-modal');
+  const clockAutoToggleEl = document.getElementById('clock-timezone-auto');
+  const clockRegionSelectEl = document.getElementById('clock-region-select');
+  const clockZoneSelectEl = document.getElementById('clock-zone-select');
+  const clockTimezoneSelectsEl = document.getElementById('clock-timezone-selects');
+  const clockSecondsToggleEl = document.getElementById('clock-seconds-toggle');
+  const clockDateToggleEl = document.getElementById('clock-date-toggle');
+  const clockCloseBtnEl = document.getElementById('clock-settings-close-btn');
+  const clockBrowserHintEl = document.getElementById('clock-browser-tz');
+  const backendStatusEl = document.getElementById('backend-status-indicator');
+  const backendPanelEl = document.getElementById('backendPanel');
+  const backendStatusLastUpdateEl = document.getElementById('backend-status-last-update');
+  const backendRefreshBtn = document.getElementById('backend-status-refresh-btn');
+  const backendText = {
+    lastUpdate: "{{ t('backend_status.last_update') }}",
+    noRecent: "{{ t('backend_status.no_recent_update') }}",
+  };
+  const clockText = {
+    browserLabel: "{{ t('clock.timezone.browser_label') }}",
+    regionPlaceholder: "{{ t('clock.timezone.choose_region') }}",
+    zonePlaceholder: "{{ t('clock.timezone.choose_zone') }}",
+  };
+  const safeModeToggleEl = document.getElementById('safeModeToggle');
+  const performanceModeToggleEl = document.getElementById('performance-mode-toggle');
+  const debugModeToggleEl = document.getElementById('debug-mode-toggle');
+  const compactStorageKey = 'd2haCompactMode';
+  let mobileNavBackdrop = null;
+  let mobileDrawerOpen = false;
+  const safeConfirmState = {
+    modal: null,
+    message: null,
+    confirmBtn: null,
+    cancelBtn: null,
+    pendingForm: null,
+    resolver: null,
+  };
+  let safeModeEnabled = (document.body.dataset.safeMode || '0') === '1';
+  const initialPerformanceMode = (document.body?.dataset?.performanceMode || '0') === '1';
+  const initialDebugMode = (document.body?.dataset?.debugMode || '0') === '1';
+  const existingSettings = window.d2haSettings || {};
+  window.d2haSettings = {
+    ...existingSettings,
+    performanceMode: existingSettings.performanceMode ?? initialPerformanceMode,
+    debugMode: existingSettings.debugMode ?? initialDebugMode,
+  };
+  window.d2haRuntime = window.d2haRuntime || { performanceHandlers: [] };
+  const performanceState = window.d2haSettings;
+  let currentNotifications = initialNotifications;
+  let dismissedNotifications = {};
+  let clockInterval = null;
+  let clockPreferences = null;
+  const clockStorageKey = 'd2haClockPrefs';
+  const closeAllFlyouts = () => {
+    toggleNotifications(false);
+    toggleSettings(false);
+    toggleBackendPanel(false);
+    closeClockModal();
+  };
+  const handleClockOutsideClick = (evt) => {
+    if (!clockModalEl?.classList.contains('visible')) return;
+    if (clockModalEl.contains(evt.target) || headerClockEl.contains(evt.target)) return;
+    closeClockModal();
+  };
+  let lastSuccessfulPing = null;
+  let consecutiveErrors = 0;
+  let backendPingTimer = null;
 
-    function loadCompactPreference() {
-      try {
-        return localStorage.getItem(compactStorageKey) === '1';
-      } catch (err) {
-        console.warn('Unable to read compact preference', err);
-        return false;
-      }
+  function loadCompactPreference() {
+    try {
+      return localStorage.getItem(compactStorageKey) === '1';
+    } catch (err) {
+      console.warn('Unable to read compact preference', err);
+      return false;
     }
+  }
 
-    function saveCompactPreference(enabled) {
-      try {
-        localStorage.setItem(compactStorageKey, enabled ? '1' : '0');
-      } catch (err) {
-        console.warn('Unable to persist compact preference', err);
-      }
+  function saveCompactPreference(enabled) {
+    try {
+      localStorage.setItem(compactStorageKey, enabled ? '1' : '0');
+    } catch (err) {
+      console.warn('Unable to persist compact preference', err);
     }
+  }
 
-    function applyCompactMode(enabled) {
-      const isEnabled = !!enabled;
-      document.body.classList.toggle('compact-mode', isEnabled);
-      if (compactToggleEl) {
-        compactToggleEl.checked = isEnabled;
-      }
-      document.dispatchEvent(new CustomEvent('compact-mode-changed', { detail: { enabled: isEnabled } }));
+  function applyCompactMode(enabled) {
+    const isEnabled = !!enabled;
+    document.body.classList.toggle('compact-mode', isEnabled);
+    if (compactToggleEl) {
+      compactToggleEl.checked = isEnabled;
     }
+    document.dispatchEvent(new CustomEvent('compact-mode-changed', { detail: { enabled: isEnabled } }));
+  }
 
-    function ensureMobileBackdrop() {
-      if (mobileNavBackdrop) return;
-      mobileNavBackdrop = document.createElement('div');
-      mobileNavBackdrop.className = 'mobile-nav-backdrop';
-      document.body.appendChild(mobileNavBackdrop);
-      mobileNavBackdrop.addEventListener('click', () => setMobileDrawerState(false));
+  function ensureMobileBackdrop() {
+    if (mobileNavBackdrop) return;
+    mobileNavBackdrop = document.createElement('div');
+    mobileNavBackdrop.className = 'mobile-nav-backdrop';
+    document.body.appendChild(mobileNavBackdrop);
+    mobileNavBackdrop.addEventListener('click', () => setMobileDrawerState(false));
+  }
+
+  function setMobileDrawerState(open) {
+    const next = !!open;
+    mobileDrawerOpen = next;
+    if (mobileDrawerTab) {
+      mobileDrawerTab.setAttribute('aria-expanded', next ? 'true' : 'false');
     }
+    ensureMobileBackdrop();
+    document.body.classList.toggle('mobile-drawer-open', next);
+  }
 
-    function setMobileDrawerState(open) {
-      const next = !!open;
-      mobileDrawerOpen = next;
-      if (mobileDrawerTab) {
-        mobileDrawerTab.setAttribute('aria-expanded', next ? 'true' : 'false');
-      }
-      ensureMobileBackdrop();
-      document.body.classList.toggle('mobile-drawer-open', next);
-    }
+  function toggleMobileDrawer() {
+    if (!window.matchMedia('(max-width: 760px)').matches) return;
+    setMobileDrawerState(!mobileDrawerOpen);
+  }
 
-    function toggleMobileDrawer() {
-      if (!window.matchMedia('(max-width: 760px)').matches) return;
-      setMobileDrawerState(!mobileDrawerOpen);
-    }
+  function initMobileDrawer() {
+    if (!navEl || !mobileDrawerTab) return;
+    ensureMobileBackdrop();
+    mobileDrawerTab.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toggleMobileDrawer();
+    });
 
-    function initMobileDrawer() {
-      if (!navEl || !mobileDrawerTab) return;
-      ensureMobileBackdrop();
-      mobileDrawerTab.addEventListener('click', (event) => {
-        event.stopPropagation();
-        toggleMobileDrawer();
-      });
+    mobileNavBackdrop?.addEventListener('click', () => setMobileDrawerState(false));
 
-      mobileNavBackdrop?.addEventListener('click', () => setMobileDrawerState(false));
-
-      navEl.querySelectorAll('a').forEach((link) => {
-        link.addEventListener('click', () => {
-          if (window.matchMedia('(max-width: 760px)').matches) {
-            setMobileDrawerState(false);
-          }
-        });
-      });
-
-      document.addEventListener('click', (evt) => {
-        if (!mobileDrawerOpen) return;
-        if (!navEl.contains(evt.target) && evt.target !== mobileDrawerTab) {
+    navEl.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        if (window.matchMedia('(max-width: 760px)').matches) {
           setMobileDrawerState(false);
         }
       });
+    });
 
-      document.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Escape' && mobileDrawerOpen) {
-          setMobileDrawerState(false);
-        }
-      });
-
-      window.addEventListener('resize', () => {
-        if (window.innerWidth > 800 && mobileDrawerOpen) {
-          setMobileDrawerState(false);
-        }
-      });
-    }
-
-    function initCompactMode() {
-      const initialCompact = loadCompactPreference();
-      applyCompactMode(initialCompact);
-
-      if (compactToggleEl) {
-        compactToggleEl.addEventListener('change', (evt) => {
-          const next = !!evt.target.checked;
-          applyCompactMode(next);
-          saveCompactPreference(next);
-        });
+    document.addEventListener('click', (evt) => {
+      if (!mobileDrawerOpen) return;
+      if (!navEl.contains(evt.target) && evt.target !== mobileDrawerTab) {
+        setMobileDrawerState(false);
       }
-    }
+    });
 
-    function getBrowserTimeZone() {
-      try {
-        return Intl.DateTimeFormat().resolvedOptions().timeZone;
-      } catch (err) {
-        console.warn('Unable to detect browser timezone', err);
-        return 'UTC';
+    document.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Escape' && mobileDrawerOpen) {
+        setMobileDrawerState(false);
       }
-    }
+    });
 
-    function loadClockPreferences() {
-      const defaults = { autoTimezone: true, timezone: '', showSeconds: true, showDate: true };
-      try {
-        const saved = JSON.parse(localStorage.getItem(clockStorageKey) || '{}');
-        return { ...defaults, ...saved };
-      } catch (err) {
-        console.warn('Unable to parse clock preferences', err);
-        return { ...defaults };
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 800 && mobileDrawerOpen) {
+        setMobileDrawerState(false);
       }
-    }
+    });
+  }
 
-    function saveClockPreferences(next) {
-      try {
-        localStorage.setItem(clockStorageKey, JSON.stringify(next));
-      } catch (err) {
-        console.warn('Unable to persist clock preferences', err);
-      }
-    }
+  function initCompactMode() {
+    const initialCompact = loadCompactPreference();
+    applyCompactMode(initialCompact);
 
-    function getSupportedTimeZones() {
-      if (typeof Intl.supportedValuesOf === 'function') {
-        return Intl.supportedValuesOf('timeZone');
-      }
-      return [
-        'UTC',
-        'Europe/Rome',
-        'Europe/Berlin',
-        'Europe/Madrid',
-        'Europe/London',
-        'America/New_York',
-        'America/Los_Angeles',
-        'America/Sao_Paulo',
-        'Asia/Tokyo',
-        'Asia/Shanghai',
-        'Asia/Dubai',
-        'Australia/Sydney',
-        'Africa/Johannesburg',
-      ];
-    }
-
-    function groupTimeZonesByRegion() {
-      const allZones = getSupportedTimeZones();
-      return allZones.reduce((acc, tz) => {
-        const [region, city] = tz.split('/');
-        if (!city) return acc;
-        if (!acc[region]) acc[region] = [];
-        acc[region].push(tz);
-        return acc;
-      }, {});
-    }
-
-    const timeZoneGroups = groupTimeZonesByRegion();
-
-    function populateRegionSelect(selectedRegion) {
-      if (!clockRegionSelectEl) return;
-      const regions = Object.keys(timeZoneGroups).sort();
-      clockRegionSelectEl.innerHTML = '';
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = `— ${clockText.regionPlaceholder} —`;
-      clockRegionSelectEl.appendChild(placeholder);
-
-      regions.forEach((region) => {
-        const opt = document.createElement('option');
-        opt.value = region;
-        opt.textContent = region;
-        if (region === selectedRegion) opt.selected = true;
-        clockRegionSelectEl.appendChild(opt);
+    if (compactToggleEl) {
+      compactToggleEl.addEventListener('change', (evt) => {
+        const next = !!evt.target.checked;
+        applyCompactMode(next);
+        saveCompactPreference(next);
       });
     }
+  }
 
-    function populateZoneSelect(region, selectedZone) {
-      if (!clockZoneSelectEl) return;
-      const zones = timeZoneGroups[region] || [];
-      clockZoneSelectEl.innerHTML = '';
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = `— ${clockText.zonePlaceholder} —`;
-      clockZoneSelectEl.appendChild(placeholder);
+  function getBrowserTimeZone() {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (err) {
+      console.warn('Unable to detect browser timezone', err);
+      return 'UTC';
+    }
+  }
 
-      zones.forEach((zone) => {
-        const [, city] = zone.split('/');
-        const opt = document.createElement('option');
-        opt.value = zone;
-        opt.textContent = city?.replace(/_/g, ' ') || zone;
-        if (zone === selectedZone) opt.selected = true;
-        clockZoneSelectEl.appendChild(opt);
-      });
+  function loadClockPreferences() {
+    const defaults = { autoTimezone: true, timezone: '', showSeconds: true, showDate: true };
+    try {
+      const saved = JSON.parse(localStorage.getItem(clockStorageKey) || '{}');
+      return { ...defaults, ...saved };
+    } catch (err) {
+      console.warn('Unable to parse clock preferences', err);
+      return { ...defaults };
+    }
+  }
+
+  function saveClockPreferences(next) {
+    try {
+      localStorage.setItem(clockStorageKey, JSON.stringify(next));
+    } catch (err) {
+      console.warn('Unable to persist clock preferences', err);
+    }
+  }
+
+  function getSupportedTimeZones() {
+    if (typeof Intl.supportedValuesOf === 'function') {
+      return Intl.supportedValuesOf('timeZone');
+    }
+    return [
+      'UTC',
+      'Europe/Rome',
+      'Europe/Berlin',
+      'Europe/Madrid',
+      'Europe/London',
+      'America/New_York',
+      'America/Los_Angeles',
+      'America/Sao_Paulo',
+      'Asia/Tokyo',
+      'Asia/Shanghai',
+      'Asia/Dubai',
+      'Australia/Sydney',
+      'Africa/Johannesburg',
+    ];
+  }
+
+  function groupTimeZonesByRegion() {
+    const allZones = getSupportedTimeZones();
+    return allZones.reduce((acc, tz) => {
+      const [region, city] = tz.split('/');
+      if (!city) return acc;
+      if (!acc[region]) acc[region] = [];
+      acc[region].push(tz);
+      return acc;
+    }, {});
+  }
+
+  const timeZoneGroups = groupTimeZonesByRegion();
+
+  function populateRegionSelect(selectedRegion) {
+    if (!clockRegionSelectEl) return;
+    const regions = Object.keys(timeZoneGroups).sort();
+    clockRegionSelectEl.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = `— ${clockText.regionPlaceholder} —`;
+    clockRegionSelectEl.appendChild(placeholder);
+
+    regions.forEach((region) => {
+      const opt = document.createElement('option');
+      opt.value = region;
+      opt.textContent = region;
+      if (region === selectedRegion) opt.selected = true;
+      clockRegionSelectEl.appendChild(opt);
+    });
+  }
+
+  function populateZoneSelect(region, selectedZone) {
+    if (!clockZoneSelectEl) return;
+    const zones = timeZoneGroups[region] || [];
+    clockZoneSelectEl.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = `— ${clockText.zonePlaceholder} —`;
+    clockZoneSelectEl.appendChild(placeholder);
+
+    zones.forEach((zone) => {
+      const [, city] = zone.split('/');
+      const opt = document.createElement('option');
+      opt.value = zone;
+      opt.textContent = city?.replace(/_/g, ' ') || zone;
+      if (zone === selectedZone) opt.selected = true;
+      clockZoneSelectEl.appendChild(opt);
+    });
+  }
+
+  function formatClock(dateObj, { timeZone = getBrowserTimeZone(), showSeconds = true } = {}) {
+    const options = {
+      hour: '2-digit',
+      minute: '2-digit',
+      ...(showSeconds ? { second: '2-digit' } : {}),
+      hour12: false,
+      timeZone,
+    };
+    return new Intl.DateTimeFormat(undefined, options).format(dateObj);
+  }
+
+  function formatDate(dateObj, timeZone) {
+    return new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      timeZone,
+    }).format(dateObj);
+  }
+
+  function getActiveTimeZone() {
+    const browserTz = getBrowserTimeZone();
+    if (!clockPreferences) return browserTz;
+    if (clockPreferences.autoTimezone) return browserTz;
+    return clockPreferences.timezone || browserTz;
+  }
+
+  function updateClockDisplay() {
+    if (!headerClockEl) return;
+    const timeZone = getActiveTimeZone();
+    const now = new Date();
+    const timeStr = formatClock(now, { timeZone, showSeconds: !!clockPreferences?.showSeconds });
+    const dateStr = formatDate(now, timeZone);
+
+    if (headerClockTimeEl) {
+      headerClockTimeEl.textContent = timeStr;
+    } else {
+      headerClockEl.textContent = timeStr;
     }
 
-    function formatClock(dateObj, { timeZone = getBrowserTimeZone(), showSeconds = true } = {}) {
-      const options = {
-        hour: '2-digit',
-        minute: '2-digit',
-        ...(showSeconds ? { second: '2-digit' } : {}),
-        hour12: false,
-        timeZone,
-      };
-      return new Intl.DateTimeFormat(undefined, options).format(dateObj);
-    }
-
-    function formatDate(dateObj, timeZone) {
-      return new Intl.DateTimeFormat('en-GB', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        timeZone,
-      }).format(dateObj);
-    }
-
-    function getActiveTimeZone() {
-      const browserTz = getBrowserTimeZone();
-      if (!clockPreferences) return browserTz;
-      if (clockPreferences.autoTimezone) return browserTz;
-      return clockPreferences.timezone || browserTz;
-    }
-
-    function updateClockDisplay() {
-      if (!headerClockEl) return;
-      const timeZone = getActiveTimeZone();
-      const now = new Date();
-      const timeStr = formatClock(now, { timeZone, showSeconds: !!clockPreferences?.showSeconds });
-      const dateStr = formatDate(now, timeZone);
-
-      if (headerClockTimeEl) {
-        headerClockTimeEl.textContent = timeStr;
+    if (headerClockDateEl) {
+      if (clockPreferences?.showDate) {
+        headerClockDateEl.textContent = dateStr;
+        headerClockDateEl.style.display = 'block';
       } else {
-        headerClockEl.textContent = timeStr;
-      }
-
-      if (headerClockDateEl) {
-        if (clockPreferences?.showDate) {
-          headerClockDateEl.textContent = dateStr;
-          headerClockDateEl.style.display = 'block';
-        } else {
-          headerClockDateEl.style.display = 'none';
-        }
+        headerClockDateEl.style.display = 'none';
       }
     }
+  }
 
-    function startClock() {
-      if (!headerClockEl) return;
-      clearInterval(clockInterval);
-      updateClockDisplay();
-      const intervalMs = clockPreferences?.showSeconds ? 1000 : 10000;
-      clockInterval = setInterval(updateClockDisplay, intervalMs);
+  function startClock() {
+    if (!headerClockEl) return;
+    clearInterval(clockInterval);
+    updateClockDisplay();
+    const intervalMs = clockPreferences?.showSeconds ? 1000 : 10000;
+    clockInterval = setInterval(updateClockDisplay, intervalMs);
+  }
+
+  function syncClockControls() {
+    if (!clockPreferences) return;
+
+    const browserTz = getBrowserTimeZone();
+    const manualTz = clockPreferences.timezone || getActiveTimeZone();
+    const [manualRegion] = (manualTz || '').split('/');
+
+    if (clockBrowserHintEl) {
+      clockBrowserHintEl.textContent = `${clockText.browserLabel} ${browserTz}`;
     }
 
-    function syncClockControls() {
-      if (!clockPreferences) return;
+    if (clockAutoToggleEl) clockAutoToggleEl.checked = !!clockPreferences.autoTimezone;
+    if (clockSecondsToggleEl) clockSecondsToggleEl.checked = !!clockPreferences.showSeconds;
+    if (clockDateToggleEl) clockDateToggleEl.checked = !!clockPreferences.showDate;
 
-      const browserTz = getBrowserTimeZone();
-      const manualTz = clockPreferences.timezone || getActiveTimeZone();
-      const [manualRegion] = (manualTz || '').split('/');
+    populateRegionSelect(manualRegion);
+    populateZoneSelect(manualRegion, clockPreferences.timezone);
 
-      if (clockBrowserHintEl) {
-        clockBrowserHintEl.textContent = `${clockText.browserLabel} ${browserTz}`;
+    const disableManual = !!clockPreferences.autoTimezone;
+    [clockRegionSelectEl, clockZoneSelectEl].forEach((el) => {
+      if (el) {
+        el.disabled = disableManual;
       }
-
-      if (clockAutoToggleEl) clockAutoToggleEl.checked = !!clockPreferences.autoTimezone;
-      if (clockSecondsToggleEl) clockSecondsToggleEl.checked = !!clockPreferences.showSeconds;
-      if (clockDateToggleEl) clockDateToggleEl.checked = !!clockPreferences.showDate;
-
-      populateRegionSelect(manualRegion);
-      populateZoneSelect(manualRegion, clockPreferences.timezone);
-
-      const disableManual = !!clockPreferences.autoTimezone;
-      [clockRegionSelectEl, clockZoneSelectEl].forEach((el) => {
-        if (el) {
-          el.disabled = disableManual;
-        }
-      });
-      if (clockTimezoneSelectsEl) {
-        clockTimezoneSelectsEl.classList.toggle('disabled', disableManual);
-        clockTimezoneSelectsEl.setAttribute('aria-disabled', disableManual ? 'true' : 'false');
-      }
+    });
+    if (clockTimezoneSelectsEl) {
+      clockTimezoneSelectsEl.classList.toggle('disabled', disableManual);
+      clockTimezoneSelectsEl.setAttribute('aria-disabled', disableManual ? 'true' : 'false');
     }
+  }
 
-    function applyClockPreference(partial, options = {}) {
-      clockPreferences = { ...clockPreferences, ...partial };
-      saveClockPreferences(clockPreferences);
-      if (!options.skipSync) {
-        syncClockControls();
-      }
-      startClock();
-    }
-
-    function openClockModal() {
-      if (!clockModalEl) return;
-      toggleNotifications(false);
-      toggleSettings(false);
-      toggleBackendPanel(false);
-      clockModalEl.classList.add('visible');
-      clockModalEl.setAttribute('aria-hidden', 'false');
-      headerClockEl?.setAttribute('aria-expanded', 'true');
-      headerClockEl?.classList.add('settings-open');
-      document.addEventListener('click', handleClockOutsideClick, true);
-    }
-
-    function closeClockModal() {
-      if (!clockModalEl) return;
-      clockModalEl.classList.remove('visible');
-      clockModalEl.setAttribute('aria-hidden', 'true');
-      headerClockEl?.setAttribute('aria-expanded', 'false');
-      headerClockEl?.classList.remove('settings-open');
-      document.removeEventListener('click', handleClockOutsideClick, true);
-    }
-
-    function initClockSettings() {
-      if (!headerClockEl) return;
-      clockPreferences = loadClockPreferences();
+  function applyClockPreference(partial, options = {}) {
+    clockPreferences = { ...clockPreferences, ...partial };
+    saveClockPreferences(clockPreferences);
+    if (!options.skipSync) {
       syncClockControls();
-      startClock();
-
-      headerClockEl.addEventListener('click', (evt) => {
-        if (clockModalEl?.contains(evt.target)) {
-          return;
-        }
-        evt.stopPropagation();
-        if (clockModalEl?.classList.contains('visible')) {
-          closeClockModal();
-        } else {
-          openClockModal();
-        }
-      });
-      headerClockEl.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Enter' || evt.key === ' ') {
-          evt.preventDefault();
-          openClockModal();
-        }
-      });
-
-      document.addEventListener('keydown', (evt) => {
-        if (evt.key === 'Escape') {
-          closeAllFlyouts();
-        }
-      });
-
-      clockAutoToggleEl?.addEventListener('change', () => {
-        applyClockPreference({ autoTimezone: !!clockAutoToggleEl.checked });
-      });
-
-      clockRegionSelectEl?.addEventListener('change', (evt) => {
-        const region = evt.target.value;
-        if (!region) return;
-        const nextZone = timeZoneGroups[region]?.[0] || '';
-        populateZoneSelect(region, nextZone);
-        applyClockPreference({ autoTimezone: false, timezone: nextZone });
-      });
-
-      clockZoneSelectEl?.addEventListener('change', (evt) => {
-        const zone = evt.target.value;
-        if (!zone) return;
-        applyClockPreference({ autoTimezone: false, timezone: zone });
-      });
-
-      clockSecondsToggleEl?.addEventListener('change', () => {
-        applyClockPreference({ showSeconds: !!clockSecondsToggleEl.checked });
-      });
-
-      clockDateToggleEl?.addEventListener('change', () => {
-        applyClockPreference({ showDate: !!clockDateToggleEl.checked });
-      });
     }
+    startClock();
+  }
 
-    function syncPerformanceToggle(enabled) {
-      if (performanceModeToggleEl) {
-        performanceModeToggleEl.checked = enabled;
+  function openClockModal() {
+    if (!clockModalEl) return;
+    toggleNotifications(false);
+    toggleSettings(false);
+    toggleBackendPanel(false);
+    clockModalEl.classList.add('visible');
+    clockModalEl.setAttribute('aria-hidden', 'false');
+    headerClockEl?.setAttribute('aria-expanded', 'true');
+    headerClockEl?.classList.add('settings-open');
+    document.addEventListener('click', handleClockOutsideClick, true);
+  }
+
+  function closeClockModal() {
+    if (!clockModalEl) return;
+    clockModalEl.classList.remove('visible');
+    clockModalEl.setAttribute('aria-hidden', 'true');
+    headerClockEl?.setAttribute('aria-expanded', 'false');
+    headerClockEl?.classList.remove('settings-open');
+    document.removeEventListener('click', handleClockOutsideClick, true);
+  }
+
+  function initClockSettings() {
+    if (!headerClockEl) return;
+    clockPreferences = loadClockPreferences();
+    syncClockControls();
+    startClock();
+
+    headerClockEl.addEventListener('click', (evt) => {
+      if (clockModalEl?.contains(evt.target)) {
+        return;
       }
-    }
-
-    function updatePerformanceMode(enabled) {
-      performanceState.performanceMode = !!enabled;
-      syncPerformanceToggle(performanceState.performanceMode);
-      applyPerformanceMode(performanceState.performanceMode);
-    }
-
-    async function loadPerformanceMode() {
-      try {
-        const res = await fetch('/api/performance_mode');
-        if (!res.ok) throw new Error('Request failed');
-        const data = await res.json();
-        updatePerformanceMode(!!data.enabled);
-      } catch (err) {
-        console.warn('Unable to load performance mode from backend', err);
-      }
-    }
-
-    async function persistPerformanceMode(enabled) {
-      try {
-        const res = await fetch('/api/performance_mode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled }),
-        });
-        if (!res.ok) throw new Error('Request failed');
-        const data = await res.json();
-        updatePerformanceMode(!!data.enabled);
-      } catch (err) {
-        console.error('Impossibile aggiornare la modalità prestazioni', err);
-        if (performanceModeToggleEl) {
-          performanceModeToggleEl.checked = performanceState.performanceMode;
-        }
-        alert('Impossibile aggiornare la modalità prestazioni');
-      }
-    }
-
-    function initPerformanceMode() {
-      updatePerformanceMode(initialPerformanceMode);
-
-      if (performanceModeToggleEl) {
-        performanceModeToggleEl.addEventListener('change', () => {
-          persistPerformanceMode(performanceModeToggleEl.checked);
-        });
-      }
-
-      loadPerformanceMode();
-    }
-
-    function syncDebugToggle(enabled) {
-      if (debugModeToggleEl) {
-        debugModeToggleEl.checked = enabled;
-      }
-    }
-
-    function updateDebugMode(enabled) {
-      performanceState.debugMode = !!enabled;
-      document.body.dataset.debugMode = performanceState.debugMode ? '1' : '0';
-      syncDebugToggle(performanceState.debugMode);
-      document.dispatchEvent(
-        new CustomEvent('debug-mode-changed', { detail: { enabled: performanceState.debugMode } })
-      );
-    }
-
-    async function loadDebugMode() {
-      try {
-        const res = await fetch('/api/debug_mode');
-        if (!res.ok) throw new Error('Request failed');
-        const data = await res.json();
-        updateDebugMode(!!data.enabled);
-      } catch (err) {
-        console.warn('Unable to load debug mode from backend', err);
-      }
-    }
-
-    async function persistDebugMode(enabled) {
-      try {
-        const res = await fetch('/api/debug_mode', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ enabled }),
-        });
-        if (!res.ok) throw new Error('Request failed');
-        const data = await res.json();
-        updateDebugMode(!!data.enabled);
-      } catch (err) {
-        console.error('Impossibile aggiornare la modalità debug', err);
-        if (debugModeToggleEl) {
-          debugModeToggleEl.checked = performanceState.debugMode;
-        }
-        alert('Impossibile aggiornare la modalità debug');
-      }
-    }
-
-    function initDebugMode() {
-      updateDebugMode(initialDebugMode);
-
-      if (debugModeToggleEl) {
-        debugModeToggleEl.addEventListener('change', () => {
-          persistDebugMode(debugModeToggleEl.checked);
-        });
-      }
-
-      loadDebugMode();
-    }
-
-    function updateSafeModeState(enabled) {
-      safeModeEnabled = !!enabled;
-      document.body.dataset.safeMode = safeModeEnabled ? '1' : '0';
-      if (safeModeToggleEl) {
-        safeModeToggleEl.checked = safeModeEnabled;
-      }
-      window.d2haSafeMode = { enabled: safeModeEnabled };
-      document.dispatchEvent(new CustomEvent('safe-mode-changed', { detail: { enabled: safeModeEnabled } }));
-    }
-
-    function registerPerformanceHandler(handler) {
-      if (typeof handler !== 'function') return;
-      window.d2haRuntime.performanceHandlers.push(handler);
-      try {
-        handler(!!performanceState.performanceMode);
-      } catch (err) {
-        console.error('Performance handler failed during registration', err);
-      }
-    }
-
-    function applyPerformanceMode(enabled) {
-      performanceState.performanceMode = !!enabled;
-      window.d2haRuntime.performanceHandlers.forEach((handler) => {
-        try {
-          handler(performanceState.performanceMode);
-        } catch (err) {
-          console.error('Performance handler failed', err);
-        }
-      });
-      document.dispatchEvent(
-        new CustomEvent('performance-mode-changed', { detail: { enabled: performanceState.performanceMode } })
-      );
-    }
-
-    function updateBackendStatus(durationMs) {
-      const now = Date.now();
-      const age = lastSuccessfulPing ? now - lastSuccessfulPing : Infinity;
-      const el = backendStatusEl;
-      if (!el) return;
-
-      el.classList.remove('backend-status-ok', 'backend-status-degraded', 'backend-status-down');
-
-      if (consecutiveErrors >= 2 || age > 30000) {
-        el.classList.add('backend-status-down');
-      } else if (age > 20000 || (durationMs || 0) > 800) {
-        el.classList.add('backend-status-degraded');
+      evt.stopPropagation();
+      if (clockModalEl?.classList.contains('visible')) {
+        closeClockModal();
       } else {
-        el.classList.add('backend-status-ok');
+        openClockModal();
       }
+    });
+    headerClockEl.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Enter' || evt.key === ' ') {
+        evt.preventDefault();
+        openClockModal();
+      }
+    });
+
+    document.addEventListener('keydown', (evt) => {
+      if (evt.key === 'Escape') {
+        closeAllFlyouts();
+      }
+    });
+
+    if (clockCloseBtnEl) {
+      clockCloseBtnEl.addEventListener('click', closeClockModal);
     }
 
-    function updateBackendPanelText() {
-      if (!backendStatusLastUpdateEl) return;
-      if (lastSuccessfulPing) {
-        backendStatusLastUpdateEl.textContent = backendText.lastUpdate.replace('{timestamp}', formatClock(new Date(lastSuccessfulPing)));
-      } else {
-        backendStatusLastUpdateEl.textContent = backendText.noRecent;
-      }
-    }
+    clockAutoToggleEl?.addEventListener('change', () => {
+      applyClockPreference({ autoTimezone: !!clockAutoToggleEl.checked });
+    });
 
-    async function pingBackend() {
-      const start = performance.now();
-      let durationMs = 0;
-      backendStatusEl?.classList.add('backend-status-updating');
-      try {
-        const res = await fetch('/api/overview', { cache: 'no-store' });
-        durationMs = performance.now() - start;
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        await res.json();
-        lastSuccessfulPing = Date.now();
-        consecutiveErrors = 0;
-        updateBackendStatus(durationMs);
-        updateBackendPanelText();
-      } catch (err) {
-        console.error('Backend healthcheck failed', err);
-        consecutiveErrors += 1;
-        updateBackendStatus(durationMs);
-      } finally {
-        backendStatusEl?.classList.remove('backend-status-updating');
-      }
-    }
+    clockRegionSelectEl?.addEventListener('change', (evt) => {
+      const region = evt.target.value;
+      if (!region) return;
+      const nextZone = timeZoneGroups[region]?.[0] || '';
+      populateZoneSelect(region, nextZone);
+      applyClockPreference({ autoTimezone: false, timezone: nextZone });
+    });
 
-    function setupBackendStatusPanel() {
-      backendRefreshBtn?.addEventListener('click', async () => {
-        await pingBackend();
-        try {
-          if (typeof window.refreshOverview === 'function') {
-            window.refreshOverview();
-          }
-        } catch (err) {
-          console.error('Impossibile aggiornare immediatamente i dati', err);
-        }
+    clockZoneSelectEl?.addEventListener('change', (evt) => {
+      const zone = evt.target.value;
+      if (!zone) return;
+      applyClockPreference({ autoTimezone: false, timezone: zone });
+    });
+
+    clockSecondsToggleEl?.addEventListener('change', () => {
+      applyClockPreference({ showSeconds: !!clockSecondsToggleEl.checked });
+    });
+
+    clockDateToggleEl?.addEventListener('change', () => {
+      applyClockPreference({ showDate: !!clockDateToggleEl.checked });
+    });
+  }
+
+  function syncPerformanceToggle(enabled) {
+    if (performanceModeToggleEl) {
+      performanceModeToggleEl.checked = enabled;
+    }
+  }
+
+  function updatePerformanceMode(enabled) {
+    performanceState.performanceMode = !!enabled;
+    syncPerformanceToggle(performanceState.performanceMode);
+    applyPerformanceMode(performanceState.performanceMode);
+  }
+
+  async function loadPerformanceMode() {
+    try {
+      const res = await fetch('/api/performance_mode');
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+      updatePerformanceMode(!!data.enabled);
+    } catch (err) {
+      console.warn('Unable to load performance mode from backend', err);
+    }
+  }
+
+  async function persistPerformanceMode(enabled) {
+    try {
+      const res = await fetch('/api/performance_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+      updatePerformanceMode(!!data.enabled);
+    } catch (err) {
+      console.error('Impossibile aggiornare la modalità prestazioni', err);
+      if (performanceModeToggleEl) {
+        performanceModeToggleEl.checked = performanceState.performanceMode;
+      }
+      alert('Impossibile aggiornare la modalità prestazioni');
+    }
+  }
+
+  function initPerformanceMode() {
+    updatePerformanceMode(initialPerformanceMode);
+
+    if (performanceModeToggleEl) {
+      performanceModeToggleEl.addEventListener('change', () => {
+        persistPerformanceMode(performanceModeToggleEl.checked);
       });
     }
 
-    function startBackendMonitor() {
-      pingBackend();
-      clearInterval(backendPingTimer);
-      backendPingTimer = setInterval(pingBackend, 5000);
-    }
+    loadPerformanceMode();
+  }
 
-    function loadDismissedNotifications() {
-      try {
-        dismissedNotifications = JSON.parse(localStorage.getItem('d2haDismissedNotifications') || '{}') || {};
-      } catch (err) {
-        dismissedNotifications = {};
+  function syncDebugToggle(enabled) {
+    if (debugModeToggleEl) {
+      debugModeToggleEl.checked = enabled;
+    }
+  }
+
+  function updateDebugMode(enabled) {
+    performanceState.debugMode = !!enabled;
+    document.body.dataset.debugMode = performanceState.debugMode ? '1' : '0';
+    syncDebugToggle(performanceState.debugMode);
+    document.dispatchEvent(
+      new CustomEvent('debug-mode-changed', { detail: { enabled: performanceState.debugMode } })
+    );
+  }
+
+  async function loadDebugMode() {
+    try {
+      const res = await fetch('/api/debug_mode');
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+      updateDebugMode(!!data.enabled);
+    } catch (err) {
+      console.warn('Unable to load debug mode from backend', err);
+    }
+  }
+
+  async function persistDebugMode(enabled) {
+    try {
+      const res = await fetch('/api/debug_mode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled }),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      const data = await res.json();
+      updateDebugMode(!!data.enabled);
+    } catch (err) {
+      console.error('Impossibile aggiornare la modalità debug', err);
+      if (debugModeToggleEl) {
+        debugModeToggleEl.checked = performanceState.debugMode;
       }
+      alert('Impossibile aggiornare la modalità debug');
+    }
+  }
+
+  function initDebugMode() {
+    updateDebugMode(initialDebugMode);
+
+    if (debugModeToggleEl) {
+      debugModeToggleEl.addEventListener('change', () => {
+        persistDebugMode(debugModeToggleEl.checked);
+      });
     }
 
-    function ensureSafeConfirmModal() {
-      if (safeConfirmState.modal) return;
+    loadDebugMode();
+  }
 
-      const backdrop = document.createElement('div');
-      backdrop.className = 'safe-confirm-backdrop';
-      backdrop.innerHTML = `
+  function updateSafeModeState(enabled) {
+    safeModeEnabled = !!enabled;
+    document.body.dataset.safeMode = safeModeEnabled ? '1' : '0';
+    if (safeModeToggleEl) {
+      safeModeToggleEl.checked = safeModeEnabled;
+    }
+    window.d2haSafeMode = { enabled: safeModeEnabled };
+    document.dispatchEvent(new CustomEvent('safe-mode-changed', { detail: { enabled: safeModeEnabled } }));
+  }
+
+  function registerPerformanceHandler(handler) {
+    if (typeof handler !== 'function') return;
+    window.d2haRuntime.performanceHandlers.push(handler);
+    try {
+      handler(!!performanceState.performanceMode);
+    } catch (err) {
+      console.error('Performance handler failed during registration', err);
+    }
+  }
+
+  function applyPerformanceMode(enabled) {
+    performanceState.performanceMode = !!enabled;
+    window.d2haRuntime.performanceHandlers.forEach((handler) => {
+      try {
+        handler(performanceState.performanceMode);
+      } catch (err) {
+        console.error('Performance handler failed', err);
+      }
+    });
+    document.dispatchEvent(
+      new CustomEvent('performance-mode-changed', { detail: { enabled: performanceState.performanceMode } })
+    );
+  }
+
+  function updateBackendStatus(durationMs) {
+    const now = Date.now();
+    const age = lastSuccessfulPing ? now - lastSuccessfulPing : Infinity;
+    const el = backendStatusEl;
+    if (!el) return;
+
+    el.classList.remove('backend-status-ok', 'backend-status-degraded', 'backend-status-down');
+
+    if (consecutiveErrors >= 2 || age > 30000) {
+      el.classList.add('backend-status-down');
+    } else if (age > 20000 || (durationMs || 0) > 800) {
+      el.classList.add('backend-status-degraded');
+    } else {
+      el.classList.add('backend-status-ok');
+    }
+  }
+
+  function updateBackendPanelText() {
+    if (!backendStatusLastUpdateEl) return;
+    if (lastSuccessfulPing) {
+      backendStatusLastUpdateEl.textContent = backendText.lastUpdate.replace('{timestamp}', formatClock(new Date(lastSuccessfulPing)));
+    } else {
+      backendStatusLastUpdateEl.textContent = backendText.noRecent;
+    }
+  }
+
+  async function pingBackend() {
+    const start = performance.now();
+    let durationMs = 0;
+    backendStatusEl?.classList.add('backend-status-updating');
+    try {
+      const res = await fetch('/api/overview', { cache: 'no-store' });
+      durationMs = performance.now() - start;
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      await res.json();
+      lastSuccessfulPing = Date.now();
+      consecutiveErrors = 0;
+      updateBackendStatus(durationMs);
+      updateBackendPanelText();
+    } catch (err) {
+      console.error('Backend healthcheck failed', err);
+      consecutiveErrors += 1;
+      updateBackendStatus(durationMs);
+    } finally {
+      backendStatusEl?.classList.remove('backend-status-updating');
+    }
+  }
+
+  function setupBackendStatusPanel() {
+    backendRefreshBtn?.addEventListener('click', async () => {
+      await pingBackend();
+      try {
+        if (typeof window.refreshOverview === 'function') {
+          window.refreshOverview();
+        }
+      } catch (err) {
+        console.error('Impossibile aggiornare immediatamente i dati', err);
+      }
+    });
+  }
+
+  function startBackendMonitor() {
+    pingBackend();
+    clearInterval(backendPingTimer);
+    backendPingTimer = setInterval(pingBackend, 5000);
+  }
+
+  function loadDismissedNotifications() {
+    try {
+      dismissedNotifications = JSON.parse(localStorage.getItem('d2haDismissedNotifications') || '{}') || {};
+    } catch (err) {
+      dismissedNotifications = {};
+    }
+  }
+
+  function ensureSafeConfirmModal() {
+    if (safeConfirmState.modal) return;
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'safe-confirm-backdrop';
+    backdrop.innerHTML = `
         <div class="safe-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="safe-confirm-title">
           <h3 class="safe-confirm-title" id="safe-confirm-title">Conferma richiesta</h3>
           <p class="safe-confirm-message" data-safe-confirm-message></p>
@@ -689,70 +773,70 @@
         </div>
       `;
 
-      backdrop.addEventListener('click', (evt) => {
-        if (evt.target === backdrop) {
-          if (typeof safeConfirmState.resolver === 'function') {
-            safeConfirmState.resolver(false);
-          }
-          closeSafeConfirmModal();
-        }
-      });
-
-      const message = backdrop.querySelector('[data-safe-confirm-message]');
-      const confirmBtn = backdrop.querySelector('[data-safe-confirm]');
-      const cancelBtn = backdrop.querySelector('[data-safe-cancel]');
-
-      confirmBtn?.addEventListener('click', () => {
-        if (safeConfirmState.pendingForm) {
-          safeConfirmState.pendingForm.submit();
-        }
-        if (typeof safeConfirmState.resolver === 'function') {
-          safeConfirmState.resolver(true);
-        }
-        closeSafeConfirmModal();
-      });
-
-      cancelBtn?.addEventListener('click', () => {
+    backdrop.addEventListener('click', (evt) => {
+      if (evt.target === backdrop) {
         if (typeof safeConfirmState.resolver === 'function') {
           safeConfirmState.resolver(false);
         }
         closeSafeConfirmModal();
-      });
-
-      safeConfirmState.modal = backdrop;
-      safeConfirmState.message = message;
-      safeConfirmState.confirmBtn = confirmBtn;
-      safeConfirmState.cancelBtn = cancelBtn;
-
-      document.body.appendChild(backdrop);
-    }
-
-    function openSafeConfirmModal(message, form, resolver = null) {
-      ensureSafeConfirmModal();
-      safeConfirmState.pendingForm = form;
-      safeConfirmState.resolver = resolver;
-      if (safeConfirmState.message) {
-        safeConfirmState.message.textContent = message;
       }
-      safeConfirmState.modal?.classList.add('visible');
-      safeConfirmState.confirmBtn?.focus({ preventScroll: true });
-    }
+    });
 
-    function closeSafeConfirmModal() {
-      safeConfirmState.pendingForm = null;
-      safeConfirmState.resolver = null;
-      safeConfirmState.modal?.classList.remove('visible');
-    }
+    const message = backdrop.querySelector('[data-safe-confirm-message]');
+    const confirmBtn = backdrop.querySelector('[data-safe-confirm]');
+    const cancelBtn = backdrop.querySelector('[data-safe-cancel]');
 
-    function requestConfirmation(message) {
-      return new Promise((resolve) => {
-        openSafeConfirmModal(message, null, resolve);
-      });
-    }
+    confirmBtn?.addEventListener('click', () => {
+      if (safeConfirmState.pendingForm) {
+        safeConfirmState.pendingForm.submit();
+      }
+      if (typeof safeConfirmState.resolver === 'function') {
+        safeConfirmState.resolver(true);
+      }
+      closeSafeConfirmModal();
+    });
 
-    initCompactMode();
-    initClockSettings();
-    initMobileDrawer();
+    cancelBtn?.addEventListener('click', () => {
+      if (typeof safeConfirmState.resolver === 'function') {
+        safeConfirmState.resolver(false);
+      }
+      closeSafeConfirmModal();
+    });
+
+    safeConfirmState.modal = backdrop;
+    safeConfirmState.message = message;
+    safeConfirmState.confirmBtn = confirmBtn;
+    safeConfirmState.cancelBtn = cancelBtn;
+
+    document.body.appendChild(backdrop);
+  }
+
+  function openSafeConfirmModal(message, form, resolver = null) {
+    ensureSafeConfirmModal();
+    safeConfirmState.pendingForm = form;
+    safeConfirmState.resolver = resolver;
+    if (safeConfirmState.message) {
+      safeConfirmState.message.textContent = message;
+    }
+    safeConfirmState.modal?.classList.add('visible');
+    safeConfirmState.confirmBtn?.focus({ preventScroll: true });
+  }
+
+  function closeSafeConfirmModal() {
+    safeConfirmState.pendingForm = null;
+    safeConfirmState.resolver = null;
+    safeConfirmState.modal?.classList.remove('visible');
+  }
+
+  function requestConfirmation(message) {
+    return new Promise((resolve) => {
+      openSafeConfirmModal(message, null, resolve);
+    });
+  }
+
+  initCompactMode();
+  initClockSettings();
+  initMobileDrawer();
 
   function saveDismissedNotifications() {
     localStorage.setItem('d2haDismissedNotifications', JSON.stringify(dismissedNotifications));
@@ -885,59 +969,59 @@
     updateBadge(visible.length);
   }
 
-    function toggleNotifications(open = null) {
-      if (!notifPanelEl || !notifToggleEl) return;
-      const shouldOpen = open === null ? !notifPanelEl.classList.contains('open') : open;
-      notifPanelEl.classList.toggle('open', shouldOpen);
-      notifToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-      if (shouldOpen && settingsPanelEl) {
-        settingsPanelEl.classList.remove('open');
-        settingsToggleEl?.setAttribute('aria-expanded', 'false');
-      }
-      if (shouldOpen && backendPanelEl) {
-        backendPanelEl.classList.remove('open');
-        backendStatusEl?.setAttribute('aria-expanded', 'false');
-      }
-      if (shouldOpen) {
-        closeClockModal();
-      }
+  function toggleNotifications(open = null) {
+    if (!notifPanelEl || !notifToggleEl) return;
+    const shouldOpen = open === null ? !notifPanelEl.classList.contains('open') : open;
+    notifPanelEl.classList.toggle('open', shouldOpen);
+    notifToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    if (shouldOpen && settingsPanelEl) {
+      settingsPanelEl.classList.remove('open');
+      settingsToggleEl?.setAttribute('aria-expanded', 'false');
     }
+    if (shouldOpen && backendPanelEl) {
+      backendPanelEl.classList.remove('open');
+      backendStatusEl?.setAttribute('aria-expanded', 'false');
+    }
+    if (shouldOpen) {
+      closeClockModal();
+    }
+  }
 
-    function toggleSettings(open = null) {
-      if (!settingsPanelEl || !settingsToggleEl) return;
-      const shouldOpen = open === null ? !settingsPanelEl.classList.contains('open') : open;
-      settingsPanelEl.classList.toggle('open', shouldOpen);
-      settingsToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-      if (shouldOpen && notifPanelEl) {
-        notifPanelEl.classList.remove('open');
-        notifToggleEl?.setAttribute('aria-expanded', 'false');
-      }
-      if (shouldOpen && backendPanelEl) {
-        backendPanelEl.classList.remove('open');
-        backendStatusEl?.setAttribute('aria-expanded', 'false');
-      }
-      if (shouldOpen) {
-        closeClockModal();
-      }
+  function toggleSettings(open = null) {
+    if (!settingsPanelEl || !settingsToggleEl) return;
+    const shouldOpen = open === null ? !settingsPanelEl.classList.contains('open') : open;
+    settingsPanelEl.classList.toggle('open', shouldOpen);
+    settingsToggleEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    if (shouldOpen && notifPanelEl) {
+      notifPanelEl.classList.remove('open');
+      notifToggleEl?.setAttribute('aria-expanded', 'false');
     }
+    if (shouldOpen && backendPanelEl) {
+      backendPanelEl.classList.remove('open');
+      backendStatusEl?.setAttribute('aria-expanded', 'false');
+    }
+    if (shouldOpen) {
+      closeClockModal();
+    }
+  }
 
-    function toggleBackendPanel(open = null) {
-      if (!backendPanelEl || !backendStatusEl) return;
-      const shouldOpen = open === null ? !backendPanelEl.classList.contains('open') : open;
-      backendPanelEl.classList.toggle('open', shouldOpen);
-      backendStatusEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
-      if (shouldOpen && notifPanelEl) {
-        notifPanelEl.classList.remove('open');
-        notifToggleEl?.setAttribute('aria-expanded', 'false');
-      }
-      if (shouldOpen && settingsPanelEl) {
-        settingsPanelEl.classList.remove('open');
-        settingsToggleEl?.setAttribute('aria-expanded', 'false');
-      }
-      if (shouldOpen) {
-        closeClockModal();
-      }
+  function toggleBackendPanel(open = null) {
+    if (!backendPanelEl || !backendStatusEl) return;
+    const shouldOpen = open === null ? !backendPanelEl.classList.contains('open') : open;
+    backendPanelEl.classList.toggle('open', shouldOpen);
+    backendStatusEl.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    if (shouldOpen && notifPanelEl) {
+      notifPanelEl.classList.remove('open');
+      notifToggleEl?.setAttribute('aria-expanded', 'false');
     }
+    if (shouldOpen && settingsPanelEl) {
+      settingsPanelEl.classList.remove('open');
+      settingsToggleEl?.setAttribute('aria-expanded', 'false');
+    }
+    if (shouldOpen) {
+      closeClockModal();
+    }
+  }
 
   function setupNotificationToggle() {
     if (!notifToggleEl) return;
@@ -1012,29 +1096,29 @@
     }
   }
 
-    function setupSafeModeToggle() {
-      if (!safeModeToggleEl) return;
-      safeModeToggleEl.addEventListener('change', () => {
-        persistSafeMode(safeModeToggleEl.checked);
-      });
-    }
+  function setupSafeModeToggle() {
+    if (!safeModeToggleEl) return;
+    safeModeToggleEl.addEventListener('change', () => {
+      persistSafeMode(safeModeToggleEl.checked);
+    });
+  }
 
-    function setupSafeConfirmations() {
-      document.addEventListener(
-        'submit',
-        (ev) => {
-          const form = ev.target;
-          if (!(form instanceof HTMLFormElement)) return;
-          const message = form.dataset.safeConfirm;
-          const handledElsewhere = form.dataset.safeModal === 'external';
-          if (!message || !safeModeEnabled || handledElsewhere) return;
+  function setupSafeConfirmations() {
+    document.addEventListener(
+      'submit',
+      (ev) => {
+        const form = ev.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        const message = form.dataset.safeConfirm;
+        const handledElsewhere = form.dataset.safeModal === 'external';
+        if (!message || !safeModeEnabled || handledElsewhere) return;
 
-          ev.preventDefault();
-          openSafeConfirmModal(message, form);
-        },
-        true,
-      );
-    }
+        ev.preventDefault();
+        openSafeConfirmModal(message, form);
+      },
+      true,
+    );
+  }
 
   window.registerPerformanceHandler = registerPerformanceHandler;
   window.applyPerformanceMode = applyPerformanceMode;
@@ -1053,5 +1137,5 @@
   startBackendMonitor();
   refreshNotifications();
   setInterval(refreshNotifications, 60000);
-})();
+}) ();
 </script>

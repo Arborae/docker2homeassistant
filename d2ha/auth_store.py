@@ -103,3 +103,8 @@ def save_auth_config(config: Dict[str, Any]) -> None:
         os.chmod(AUTH_CONFIG_PATH, 0o600)
     except Exception:
         pass
+
+
+# Alias for backward compatibility
+get_auth_config = load_auth_config
+

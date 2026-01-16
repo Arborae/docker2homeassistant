@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="{{ get_current_lang() }}">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA • Loading</title>
+  <title>D2HA - Loading</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 </head>
-<body
-  class="theme-{{ get_current_theme() }}"
-  data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
   data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
-  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}"
->
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <div class="auth-page splash-page">
     <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
     <div class="auth-title" aria-hidden="true">D2HA</div>
@@ -29,7 +28,7 @@
         </div>
         <div class="progress-info">
           <span id="progressLabel" class="progress-label">0%</span>
-          <span class="progress-hint">Checking services & caching data</span>
+          <span class="progress-hint">Checking services &amp; caching data</span>
         </div>
       </div>
     </div>
@@ -38,10 +37,11 @@
   <script>
     window.d2haSplashConfig = {
       targetUrl: {{ target_url | tojson }},
-      healthUrl: {{ url_for('api_health') | tojson }}
+      healthUrl: {{ url_for('health_check_override') | tojson }}
     };
   </script>
   <script src="{{ url_for('static', filename='js/auth_background.js') }}"></script>
   <script src="{{ url_for('static', filename='js/splash.js') }}"></script>
 </body>
+
 </html>

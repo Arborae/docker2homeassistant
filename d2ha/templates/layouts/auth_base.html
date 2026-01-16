@@ -39,7 +39,7 @@
         <button id="onboardingToggle" class="onboarding-toggle" type="button" aria-expanded="false" aria-controls="onboardingMenu" title="{{ t('settings.title') }}">🌐</button>
         <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">
           <h2>{{ t('settings.title') }}</h2>
-          <form method="post" action="{{ url_for('set_language') }}">
+          <form method="post" action="{{ url_for('auth.set_language') }}">
             <input type="hidden" name="next" value="{{ request.path }}">
             <label for="onboarding-lang">{{ t('language.label') }}</label>
             <select id="onboarding-lang" name="lang" onchange="this.form.submit()">
@@ -50,7 +50,7 @@
               {% endfor %}
             </select>
           </form>
-          <form method="post" action="{{ url_for('set_theme') }}">
+          <form method="post" action="{{ url_for('auth.set_theme') }}">
             <input type="hidden" name="next" value="{{ request.path }}">
             <label for="onboarding-theme">{{ t('theme.label') }}</label>
             <select id="onboarding-theme" name="theme" onchange="this.form.submit()">

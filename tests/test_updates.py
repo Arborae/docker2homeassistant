@@ -17,9 +17,9 @@ def load_app_module():
     mock_client.info.return_value = {}
 
     with mock.patch("docker.from_env", return_value=mock_client), mock.patch(
-        "docker_service.DockerService.start_overview_refresher"
-    ), mock.patch("docker_service.MqttManager.start_periodic_publisher"), mock.patch(
-        "docker_service.MqttManager.setup"
+        "services.docker.DockerService.start_overview_refresher"
+    ), mock.patch("mqtt.manager.MqttManager.start_periodic_publisher"), mock.patch(
+        "mqtt.manager.MqttManager.setup"
     ):
         # Ensure a fresh import for each test run
         sys.modules.pop("app", None)
@@ -36,9 +36,9 @@ def create_docker_service():
     mock_client.info.return_value = {}
 
     with mock.patch("docker.from_env", return_value=mock_client):
-        import docker_service
+        from services.docker import DockerService
 
-        return docker_service.DockerService()
+        return DockerService()
 
 
 def test_updates_page_handles_docker_errors_gracefully():

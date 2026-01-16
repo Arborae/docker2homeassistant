@@ -1,397 +1,38 @@
 <!DOCTYPE html>
 <html lang="{{ get_current_lang() }}">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – Container</title>
-  <style>
-    :root {
-      --bg-base: #0b1020;
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0,255,255,0.05), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(124,255,195,0.06), transparent 24%),
-                    linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
-      --bg-card: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
-                  linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
-                  rgba(17, 22, 36, 0.92);
-      --bg-card-alt: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)),
-                     rgba(26, 34, 52, 0.86);
-      --accent-primary: #31c4ff;
-      --accent: var(--accent-primary);
-      --accent-2: #7cffc3;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
-      --text: #e7ecf4;
-      --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
-      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-      --control-surface: #0f141f;
-      --bg: var(--bg-base);
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-
-    body.theme-light {
-      --bg-base: linear-gradient(135deg, #fff3e0, #ffe0c2);
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
-                    var(--bg-base);
-      --bg-card: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.78)),
-                  linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
-                  #ffffff;
-      --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.84)),
-                     #fff7ed;
-      --accent-primary: #f97316;
-      --accent: var(--accent-primary);
-      --accent-2: #fb923c;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.28);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
-      --text: #1f2937;
-      --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
-      --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
-      --control-surface: #fffaf3;
-      --auth-bg-1: #ffe9d6;
-      --auth-bg-2: #ffd0a1;
-      --bg: #fff7ed;
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-primary); color: var(--text); }
-    a { color: inherit; text-decoration: none; }
-    :root {
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --shadow-strong: 0 16px 40px rgba(0,0,0,0.45);
-      --shadow-soft: 0 10px 28px rgba(0,0,0,0.32);
-    }
-
-    .section-summary-bar {
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
-        linear-gradient(120deg, var(--accent-surface), rgba(124, 255, 195, 0.06)),
-        var(--panel);
-      border: 1px solid var(--accent-border-soft);
-      box-shadow: var(--shadow-strong);
-      border-radius: var(--radius-lg);
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .section-summary-bar h3 {
-      margin: 0;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 1rem;
-    }
-
-    .section-summary-bar .meta { color: var(--muted); font-weight: 700; letter-spacing: 0.01em; }
-
-    .section-card {
-      background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
-        linear-gradient(140deg, var(--accent-surface), rgba(124, 255, 195, 0.04)),
-        var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow-strong);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-    .section-card + .section-card { margin-top: 12px; }
-
-    .section-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 14px;
-      background: var(--stack-header-bg);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-card-header .title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .section-card-body { padding: 12px 14px 16px; background: var(--panel-2); }
-
-    .section-card-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .section-card-badge {
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: var(--accent-surface);
-      color: var(--accent);
-      border: 1px solid var(--accent-border);
-      font-weight: 800;
-      letter-spacing: 0.04em;
-    }
-
-    .section-toggle { cursor: pointer; }
-    .section-toggle-btn {
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 6px 10px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      min-height: 32px;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    }
-    .section-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
-    .section-toggle-btn .chevron { display: inline-block; width: 10px; text-align: center; }
-    .section-card-body.collapsed { display: none; }
-
-    .btn-primary-glow {
-      background: var(--accent-gradient);
-      border: 1px solid var(--accent-border-strong);
-      color: #0b111c;
-      border-radius: 14px;
-      padding: 10px 16px;
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      cursor: pointer;
-      box-shadow: 0 10px 26px var(--accent-glow), inset 0 1px 0 rgba(255,255,255,0.18);
-      transition: transform 0.1s ease, box-shadow 0.2s ease;
-    }
-    .btn-primary-glow:hover { transform: translateY(-1px); box-shadow: 0 12px 30px var(--accent-glow); }
-
-    .btn {
-      border: 1px solid var(--border);
-      background: var(--control-surface);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 8px 10px;
-      cursor: pointer;
-      min-width: 36px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      box-shadow: var(--shadow-soft);
-    }
-    .btn:hover { border-color: var(--accent-border); color: var(--accent); }
-    .btn.loading { opacity: 0.6; cursor: wait; }
-    .btn.hidden { display: none; }
-
-    .btn-chip {
-      border: 1px solid var(--accent-border);
-      background: rgba(255,255,255,0.04);
-      color: var(--accent);
-      border-radius: 999px;
-      padding: 6px 12px;
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      cursor: pointer;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px var(--accent-glow-soft);
-      transition: all 0.15s ease;
-    }
-    .btn-chip:hover { background: var(--accent-surface); color: var(--text); }
-    header {
-      background: var(--bg-primary);
-      border-bottom:1px solid var(--border);
-      padding:16px 18px;
-      box-shadow: var(--shadow);
-      position:sticky;
-      top:0;
-      z-index:10;
-      backdrop-filter: blur(6px);
-    }
-    .header-shell {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-      padding: 12px 14px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 4px 2px 0;
-      align-items: center;
-    }
-    .tab { padding:9px 14px; border-radius:10px; background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); color: var(--muted); font-weight:700; border:1px solid rgba(255,255,255,0.08); transition: all 0.15s ease; box-shadow:0 6px 18px rgba(0,0,0,0.28); }
-    .tab:hover { color: var(--text); border-color: var(--accent-border-soft); background: rgba(255,255,255,0.06); }
-    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 10px 26px var(--accent-glow); border-color: var(--accent-border); }
-    .logout-link { margin-left:auto; background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06)); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.35); border-color: var(--border); }
-    main { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
-    .card { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:14px 16px; box-shadow: var(--shadow); }
-    .stack-card { display:flex; flex-direction:column; gap:12px; }
-    .stack-header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:2px; padding:12px 14px; border:1px solid var(--border); border-radius:14px; background: var(--bg-card-alt); box-shadow: var(--shadow); }
-    .stack-toggle { margin-bottom:0; cursor:pointer; }
-    .stack-title { font-size:1rem; font-weight:800; display:flex; align-items:center; gap:10px; letter-spacing:0.02em; }
-    .stack-name { text-transform: uppercase; letter-spacing:0.08em; }
-    .stack-chip { padding:4px 10px; border-radius:999px; background: rgba(255,255,255,0.05); color: var(--muted); font-size:0.85rem; font-weight:700; }
-    .stack-toggle-btn { border:1px solid var(--border); background: rgba(255,255,255,0.04); color: var(--text); border-radius:10px; padding:6px 10px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; min-height:32px; }
-    .stack-toggle-btn:hover { border-color: var(--accent-border); color: var(--accent); }
-    .stack-toggle-btn .chevron { display:inline-block; width:10px; text-align:center; }
-    .stack-content.collapsed { display:none; }
-    table { width:100%; border-collapse: collapse; background: var(--bg-card-alt); border-radius:14px; overflow:hidden; table-layout: fixed; }
-    body.theme-dark .section-card-body > table { background: transparent; border-radius: 0; overflow: visible; }
-    th, td { padding:10px 12px; font-size:0.85rem; text-align:left; border-bottom:1px solid var(--border); vertical-align: middle; }
-    th { background: rgba(255,255,255,0.03); color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-size:0.8rem; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: rgba(255,255,255,0.03); }
-    .status-pill { padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:700; text-transform: uppercase; display:inline-block; }
-    .status-running { background: rgba(124,255,195,0.15); color: #7cffc3; }
-    .status-exited, .status-stopped { background: rgba(255,99,71,0.15); color: #ff8a7a; }
-    .status-paused { background: rgba(255,193,7,0.15); color: #ffd54f; }
-    .status-restarting { background: rgba(49,196,255,0.15); color: #31c4ff; }
-    .status-pending { background: rgba(49,196,255,0.15); color: #31c4ff; display:inline-flex; align-items:center; gap:6px; }
-    .spinner { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.18); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; }
-    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    .actions { display:flex; flex-wrap: wrap; gap:6px; justify-content:flex-end; }
-    .actions .btn { white-space:nowrap; }
-    .actions-cell { text-align:right; }
-    .col-select { width: 48px; }
-    .col-name { width: 220px; }
-    .col-status { width: 120px; }
-    .col-uptime, .col-cpu, .col-ram, .col-restart { width: 110px; }
-    .col-networks, .col-ports { width: 170px; }
-    .col-actions { width: 200px; }
-      .btn-strong { background: var(--accent-gradient); color:#0b111c; box-shadow:0 8px 18px var(--accent-glow); font-weight:800; }
-      .btn-ghost { background: var(--accent-surface); color: var(--accent); border-color: var(--accent-border); font-weight:800; }
-      .btn-ghost:hover { background: rgba(49,196,255,0.18); }
-    .btn-play { background:#2ecc71; color:#07130c; }
-    .btn-stop { background:#e74c3c; }
-    .btn-delete { background:#b71c1c; }
-    .btn-pause { background:#f1c40f; color:#0d0f14; }
-    .btn-restart { background:#3498db; }
-    .meta { color: var(--muted); font-size:0.85rem; }
-    .row-clickable { cursor:pointer; }
-    .select-col { width: 48px; text-align:center; }
-    .checkbox { position:relative; display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; }
-    .checkbox input { position:absolute; inset:0; margin:0; opacity:0; cursor:pointer; z-index:2; }
-    .checkmark { width:100%; height:100%; border-radius:6px; border:1px solid var(--border); display:inline-flex; align-items:center; justify-content:center; background: rgba(255,255,255,0.04); transition: all 0.15s ease; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
-    .checkbox input:checked + .checkmark { background: var(--accent-gradient); border-color: rgba(49,196,255,0.8); box-shadow: 0 0 0 4px rgba(49,196,255,0.18); }
-    .checkbox input:checked + .checkmark::after { content:'✓'; color:#0b111c; font-weight:900; font-size:0.85rem; }
-    .bulk-bar { position:fixed; left:0; right:0; bottom:0; background: var(--bg-card); border-top:1px solid var(--border); padding:12px 18px; display:none; align-items:center; justify-content:space-between; gap:12px; box-shadow: 0 -8px 20px rgba(0,0,0,0.25); z-index:30; color: var(--text); }
-    .bulk-bar.visible { display:flex; }
-    .bulk-summary { color: var(--muted); font-weight:700; letter-spacing:0.02em; }
-    .bulk-actions { display:flex; gap:8px; flex-wrap:wrap; }
-    .modal-backdrop { position: fixed; inset:0; background: rgba(0,0,0,0.65); display:none; align-items:center; justify-content:center; z-index: 50; padding:20px; }
-    .modal-backdrop.visible { display:flex; }
-    .modal { background: var(--panel-2); border:1px solid var(--border); border-radius:16px; width:min(1100px, 100%); height:82vh; max-height:82vh; overflow:hidden; box-shadow: var(--shadow); display:flex; flex-direction:column; }
-    .modal-header { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border); background: var(--stack-header-bg); }
-    .modal-title { font-weight:800; font-size:1rem; letter-spacing:0.02em; }
-    .modal-close { background:none; border:none; color:var(--muted); font-size:1.2rem; cursor:pointer; }
-    .modal-tabs { display:flex; gap:8px; padding:12px 16px 0; border-bottom:1px solid var(--border); }
-    .modal-tab { padding:8px 12px; border-radius:10px 10px 0 0; background: rgba(255,255,255,0.03); border:1px solid transparent; color:var(--muted); font-weight:700; cursor:pointer; }
-    .modal-tab.active { background: var(--panel); color: var(--text); border-color: var(--border); box-shadow: inset 0 -3px 0 var(--accent); }
-    .modal-body { padding:16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:12px; min-height:0; }
-    .debug-overlay { position:fixed; inset:0; padding:18px; display:none; align-items:center; justify-content:center; background:rgba(5,8,15,0.78); z-index:70; backdrop-filter: blur(4px); }
-    .debug-overlay.visible { display:flex; }
-    .debug-panel { width:min(1100px, 100%); background: var(--panel); border:1px solid var(--accent-border-soft); border-radius: 18px; box-shadow: var(--shadow-strong); overflow:hidden; display:flex; flex-direction:column; gap:0; }
-    .debug-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 16px; background: var(--stack-header-bg); border-bottom: 1px solid var(--border); }
-    .debug-eyebrow { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.75rem; color: var(--muted); }
-    .debug-title { font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em; }
-    .debug-actions { display:flex; gap:8px; align-items:center; }
-    .debug-body { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:12px; padding:14px 16px 18px; background: var(--panel-2); }
-    .debug-column { background: rgba(255,255,255,0.02); border:1px solid var(--border); border-radius: 14px; padding:12px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); display:flex; flex-direction:column; gap:10px; min-height: 260px; }
-    .debug-subtitle { font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; font-size: 0.8rem; color: var(--muted); }
-    .debug-list, .debug-log { flex:1; overflow-y:auto; background: var(--control-surface); border-radius: 10px; padding:10px; border:1px dashed var(--accent-border-soft); font-family: "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: 0.9rem; }
-    .debug-log-line { padding:6px 8px; border-bottom: 1px solid rgba(255,255,255,0.04); display:flex; gap:8px; align-items:flex-start; }
-    .debug-log-line:last-child { border-bottom:none; }
-    .debug-log-line .tag { padding:2px 6px; border-radius:8px; font-size:0.75rem; background: var(--accent-surface); color: var(--accent); border:1px solid var(--accent-border-soft); }
-    .debug-log-line .text { flex:1; word-break: break-word; }
-    .debug-list .command { padding:6px 8px; border-bottom:1px solid rgba(255,255,255,0.06); color: var(--text); }
-    .debug-list .command:last-child { border-bottom:none; }
-    .debug-overlay [class*='inline-btn'] { background: var(--accent-surface); border-color: var(--accent-border); color: var(--accent); }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; }
-    .pill { padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.05); border:1px solid var(--border); font-size:0.8rem; display:inline-block; }
-    .field { background: var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
-    .field h4 { margin:0 0 6px 0; color:var(--muted); font-size:0.85rem; letter-spacing:0.01em; }
-    .kv { display:flex; justify-content:space-between; gap:10px; padding:6px 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
-    .kv:last-child { border-bottom:none; }
-    .badge { display:inline-flex; align-items:center; padding:4px 8px; border-radius:999px; background: var(--accent-surface); color: var(--accent); font-size:0.8rem; }
-    .muted { color: var(--muted); font-size:0.85rem; }
-    .stats-row { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; }
-    .stat-box { background: var(--panel); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; flex-direction:column; gap:6px; }
-    canvas { width:100%; height:160px; background: radial-gradient(circle at 20% 20%, rgba(49,196,255,0.05), transparent 35%); border-radius:10px; }
-    .logs-area { background: var(--control-surface); color: var(--text); border:1px solid var(--border); border-radius:12px; padding:10px; font-family:"JetBrains Mono", monospace; font-size:0.8rem; max-height:380px; overflow:auto; white-space:pre-wrap; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.02); }
-    .logs-panel .logs-area { flex:1; max-height:unset; min-height:0; }
-    .logs-area .log-line { padding:4px 8px; border-left:3px solid transparent; margin-bottom:2px; border-radius:8px; display:flex; gap:8px; align-items:flex-start; }
-    .logs-area .log-line:last-child { margin-bottom:0; }
-    .logs-area .log-bullet { opacity:0.4; }
-    .logs-area .log-info { border-color: var(--accent); background:rgba(49,196,255,0.06); }
-    .logs-area .log-warn { border-color:#ffd54f; background:rgba(255,213,79,0.07); }
-    .logs-area .log-error { border-color:#ff8a7a; background:rgba(255,138,122,0.08); }
-    .logs-area .log-debug { border-color:#9aa7bd; background:rgba(154,167,189,0.08); color: var(--text); }
-    .logs-area .log-other { border-color:rgba(255,255,255,0.08); }
-    .controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .select, .input { background: var(--control-surface); color: var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size:0.9rem; }
-    .inline-btn { padding:8px 12px; border-radius:10px; border:1px solid var(--border); background: var(--control-surface); color: var(--text); cursor:pointer; }
-    .inline-btn:hover { border-color: var(--accent-border); color: var(--accent); box-shadow: 0 6px 18px var(--accent-glow-soft); }
-    .chip { background: rgba(255,255,255,0.05); border:1px solid var(--border); padding:4px 8px; border-radius:8px; font-size:0.8rem; }
-    .small { font-size:0.8rem; color:var(--muted); }
-    .table-kv { width:100%; border-collapse:collapse; }
-    .table-kv td { padding:6px 4px; border-bottom:1px solid var(--border); font-size:0.85rem; }
-    .table-kv tr:last-child td { border-bottom:none; }
-    .tab-panel { display:none; }
-    .tab-panel.active { display:block; }
-    .tab-panel.logs-panel.active { display:flex; flex-direction:column; flex:1; min-height:0; }
-    .toast-container { position:fixed; top:14px; left:0; right:0; display:flex; justify-content:center; gap:10px; pointer-events:none; z-index:60; }
-    .toast { background: linear-gradient(145deg, var(--control-surface), var(--panel)); color: var(--text); border:1px solid var(--border); border-radius:12px; padding:12px 14px; min-width:260px; box-shadow: var(--shadow); opacity:0; transform: translateY(-12px); transition: all 0.2s ease; pointer-events:auto; display:flex; flex-direction:column; gap:8px; }
-    .toast.visible { opacity:1; transform: translateY(0); }
-    .toast-message { font-weight:700; font-size:0.9rem; }
-    .toast-actions { display:flex; gap:8px; }
-    .toast-actions button { border:1px solid var(--border); border-radius:999px; padding:6px 12px; background: var(--control-surface); color: var(--text); cursor:pointer; font-weight:700; box-shadow: var(--shadow-soft); }
-    .toast-info { border-color: var(--accent-glow-soft); }
-    .toast-success { border-color: rgba(124,255,195,0.25); }
-    .toast-error { border-color: rgba(255,138,122,0.25); }
-    .toast-warning { border-color: rgba(255,213,79,0.35); }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
+
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <header>
     <div class="header-shell">
       {% include 'partials/notifications_panel.html' %}
       <nav id="primaryNav" role="navigation">
-        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-        <a href="{{ url_for('volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{ t("nav.volumes") }}</a>
-        <a href="{{ url_for('networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{ t("nav.networks") }}</a>
-        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+        <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+        <a href="{{ url_for('ui.containers_view') }}"
+          class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
+          t("nav.containers") }}</a>
+        <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
+          t("nav.images") }}</a>
+        <a href="{{ url_for('ui.volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{
+          t("nav.volumes") }}</a>
+        <a href="{{ url_for('ui.networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{
+          t("nav.networks") }}</a>
+        <a href="{{ url_for('ui.updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{
+          t("nav.updates") }}</a>
+        <a href="{{ url_for('ui.events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{
+          t("nav.events") }}</a>
+        <a href="{{ url_for('ui.autodiscovery_view') }}"
+          class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('auth.logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
       </nav>
     </div>
   </header>
@@ -402,121 +43,126 @@
     <section class="section-summary-bar">
       <div>
         <h3>Stato container</h3>
-        <div class="meta">{{ summary.running }} container attivi · {{ summary.total_containers }} totali · {{ summary.images }} immagini installate</div>
+        <div class="meta">{{ summary.running }} container attivi · {{ summary.total_containers }} totali · {{
+          summary.images }} immagini installate</div>
       </div>
     </section>
 
     {% for stack in stacks %}
-      <section class="section-card">
-        <div class="section-card-header section-toggle" data-stack-toggle>
-          <div class="title">
-            <button class="section-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
-              <span class="chevron">▾</span>
-            </button>
-            <span class="stack-name">{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</span>
-          </div>
-          <div class="section-card-actions">
-            <div class="section-card-badge">{{ stack.containers|length }} container</div>
-          </div>
+    <section class="section-card">
+      <div class="section-card-header section-toggle" data-stack-toggle>
+        <div class="title">
+          <button class="section-toggle-btn" type="button" aria-expanded="true" aria-label="Mostra o nascondi sezione">
+            <span class="chevron">▾</span>
+          </button>
+          <span class="stack-name">{{ 'Senza stack' if stack.name == '_no_stack' else stack.name }}</span>
         </div>
-        <div class="section-card-body stack-content">
-          <table class="responsive-table">
-            <colgroup>
-              <col class="col-select">
-              <col class="col-name">
-              <col class="col-status">
-              <col class="col-uptime">
-              <col class="col-cpu">
-              <col class="col-ram">
-              <col class="col-restart">
-              <col class="col-networks">
-              <col class="col-ports">
-              <col class="col-actions">
-            </colgroup>
-            <thead>
-              <tr>
-                <th class="select-col" aria-label="Seleziona"></th>
-                <th>Nome</th>
-                <th>Stato</th>
-                <th>Uptime</th>
-                <th>CPU</th>
-                <th>RAM</th>
-                <th>Restart</th>
-                <th>Reti</th>
-                <th>Porte</th>
-                <th>Azioni</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for c in stack.containers %}
-                <tr class="row-clickable" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}" data-container-status="{{ c.status.lower() }}">
-                  <td class="select-col" data-label="Seleziona">
-                    <label class="checkbox">
-                      <input type="checkbox" class="container-select" value="{{ c.id }}" data-container-name="{{ c.name }}" aria-label="Seleziona {{ c.name }}">
-                      <span class="checkmark"></span>
-                    </label>
-                  </td>
-                  <td data-label="Nome">
-                    <div><strong>{{ c.name }}</strong></div>
-                    <div class="meta">{{ c.image }}</div>
-                    <div class="meta">{{ c.short_id }}</div>
-                  </td>
-                  <td data-label="Stato" data-field="status">
-                    {% set status = c.status.lower() %}
-                    {% set css = "status-pill " %}
-                    {% if status == "running" %}
-                      {% set css = css + "status-running" %}
-                    {% elif status in ["exited", "stopped"] %}
-                      {% set css = css + "status-exited" %}
-                    {% elif status == "paused" %}
-                      {% set css = css + "status-paused" %}
-                    {% elif status == "restarting" %}
-                      {% set css = css + "status-restarting" %}
-                    {% else %}
-                      {% set css = css + "status-paused" %}
-                    {% endif %}
-                    <span class="{{ css }}">{{ c.status }}</span>
-                  </td>
-                  <td data-label="Uptime" data-field="uptime">{{ c.uptime }}</td>
-                  <td data-label="CPU" data-field="cpu">{{ c.cpu_percent }}%</td>
-                  <td data-label="RAM" data-field="ram">{{ c.mem_usage }} ({{ c.mem_percent }}%)</td>
-                  <td data-label="Restart" data-field="restart">{{ c.restarts }}</td>
-                  <td data-label="Reti" data-field="networks">
-                    {% if c.networks %}
-                      <div class="meta">
-                        {% for net in c.networks %}
-                          <div>{{ net.name }}{% if net.ip %} – {{ net.ip }}{% endif %}</div>
-                        {% endfor %}
-                      </div>
-                    {% else %}
-                      <span class="meta">Nessuna rete</span>
-                    {% endif %}
-                  </td>
-                  <td data-label="Porte" data-field="ports">
-                    {% if c.ports.mode == 'host' %}
-                      <div class="meta">Modalità host</div>
-                    {% elif c.ports.bindings %}
-                      <div class="meta">
-                        {% for port in c.ports.bindings %}
-                          <div>{{ port }}</div>
-                        {% endfor %}
-                      </div>
-                    {% else %}
-                      <span class="meta">Nessuna porta esposta</span>
-                    {% endif %}
-                  </td>
-                  <td class="actions-cell" data-label="Azioni">
-                    <div class="actions">
-                      <button class="btn-primary-glow" type="button" data-open-modal data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Dettagli</button>
-                      <button class="btn-primary-glow" type="button" data-open-modal data-tab="logs" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
-                    </div>
-                  </td>
-                </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+        <div class="section-card-actions">
+          <div class="section-card-badge">{{ stack.containers|length }} container</div>
         </div>
-      </section>
+      </div>
+      <div class="section-card-body stack-content">
+        <table class="responsive-table">
+          <colgroup>
+            <col class="col-select">
+            <col class="col-name">
+            <col class="col-status">
+            <col class="col-uptime">
+            <col class="col-cpu">
+            <col class="col-ram">
+            <col class="col-restart">
+            <col class="col-networks">
+            <col class="col-ports">
+            <col class="col-actions">
+          </colgroup>
+          <thead>
+            <tr>
+              <th class="select-col" aria-label="Seleziona"></th>
+              <th>Nome</th>
+              <th>Stato</th>
+              <th>Uptime</th>
+              <th>CPU</th>
+              <th>RAM</th>
+              <th>Restart</th>
+              <th>Reti</th>
+              <th>Porte</th>
+              <th>Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in stack.containers %}
+            <tr class="row-clickable" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}"
+              data-container-status="{{ c.status.lower() }}">
+              <td class="select-col" data-label="Seleziona">
+                <label class="checkbox">
+                  <input type="checkbox" class="container-select" value="{{ c.id }}" data-container-name="{{ c.name }}"
+                    aria-label="Seleziona {{ c.name }}">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+              <td data-label="Nome">
+                <div><strong>{{ c.name }}</strong></div>
+                <div class="meta">{{ c.image }}</div>
+                <div class="meta">{{ c.short_id }}</div>
+              </td>
+              <td data-label="Stato" data-field="status">
+                {% set status = c.status.lower() %}
+                {% set css = "status-pill " %}
+                {% if status == "running" %}
+                {% set css = css + "status-running" %}
+                {% elif status in ["exited", "stopped"] %}
+                {% set css = css + "status-exited" %}
+                {% elif status == "paused" %}
+                {% set css = css + "status-paused" %}
+                {% elif status == "restarting" %}
+                {% set css = css + "status-restarting" %}
+                {% else %}
+                {% set css = css + "status-paused" %}
+                {% endif %}
+                <span class="{{ css }}">{{ c.status }}</span>
+              </td>
+              <td data-label="Uptime" data-field="uptime">{{ c.uptime }}</td>
+              <td data-label="CPU" data-field="cpu">{{ c.cpu_percent }}%</td>
+              <td data-label="RAM" data-field="ram">{{ c.mem_usage }} ({{ c.mem_percent }}%)</td>
+              <td data-label="Restart" data-field="restart">{{ c.restarts }}</td>
+              <td data-label="Reti" data-field="networks">
+                {% if c.networks %}
+                <div class="meta">
+                  {% for net in c.networks %}
+                  <div>{{ net.name }}{% if net.ip %} – {{ net.ip }}{% endif %}</div>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <span class="meta">Nessuna rete</span>
+                {% endif %}
+              </td>
+              <td data-label="Porte" data-field="ports">
+                {% if c.ports.mode == 'host' %}
+                <div class="meta">Modalità host</div>
+                {% elif c.ports.bindings %}
+                <div class="meta">
+                  {% for port in c.ports.bindings %}
+                  <div>{{ port }}</div>
+                  {% endfor %}
+                </div>
+                {% else %}
+                <span class="meta">Nessuna porta esposta</span>
+                {% endif %}
+              </td>
+              <td class="actions-cell" data-label="Azioni">
+                <div class="actions">
+                  <button class="btn-primary-glow" type="button" data-open-modal data-container-id="{{ c.id }}"
+                    data-container-name="{{ c.name }}">Dettagli</button>
+                  <button class="btn-primary-glow" type="button" data-open-modal data-tab="logs"
+                    data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
     {% endfor %}
   </main>
 
@@ -548,68 +194,86 @@
       </div>
       <div class="modal-body">
         <div class="tab-panel active" data-panel="info">
-          <div class="grid">
+          <!-- Top Row: Metrics -->
+          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 20px;">
             <div class="field">
               <h4>Stato</h4>
               <div id="info-status" class="badge">-</div>
             </div>
             <div class="field">
               <h4>Uptime</h4>
-              <div id="info-uptime">-</div>
+              <div id="info-uptime" style="font-weight:700; font-size:1.1rem;">-</div>
             </div>
             <div class="field">
               <h4>Riavvio</h4>
-              <div id="info-restart">-</div>
-            </div>
-            <div class="field">
-              <h4>Immagine</h4>
-              <div id="info-image">-</div>
-              <div class="muted" id="info-short-id"></div>
+              <div id="info-restart" style="font-weight:700; font-size:1.1rem;">-</div>
             </div>
           </div>
 
-          <div class="stats-row">
-            <div class="stat-box">
-              <div class="kv"><span>CPU</span><strong id="stat-cpu">-</strong></div>
-              <canvas id="chart-cpu"></canvas>
+          <!-- Resources Section -->
+          <div class="card"
+            style="margin-bottom: 20px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: rgba(255,255,255,0.02);">
+            <div class="card-header" style="margin-bottom: 12px;">
+              <h4 style="margin:0; text-transform:uppercase; color:var(--muted); font-size:0.8rem;">Risorse Live</h4>
             </div>
-            <div class="stat-box">
-              <div class="kv"><span>RAM</span><strong id="stat-ram">-</strong></div>
-              <canvas id="chart-ram"></canvas>
-            </div>
-            <div class="stat-box">
-              <div class="kv"><span>Network</span><strong id="stat-net">-</strong></div>
-              <canvas id="chart-net"></canvas>
-            </div>
-          </div>
-
-          <div class="grid">
-            <div class="field">
-              <h4>Reti</h4>
-              <div id="info-networks" class="muted">-</div>
-            </div>
-            <div class="field">
-              <h4>Porte</h4>
-              <div id="info-ports" class="muted">-</div>
-            </div>
-            <div class="field">
-              <h4>Volumi</h4>
-              <div id="info-volumes" class="muted">-</div>
-            </div>
-            <div class="field">
-              <h4>Command</h4>
-              <div id="info-command" class="muted">-</div>
+            <div class="stats-row">
+              <div class="stat-box">
+                <div class="kv"><span>CPU</span><strong id="stat-cpu">-</strong></div>
+                <canvas id="chart-cpu"></canvas>
+              </div>
+              <div class="stat-box">
+                <div class="kv"><span>RAM</span><strong id="stat-ram">-</strong></div>
+                <canvas id="chart-ram"></canvas>
+              </div>
+              <div class="stat-box">
+                <div class="kv"><span>Network</span><strong id="stat-net">-</strong></div>
+                <canvas id="chart-net"></canvas>
+              </div>
             </div>
           </div>
 
-          <div class="grid">
-            <div class="field">
-              <h4>Environment</h4>
-              <table class="table-kv" id="info-env"></table>
+          <!-- Configuration & Details Grid -->
+          <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 24px;">
+            <!-- Left Column: Config -->
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div class="field">
+                <h4>Immagine</h4>
+                <div id="info-image" style="word-break:break-all;">-</div>
+                <div class="muted" id="info-short-id" style="font-family:monospace; font-size:0.8rem;"></div>
+              </div>
+              <div class="field">
+                <h4>Command</h4>
+                <div id="info-command" class="muted"
+                  style="font-family:monospace; font-size:0.85rem; word-break:break-all;">-</div>
+              </div>
+              <div class="field">
+                <h4>Reti</h4>
+                <div id="info-networks" class="muted">-</div>
+              </div>
+              <div class="field">
+                <h4>Porte</h4>
+                <div id="info-ports" class="muted">-</div>
+              </div>
+              <div class="field">
+                <h4>Volumi</h4>
+                <div id="info-volumes" class="muted">-</div>
+              </div>
             </div>
-            <div class="field">
-              <h4>Label</h4>
-              <table class="table-kv" id="info-labels"></table>
+
+            <!-- Right Column: Env & Labels -->
+            <div style="display:flex; flex-direction:column; gap:16px;">
+              <div class="field">
+                <h4>Environment</h4>
+                <div class="scrollable-table">
+                  <table class="table-kv" id="info-env"></table>
+                </div>
+              </div>
+              <div class="field">
+                <h4>Label</h4>
+                <div class="scrollable-table">
+                  <table class="table-kv" id="info-labels"></table>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -617,28 +281,28 @@
         <div class="tab-panel logs-panel" data-panel="logs">
           <div class="controls">
             <label class="muted"><input type="checkbox" id="logs-auto" checked> Auto-refresh</label>
-          <label class="muted">Linee
-            <select id="logs-tail" class="select">
-              <option value="10">10</option>
-              <option value="50">50</option>
-              <option value="100" selected>100</option>
-              <option value="150">150</option>
-              <option value="500">500</option>
-              <option value="all">Senza limiti</option>
-            </select>
-          </label>
-          <label class="muted">Severità
-            <select id="logs-severity" class="select">
-              <option value="all" selected>Tutte</option>
-              <option value="error">Errori</option>
-              <option value="warn">Warning</option>
-              <option value="info">Info</option>
-              <option value="debug">Debug</option>
-              <option value="other">Altro</option>
-            </select>
-          </label>
-          <button class="inline-btn" id="logs-refresh">Aggiorna ora</button>
-        </div>
+            <label class="muted">Linee
+              <select id="logs-tail" class="select">
+                <option value="10">10</option>
+                <option value="50">50</option>
+                <option value="100" selected>100</option>
+                <option value="150">150</option>
+                <option value="500">500</option>
+                <option value="all">Senza limiti</option>
+              </select>
+            </label>
+            <label class="muted">Severità
+              <select id="logs-severity" class="select">
+                <option value="all" selected>Tutte</option>
+                <option value="error">Errori</option>
+                <option value="warn">Warning</option>
+                <option value="info">Info</option>
+                <option value="debug">Debug</option>
+                <option value="other">Altro</option>
+              </select>
+            </label>
+            <button class="inline-btn" id="logs-refresh">Aggiorna ora</button>
+          </div>
           <pre class="logs-area" id="logs-output">Seleziona un container...</pre>
         </div>
 
@@ -659,9 +323,10 @@
               <div id="updates-state" class="badge">-</div>
             </div>
           </div>
-          <div class="controls">
-            <label class="muted">Frequenza controllo
-              <select id="updates-frequency" class="select">
+          <div class="field">
+            <h4>Frequenza controllo</h4>
+            <div class="input-row">
+              <select id="updates-frequency" class="select" style="min-width:140px;">
                 <option value="15">15 min</option>
                 <option value="30">30 min</option>
                 <option value="60" selected>1 ora</option>
@@ -669,9 +334,9 @@
                 <option value="720">12 ore</option>
                 <option value="1440">Ogni giorno</option>
               </select>
-            </label>
-            <button class="inline-btn" id="updates-save">Salva</button>
-            <button class="inline-btn" id="updates-check">Check now</button>
+              <button class="inline-btn" id="updates-save">Salva</button>
+              <button class="inline-btn" id="updates-check">Check now</button>
+            </div>
           </div>
           <div id="updates-feedback" class="small"></div>
         </div>
@@ -981,7 +646,7 @@
     };
 
     const fetchContainerAction = async (id, action) => {
-      const res = await fetch(`/containers/${id}/${action}`, { method: 'POST', headers: { Accept: 'application/json' } });
+      const res = await fetch(`/api/containers/${id}/${action}`, { method: 'POST', headers: { Accept: 'application/json' } });
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || 'Request failed');
@@ -1423,7 +1088,7 @@
       if (!currentContainerId) return;
       showToast('Installazione aggiornamento in corso...', { type: 'info' });
       try {
-        const res = await fetch(`/containers/${currentContainerId}/full_update`, { method: 'POST' });
+        const res = await fetch(`/api/containers/${currentContainerId}/full_update`, { method: 'POST' });
         if (!res.ok) throw new Error('fail');
         showToast('Aggiornamento avviato', { type: 'success' });
         await updateUpdates(true);
@@ -1605,4 +1270,5 @@
 
   </script>
 </body>
+
 </html>

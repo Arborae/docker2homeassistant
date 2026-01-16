@@ -1,167 +1,38 @@
 <!DOCTYPE html>
 <html lang="{{ get_current_lang() }}">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA – {{ t('nav.networks') }}</title>
   {% include 'partials/notifications_styles.html' %}
-  <style>
-    :root {
-      --bg-base: #0b1020;
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0,255,255,0.05), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(124,255,195,0.06), transparent 24%),
-                    linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
-      --bg-card: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
-                  linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
-                  rgba(17, 22, 36, 0.92);
-      --bg-card-alt: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)),
-                     rgba(26, 34, 52, 0.86);
-      --accent-primary: #31c4ff;
-      --accent: var(--accent-primary);
-      --accent-2: #7cffc3;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
-      --text: #e7ecf4;
-      --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
-      --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-      --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-      --control-surface: #0f141f;
-      --bg: var(--bg-base);
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-
-    body.theme-light {
-      --bg-base: linear-gradient(135deg, #fff3e0, #ffe0c2);
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
-                    var(--bg-base);
-      --bg-card: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.78)),
-                  linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
-                  #ffffff;
-      --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.84)),
-                     #fff7ed;
-      --accent-primary: #f97316;
-      --accent: var(--accent-primary);
-      --accent-2: #fb923c;
-      --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.28);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
-      --text: #1f2937;
-      --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
-      --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
-      --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
-      --control-surface: #fffaf3;
-      --auth-bg-1: #ffe9d6;
-      --auth-bg-2: #ffd0a1;
-      --bg: #fff7ed;
-      --panel: var(--bg-card);
-      --panel-2: var(--bg-card-alt);
-    }
-
-    * { box-sizing: border-box; }
-    body { margin:0; font-family:"Inter", system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg-primary); color: var(--text); }
-    a { color: inherit; text-decoration: none; }
-    :root {
-      --radius-lg: 20px;
-      --radius-md: 14px;
-      --shadow-strong: 0 16px 40px rgba(0,0,0,0.45);
-      --shadow-soft: 0 10px 28px rgba(0,0,0,0.32);
-    }
-    .btn { border:1px solid var(--border); background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03)); color: var(--text); border-radius:10px; padding:9px 12px; cursor:pointer; font-weight:700; letter-spacing:0.02em; box-shadow:0 6px 16px rgba(0,0,0,0.25); transition: all 0.15s ease; display:inline-flex; align-items:center; gap:8px; justify-content: center; }
-    .btn:hover { border-color: var(--accent-border); color: var(--accent); }
-    .btn-primary-glow { background: var(--accent-gradient); color:#0c121e; border:1px solid var(--accent-border); box-shadow: 0 12px 26px var(--accent-glow); }
-    .btn-ghost { background: rgba(255,255,255,0.06); border-color: var(--border); color: var(--text); }
-    .btn-chip { border: 1px solid var(--accent-border); background: rgba(255,255,255,0.04); color: var(--accent); border-radius: 999px; padding: 6px 12px; font-weight: 700; letter-spacing: 0.02em; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 12px var(--accent-glow-soft); transition: all 0.15s ease; }
-    .btn-chip:hover { background: var(--accent-surface); color: var(--text); }
-    header { background: var(--bg-primary); border-bottom:1px solid var(--border); padding:16px 18px; box-shadow: var(--shadow); position:sticky; top:0; z-index: 200; isolation: isolate; backdrop-filter: blur(6px); }
-    .header-shell { background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 10px; }
-    nav { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 2px 0; align-items: center; }
-    .tab { padding:9px 14px; border-radius:10px; background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); color: var(--muted); font-weight:700; border:1px solid rgba(255,255,255,0.08); transition: all 0.15s ease; box-shadow:0 6px 18px rgba(0,0,0,0.28); }
-    .tab:hover { color: var(--text); border-color: var(--accent-border-soft); background: rgba(255,255,255,0.06); }
-    .tab.active { background: var(--accent-gradient); color:#0c121e; box-shadow:0 10px 26px var(--accent-glow); border-color: var(--accent-border); }
-    .logout-link { margin-left:auto; background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06)); color: var(--text); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.35); border-color: var(--border); }
-    main { padding: 18px; display: flex; flex-direction: column; gap: 16px; }
-    .card { background: var(--bg-card); border:1px solid var(--border); border-radius:18px; padding:14px 16px; box-shadow: var(--shadow); }
-    .page-header { display:flex; flex-direction:column; gap:6px; margin-bottom:12px; }
-    .page-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.75rem; color: var(--muted); }
-    .page-title { font-size:1.4rem; font-weight:800; letter-spacing:0.01em; }
-    .page-subtitle { color: var(--muted); }
-    .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:10px; }
-    .toolbar-controls { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-    .field { display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--border); border-radius:12px; background: rgba(255,255,255,0.02); min-height:42px; }
-    .field input, .field select { background: transparent; border: none; color: var(--text); outline: none; font-size: 0.95rem; min-width: 160px; }
-    body.theme-dark select { background: var(--control-surface); color: var(--text); }
-    body.theme-dark select option { background: var(--control-surface); color: var(--text); }
-    .field select { padding-right: 4px; }
-    .toggle { display:flex; align-items:center; gap:6px; color: var(--muted); font-weight:700; }
-    table { width:100%; border-collapse:collapse; }
-    th, td { padding:10px 8px; text-align:left; }
-    th { text-transform: uppercase; letter-spacing:0.06em; font-size:0.8rem; color: var(--muted); border-bottom:1px solid var(--border); }
-    tr { border-bottom:1px solid var(--border); }
-    tr:hover { background: rgba(255,255,255,0.02); }
-    .badge { display:inline-flex; align-items:center; gap:6px; border-radius:999px; padding:6px 10px; border:1px solid var(--border); font-weight:700; font-size:0.85rem; }
-    .badge-ok { background: rgba(124,255,195,0.08); color: #7cffc3; border-color: rgba(124,255,195,0.4); }
-    .badge-warn { background: rgba(249,115,22,0.12); color: #fca05d; border-color: rgba(249,115,22,0.4); }
-    .meta { color: var(--muted); font-size:0.9rem; }
-    .actions { display:flex; gap:8px; }
-    .pill-row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
-    .details-row { background: var(--bg-card-alt); }
-    .details-shell { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:14px; padding:8px 4px; }
-    .chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:12px; background: rgba(255,255,255,0.05); border:1px solid var(--border); }
-    .muted { color: var(--muted); }
-    .label-row { display:flex; gap:8px; align-items:center; margin-top:6px; }
-    .network-name { font-weight:800; letter-spacing:0.01em; }
-    .inline-link { color: var(--accent); font-weight:700; }
-    .modal-backdrop { position: fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.4); z-index:50; backdrop-filter: blur(2px); }
-    .modal-backdrop.open { display:flex; }
-    .modal { background: var(--panel); border:1px solid var(--border); border-radius:16px; padding:16px; width: min(640px, 94vw); box-shadow: var(--shadow-strong); }
-    .modal-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; }
-    .modal-title { font-weight:800; font-size:1.2rem; }
-    .modal-body { display:flex; flex-direction:column; gap:10px; }
-    .form-row { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; }
-    .form-control { display:flex; flex-direction:column; gap:6px; background: rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:12px; padding:10px; }
-    .form-control label { font-weight:700; font-size:0.95rem; }
-    .form-control input, .form-control select { background: transparent; border:none; color: var(--text); font-size:1rem; outline:none; }
-    .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:6px; }
-    .label-pair { display:flex; gap:8px; align-items:center; }
-    .helper { font-size:0.85rem; color: var(--muted); }
-    .small { font-size:0.9rem; }
-    @media (max-width: 840px) {
-      .toolbar { flex-direction: column; align-items: stretch; }
-      .toolbar-controls { width:100%; }
-      .toolbar-controls .field { flex:1; }
-      .actions { flex-wrap:wrap; }
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
+
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <header>
     <div class="header-shell">
       {% include 'partials/notifications_panel.html' %}
       <nav id="primaryNav" role="navigation">
-        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">{{ t("nav.home") }}</a>
-        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-        <a href="{{ url_for('volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{ t("nav.volumes") }}</a>
-        <a href="{{ url_for('networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{ t("nav.networks") }}</a>
-        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+        <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">{{ t("nav.home")
+          }}</a>
+        <a href="{{ url_for('ui.containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
+          t("nav.containers") }}</a>
+        <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
+          t("nav.images") }}</a>
+        <a href="{{ url_for('ui.volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{
+          t("nav.volumes") }}</a>
+        <a href="{{ url_for('ui.networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{
+          t("nav.networks") }}</a>
+        <a href="{{ url_for('ui.updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{
+          t("nav.updates") }}</a>
+        <a href="{{ url_for('ui.events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{
+          t("nav.events") }}</a>
+        <a href="{{ url_for('ui.autodiscovery_view') }}"
+          class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('auth.logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
       </nav>
     </div>
   </header>
@@ -188,7 +59,8 @@
           </div>
           <label class="toggle"><input type="checkbox" id="customOnly"> {{ t('networks.only_custom') }}</label>
         </div>
-        <button id="createNetworkBtn" class="btn btn-primary-glow" type="button">＋ {{ t('networks.create_button') }}</button>
+        <button id="createNetworkBtn" class="btn btn-primary-glow" type="button">＋ {{ t('networks.create_button')
+          }}</button>
       </div>
       <div class="table-wrapper">
         <table id="networksTable">
@@ -272,7 +144,7 @@
 
   {% include 'partials/notifications_script.html' %}
   <script>
-    const initialNetworks = {{ networks|default([])|tojson }};
+    const initialNetworks = {{ networks|default ([]) | tojson }};
     const networksBody = document.getElementById('networksBody');
     const networksEmpty = document.getElementById('networksEmpty');
     const searchInput = document.getElementById('searchInput');
@@ -308,7 +180,7 @@
       });
     }
 
-    function badge(content, ok=true) {
+    function badge(content, ok = true) {
       const cls = ok ? 'badge badge-ok' : 'badge badge-warn';
       return `<span class="${cls}">${content}</span>`;
     }
@@ -508,7 +380,7 @@
     cancelModalBtn.addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', (ev) => { if (ev.target === modal) modal.classList.remove('open'); });
 
-    function addLabelRow(key='', value='') {
+    function addLabelRow(key = '', value = '') {
       const row = document.createElement('div');
       row.className = 'label-row';
       row.innerHTML = `
@@ -569,4 +441,5 @@
     setupPerformanceSync();
   </script>
 </body>
+
 </html>

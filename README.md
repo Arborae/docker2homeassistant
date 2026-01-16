@@ -397,6 +397,8 @@ API JSON (estratto):
 
 - `GET /api/overview` – Panoramica host e stack
 - `GET /api/containers/<id>/details` – Dettaglio container
+- `GET /api/notifications` – Notifiche (aggiornamenti, eventi critici)
+- `GET /api/networks` – Lista reti Docker
 - `GET /api/containers/<id>/stats` – Statistiche live
 - `GET|POST /api/containers/<id>/updates` – Stato aggiornamenti / refresh
 - `POST /api/containers/<id>/updates/frequency` – Frequenza scan

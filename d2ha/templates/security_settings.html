@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="{{ get_current_lang() }}">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,28 +8,28 @@
   <style>
     :root {
       --bg-base: #0b1020;
-      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0,255,255,0.05), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(124,255,195,0.06), transparent 24%),
-                    linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
+      --bg-primary: radial-gradient(circle at 12% 18%, rgba(0, 255, 255, 0.05), transparent 26%),
+        radial-gradient(circle at 84% 18%, rgba(124, 255, 195, 0.06), transparent 24%),
+        linear-gradient(135deg, #0b1020, #10162c 60%, #0f1b3f 100%);
       --bg-card: linear-gradient(150deg, rgba(49, 196, 255, 0.12), rgba(124, 255, 195, 0.08)),
-                  linear-gradient(120deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)),
-                  rgba(17, 22, 36, 0.92);
-      --bg-card-alt: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015)),
-                     rgba(26, 34, 52, 0.86);
+        linear-gradient(120deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+        rgba(17, 22, 36, 0.92);
+      --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015)),
+        rgba(26, 34, 52, 0.86);
       --accent-primary: #31c4ff;
       --accent: var(--accent-primary);
       --accent-2: #7cffc3;
       --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(49,196,255,0.35);
-      --accent-glow-soft: rgba(49,196,255,0.25);
-      --accent-border-strong: rgba(49,196,255,0.55);
-      --accent-border: rgba(49,196,255,0.45);
-      --accent-border-soft: rgba(49,196,255,0.3);
-      --accent-surface: rgba(49,196,255,0.08);
+      --accent-glow: rgba(49, 196, 255, 0.35);
+      --accent-glow-soft: rgba(49, 196, 255, 0.25);
+      --accent-border-strong: rgba(49, 196, 255, 0.55);
+      --accent-border: rgba(49, 196, 255, 0.45);
+      --accent-border-soft: rgba(49, 196, 255, 0.3);
+      --accent-surface: rgba(49, 196, 255, 0.08);
       --text: #e7ecf4;
       --muted: #9aa7bd;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 10px 30px rgba(0,0,0,0.45);
+      --border: rgba(255, 255, 255, 0.08);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
       --header-bg: linear-gradient(90deg, #0d111c, #12182a);
       --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
       --control-surface: #0f141f;
@@ -40,27 +41,27 @@
     body.theme-light {
       --bg-base: linear-gradient(135deg, #fff3e0, #ffe0c2);
       --bg-primary: radial-gradient(circle at 12% 18%, rgba(255, 184, 94, 0.18), transparent 26%),
-                    radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
-                    var(--bg-base);
+        radial-gradient(circle at 84% 18%, rgba(255, 129, 73, 0.16), transparent 24%),
+        var(--bg-base);
       --bg-card: linear-gradient(150deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.78)),
-                  linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
-                  #ffffff;
+        linear-gradient(180deg, rgba(255, 138, 61, 0.12), rgba(255, 206, 115, 0.06)),
+        #ffffff;
       --bg-card-alt: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.84)),
-                     #fff7ed;
+        #fff7ed;
       --accent-primary: #f97316;
       --accent: var(--accent-primary);
       --accent-2: #fb923c;
       --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-      --accent-glow: rgba(249,115,22,0.28);
-      --accent-glow-soft: rgba(249,115,22,0.18);
-      --accent-border-strong: rgba(249,115,22,0.55);
-      --accent-border: rgba(249,115,22,0.42);
-      --accent-border-soft: rgba(249,115,22,0.26);
-      --accent-surface: rgba(249,115,22,0.08);
+      --accent-glow: rgba(249, 115, 22, 0.28);
+      --accent-glow-soft: rgba(249, 115, 22, 0.18);
+      --accent-border-strong: rgba(249, 115, 22, 0.55);
+      --accent-border: rgba(249, 115, 22, 0.42);
+      --accent-border-soft: rgba(249, 115, 22, 0.26);
+      --accent-surface: rgba(249, 115, 22, 0.08);
       --text: #1f2937;
       --muted: #4b5563;
-      --border: rgba(0,0,0,0.08);
-      --shadow: 0 8px 24px rgba(0,0,0,0.1);
+      --border: rgba(0, 0, 0, 0.08);
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
       --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
       --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
       --control-surface: #fffaf3;
@@ -68,7 +69,11 @@
       --panel: var(--bg-card);
       --panel-2: var(--bg-card-alt);
     }
-    * { box-sizing: border-box; }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -76,7 +81,12 @@
       color: var(--text);
       min-height: 100vh;
     }
-    a { color: inherit; text-decoration: none; }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
     header {
       background: var(--bg-primary);
       border-bottom: 1px solid var(--border);
@@ -87,6 +97,7 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(6px);
     }
+
     .header-shell {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -97,6 +108,7 @@
       flex-direction: column;
       gap: 10px;
     }
+
     nav {
       display: flex;
       flex-wrap: wrap;
@@ -104,30 +116,39 @@
       padding: 4px 2px 0;
       align-items: center;
     }
+
     .tab {
       padding: 9px 14px;
       border-radius: 10px;
-      background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
       color: var(--muted);
       font-weight: 700;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       transition: all 0.15s ease;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
     }
-    .tab:hover { color: var(--text); border-color: var(--accent-border-soft); background: rgba(255,255,255,0.06); }
+
+    .tab:hover {
+      color: var(--text);
+      border-color: var(--accent-border-soft);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
     .tab.active {
       background: var(--accent-gradient);
       color: #0c121e;
       box-shadow: 0 10px 26px var(--accent-glow);
       border-color: var(--accent-border);
     }
+
     .logout-link {
       margin-left: auto;
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
       color: var(--text);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.35);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 20px rgba(0, 0, 0, 0.35);
       border-color: var(--border);
     }
+
     .container {
       max-width: 1100px;
       margin: 24px auto 40px;
@@ -135,6 +156,7 @@
       display: grid;
       gap: 14px;
     }
+
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -142,13 +164,30 @@
       padding: 18px;
       box-shadow: var(--shadow);
     }
+
     .card h2 {
       margin: 0 0 6px;
       font-size: 1.2rem;
     }
-    .muted { color: var(--muted); }
-    form { display: grid; gap: 12px; margin-top: 12px; }
-    label { font-weight: 600; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    label {
+      font-weight: 600;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
     input {
       width: 100%;
       padding: 10px 12px;
@@ -157,8 +196,17 @@
       background: var(--panel-2);
       color: var(--text);
     }
-    .password-input-wrapper { position: relative; display: flex; align-items: center; }
-    .password-input-wrapper input { padding-right: 42px; }
+
+    .password-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .password-input-wrapper input {
+      padding-right: 42px;
+    }
+
     .password-toggle {
       position: absolute;
       top: 50%;
@@ -179,9 +227,22 @@
       align-items: center;
       justify-content: center;
     }
-    .password-toggle:hover { opacity: 1; }
-    input:focus { outline: 2px solid var(--accent-border); }
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    .password-toggle:hover {
+      opacity: 1;
+    }
+
+    input:focus {
+      outline: 2px solid var(--accent-border);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
     button {
       padding: 10px 16px;
       border-radius: 10px;
@@ -192,33 +253,106 @@
       color: #0c121e;
       box-shadow: 0 6px 18px var(--accent-glow);
     }
-    button.secondary { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); box-shadow: none; }
-    .status { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); display: inline-flex; gap: 8px; align-items: center; }
-    .status.on { border-color: rgba(124,255,195,0.4); background: rgba(124,255,195,0.08); color: #7cffc3; }
-    .status.off { border-color: rgba(255,99,99,0.4); background: rgba(255,99,99,0.08); color: #ff8d8d; }
-    .section-title { font-size: 1rem; margin: 16px 0 6px; color: var(--muted); }
-    .pending-box { margin-top: 12px; padding: 12px; border-radius: 12px; border: 1px dashed var(--accent-border); background: var(--accent-surface); }
-    .qr-box { display: grid; gap: 10px; align-items: center; grid-template-columns: auto 1fr; }
-    .qr-box img { background: white; padding: 8px; border-radius: 10px; }
-    .secret-chip { padding: 6px 10px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1px solid var(--border); display: inline-block; }
-    @media (max-width: 700px) { .qr-box { grid-template-columns: 1fr; } nav { justify-content: flex-start; } }
+
+    button.secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+      box-shadow: none;
+    }
+
+    .status {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status.on {
+      border-color: rgba(124, 255, 195, 0.4);
+      background: rgba(124, 255, 195, 0.08);
+      color: #7cffc3;
+    }
+
+    .status.off {
+      border-color: rgba(255, 99, 99, 0.4);
+      background: rgba(255, 99, 99, 0.08);
+      color: #ff8d8d;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      margin: 16px 0 6px;
+      color: var(--muted);
+    }
+
+    .pending-box {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px dashed var(--accent-border);
+      background: var(--accent-surface);
+    }
+
+    .qr-box {
+      display: grid;
+      gap: 10px;
+      align-items: center;
+      grid-template-columns: auto 1fr;
+    }
+
+    .qr-box img {
+      background: white;
+      padding: 8px;
+      border-radius: 10px;
+    }
+
+    .secret-chip {
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      display: inline-block;
+    }
+
+    @media (max-width: 700px) {
+      .qr-box {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        justify-content: flex-start;
+      }
+    }
   </style>
   {% include 'partials/notifications_styles.html' %}
 </head>
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}" data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}" data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
+
+<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
+  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
   <header>
     <div class="header-shell">
       {% include 'partials/notifications_panel.html' %}
       <nav id="primaryNav" role="navigation">
-        <a href="{{ url_for('index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
-        <a href="{{ url_for('images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
-        <a href="{{ url_for('volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{ t("nav.volumes") }}</a>
-        <a href="{{ url_for('networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{ t("nav.networks") }}</a>
-        <a href="{{ url_for('updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
-        <a href="{{ url_for('events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
-        <a href="{{ url_for('autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-        <a href="{{ url_for('logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
+        <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+        <a href="{{ url_for('ui.containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
+          t("nav.containers") }}</a>
+        <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
+          t("nav.images") }}</a>
+        <a href="{{ url_for('ui.volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{
+          t("nav.volumes") }}</a>
+        <a href="{{ url_for('ui.networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{
+          t("nav.networks") }}</a>
+        <a href="{{ url_for('ui.updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{
+          t("nav.updates") }}</a>
+        <a href="{{ url_for('ui.events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{
+          t("nav.events") }}</a>
+        <a href="{{ url_for('ui.autodiscovery_view') }}"
+          class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+        <a href="{{ url_for('auth.logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
       </nav>
     </div>
   </header>
@@ -228,7 +362,8 @@
 
     <div class="card">
       <h2>Impostazioni di sicurezza</h2>
-      <p class="muted">Questa pagina ti permette di aggiornare le credenziali admin e gestire la 2FA. L'account controlla Docker su questo host: usa password robuste e preferisci sempre la 2FA.</p>
+      <p class="muted">Questa pagina ti permette di aggiornare le credenziali admin e gestire la 2FA. L'account
+        controlla Docker su questo host: usa password robuste e preferisci sempre la 2FA.</p>
     </div>
 
     <div class="card">
@@ -240,7 +375,8 @@
           Password attuale
           <div class="password-input-wrapper">
             <input type="password" name="current_password" autocomplete="current-password" required />
-            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
+              title="{{ t('password.toggle.show') }}">👁</button>
           </div>
         </label>
         {% if two_factor_enabled %}
@@ -252,7 +388,8 @@
         <label>
           {{ t('security.session_timeout_label') }}
           <div class="muted" style="font-weight: 400;">{{ t('security.session_timeout_hint') }}</div>
-          <input type="number" name="session_timeout_minutes" min="1" max="1440" value="{{ session_timeout_minutes }}" required />
+          <input type="number" name="session_timeout_minutes" min="1" max="1440" value="{{ session_timeout_minutes }}"
+            required />
         </label>
         <div class="actions">
           <button type="submit">Salva timeout</button>
@@ -262,14 +399,16 @@
 
     <div class="card">
       <h2>Cambia credenziali</h2>
-      <p class="muted">Aggiorna username e/o password. Richiede la password attuale e, se attiva, anche un codice 2FA.</p>
+      <p class="muted">Aggiorna username e/o password. Richiede la password attuale e, se attiva, anche un codice 2FA.
+      </p>
       <form method="POST">
         <input type="hidden" name="action" value="change_credentials" />
         <label>
           Password attuale
           <div class="password-input-wrapper">
             <input type="password" name="current_password" autocomplete="current-password" required />
-            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
+              title="{{ t('password.toggle.show') }}">👁</button>
           </div>
         </label>
         {% if two_factor_enabled %}
@@ -286,14 +425,16 @@
           Nuova password (facoltativa)
           <div class="password-input-wrapper">
             <input type="password" name="new_password" autocomplete="new-password" />
-            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
+              title="{{ t('password.toggle.show') }}">👁</button>
           </div>
         </label>
         <label>
           Conferma nuova password
           <div class="password-input-wrapper">
             <input type="password" name="new_password_confirm" autocomplete="new-password" />
-            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
+              title="{{ t('password.toggle.show') }}">👁</button>
           </div>
         </label>
         <div class="actions">
@@ -312,64 +453,67 @@
       </div>
 
       {% if not two_factor_enabled %}
-        <form method="POST" style="margin-top: 14px;">
-          <input type="hidden" name="action" value="enable_2fa" />
-          <label>
-            Password attuale
-            <div class="password-input-wrapper">
-              <input type="password" name="current_password" autocomplete="current-password" required />
-              <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
-            </div>
-          </label>
-          <div class="actions">
-            <button type="submit">Abilita 2FA</button>
-            <span class="muted">Richiede conferma con un codice generato.</span>
+      <form method="POST" style="margin-top: 14px;">
+        <input type="hidden" name="action" value="enable_2fa" />
+        <label>
+          Password attuale
+          <div class="password-input-wrapper">
+            <input type="password" name="current_password" autocomplete="current-password" required />
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
+              title="{{ t('password.toggle.show') }}">👁</button>
           </div>
-        </form>
+        </label>
+        <div class="actions">
+          <button type="submit">Abilita 2FA</button>
+          <span class="muted">Richiede conferma con un codice generato.</span>
+        </div>
+      </form>
       {% else %}
-        <form method="POST" style="margin-top: 14px;">
-          <input type="hidden" name="action" value="disable_2fa" />
-          <label>
-            Password attuale
-            <div class="password-input-wrapper">
-              <input type="password" name="current_password" autocomplete="current-password" required />
-              <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}" title="{{ t('password.toggle.show') }}">👁</button>
-            </div>
-          </label>
-          <label>
-            Codice 2FA corrente
-            <input type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" required />
-          </label>
-          <div class="actions">
-            <button type="submit" class="secondary">Disabilita 2FA</button>
-            <span class="muted">Servono password e codice valido.</span>
+      <form method="POST" style="margin-top: 14px;">
+        <input type="hidden" name="action" value="disable_2fa" />
+        <label>
+          Password attuale
+          <div class="password-input-wrapper">
+            <input type="password" name="current_password" autocomplete="current-password" required />
+            <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
+              title="{{ t('password.toggle.show') }}">👁</button>
           </div>
-        </form>
+        </label>
+        <label>
+          Codice 2FA corrente
+          <input type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" required />
+        </label>
+        <div class="actions">
+          <button type="submit" class="secondary">Disabilita 2FA</button>
+          <span class="muted">Servono password e codice valido.</span>
+        </div>
+      </form>
       {% endif %}
 
       {% if pending_2fa_setup and provisioning_uri %}
-        <div class="pending-box">
-          <p><strong>Setup 2FA in sospeso.</strong> Scansiona il QR o inserisci la chiave segreta, quindi verifica con un codice generato.</p>
-          <div class="qr-box">
-            {% if qr_code_data_uri %}
-              <img src="{{ qr_code_data_uri }}" alt="QR 2FA" width="180" height="180" />
-            {% endif %}
-            <div>
-              <div class="secret-chip">Segreto: {{ totp_secret or 'n/d' }}</div>
-              <p class="muted" style="word-break: break-all;">URI: {{ provisioning_uri }}</p>
-            </div>
+      <div class="pending-box">
+        <p><strong>Setup 2FA in sospeso.</strong> Scansiona il QR o inserisci la chiave segreta, quindi verifica con un
+          codice generato.</p>
+        <div class="qr-box">
+          {% if qr_code_data_uri %}
+          <img src="{{ qr_code_data_uri }}" alt="QR 2FA" width="180" height="180" />
+          {% endif %}
+          <div>
+            <div class="secret-chip">Segreto: {{ totp_secret or 'n/d' }}</div>
+            <p class="muted" style="word-break: break-all;">URI: {{ provisioning_uri }}</p>
           </div>
-          <form method="POST" style="margin-top: 12px;">
-            <input type="hidden" name="action" value="confirm_enable_2fa" />
-            <label>
-              Inserisci un codice generato dall'app
-              <input type="text" name="verify_totp_code" inputmode="numeric" autocomplete="one-time-code" required />
-            </label>
-            <div class="actions">
-              <button type="submit">Conferma e abilita 2FA</button>
-            </div>
-          </form>
         </div>
+        <form method="POST" style="margin-top: 12px;">
+          <input type="hidden" name="action" value="confirm_enable_2fa" />
+          <label>
+            Inserisci un codice generato dall'app
+            <input type="text" name="verify_totp_code" inputmode="numeric" autocomplete="one-time-code" required />
+          </label>
+          <div class="actions">
+            <button type="submit">Conferma e abilita 2FA</button>
+          </div>
+        </form>
+      </div>
       {% endif %}
     </div>
   </div>
@@ -420,4 +564,5 @@
 
   {% include 'partials/notifications_script.html' %}
 </body>
+
 </html>
