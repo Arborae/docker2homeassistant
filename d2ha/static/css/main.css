@@ -2231,8 +2231,10 @@ summary::-webkit-details-marker {
 /* Stats Row */
 .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    grid-template-columns: 1fr;
+    grid-auto-rows: 1fr;
     gap: 12px;
+    height: 100%;
 }
 
 .stat-box {
