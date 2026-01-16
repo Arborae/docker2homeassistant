@@ -2187,3 +2187,37 @@ summary::-webkit-details-marker {
     height: 16px;
     fill: currentColor;
 }
+
+/* Status Chips */
+.status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    color: var(--muted);
+}
+
+.status-chip.success {
+    background: rgba(124, 255, 195, 0.1);
+    border-color: rgba(124, 255, 195, 0.2);
+    color: #7cffc3;
+}
+
+.status-chip.danger {
+    background: rgba(255, 99, 99, 0.1);
+    border-color: rgba(255, 99, 99, 0.2);
+    color: #ff8d8d;
+}
+
+.status-chip .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+}
