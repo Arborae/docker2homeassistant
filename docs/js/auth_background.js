@@ -52,9 +52,11 @@
       height * 0.8,
       Math.max(width, height)
     );
-    g.addColorStop(0, "rgba(56, 189, 248, 0.18)");
-    g.addColorStop(0.4, "rgba(15, 23, 42, 0.95)");
-    g.addColorStop(1, "rgba(2, 6, 23, 1)");
+    // --accent-primary: #31c4ff (49, 196, 255)
+    g.addColorStop(0, "rgba(49, 196, 255, 0.12)");
+    // --bg-base: #0b1020 (11, 16, 32)
+    g.addColorStop(0.4, "rgba(11, 16, 32, 0.95)");
+    g.addColorStop(1, "rgba(5, 8, 16, 1)");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, width, height);
 
@@ -71,7 +73,7 @@
 
       ctx.beginPath();
       ctx.arc(n.x, n.y, 2.3, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(148, 163, 184, 0.7)";
+      ctx.fillStyle = "rgba(154, 167, 189, 0.5)"; // --muted #9aa7bd
       ctx.fill();
     }
 
@@ -85,7 +87,8 @@
         const maxDist = 220;
         if (dist2 < maxDist * maxDist) {
           const alpha = 1 - Math.sqrt(dist2) / maxDist;
-          ctx.strokeStyle = "rgba(79, 195, 247," + (alpha * 0.6).toFixed(3) + ")";
+          // --accent-primary: #31c4ff
+          ctx.strokeStyle = "rgba(49, 196, 255," + (alpha * 0.5).toFixed(3) + ")";
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);

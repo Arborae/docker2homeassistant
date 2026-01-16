@@ -1,716 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <title>Docker to Home Assistant (D2HA) – Docker control & MQTT autodiscovery</title>
-
-  <!-- SEO base -->
+  <title>Docker to Home Assistant (D2HA)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="D2HA (Docker to Home Assistant) is a modern web UI to monitor and control Docker containers with MQTT autodiscovery integration for Home Assistant." />
-  <meta name="keywords" content="docker, home assistant, mqtt, autodiscovery, docker containers, web ui, docker monitoring, docker management, d2ha" />
-
-  <!-- Open Graph / Social -->
-  <meta property="og:title" content="Docker to Home Assistant (D2HA)" />
-  <meta property="og:description" content="Monitor and control Docker containers with a modern web UI and MQTT autodiscovery for Home Assistant." />
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://arborae.github.io/docker2homeassistant/" />
-
-  <!-- CSS per la pagina auth + background -->
-  <link rel="stylesheet" href="./css/auth.css" />
-
-  <!-- Stili extra per la landing + animazione intro -->
-  <style>
-    :root {
-      --tech-gradient: linear-gradient(135deg, #38bdf8, #7c3aed);
-      --tech-glow: 0 18px 48px rgba(56, 189, 248, 0.35);
-    }
-
-    body {
-      overflow-x: hidden;
-    }
-
-    .auth-overlay {
-      width: 100%;
-      max-width: 1180px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-inline: clamp(1rem, 3vw, 2rem);
-    }
-
-    .landing-card {
-      padding: clamp(1.8rem, 4vw, 2.6rem);
-      width: 100%;
-      max-width: 1100px;
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(150deg, rgba(49, 196, 255, 0.08), rgba(124, 255, 195, 0.06)),
-                  linear-gradient(120deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
-                  rgba(10, 15, 28, 0.58);
-      border-color: rgba(148, 163, 184, 0.32);
-      box-shadow: 0 26px 52px rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(16px) saturate(112%);
-    }
-
-    .landing-card::after {
-      content: "";
-      position: absolute;
-      inset: 8% 12%;
-      background: url('./assets/logo.svg') center center / contain no-repeat;
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.8s ease, transform 0.8s ease;
-      filter: drop-shadow(0 10px 28px rgba(56, 189, 248, 0.28));
-      pointer-events: none;
-    }
-
-    .landing-header {
-      margin-bottom: 1.6rem;
-      width: 100%;
-    }
-
-    .landing-title {
-      font-size: clamp(1.9rem, 4vw, 2.2rem);
-      font-weight: 700;
-      margin-bottom: 0.8rem;
-      letter-spacing: 0.02em;
-      background: var(--tech-gradient);
-      -webkit-background-clip: text;
-      color: transparent;
-      text-shadow: 0 8px 30px rgba(56, 189, 248, 0.3);
-    }
-
-    .landing-subtitle {
-      font-size: 0.98rem;
-      color: #9ca3af;
-      margin-bottom: 1.4rem;
-      line-height: 1.6;
-    }
-
-    .landing-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.4rem;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-
-    .landing-badge {
-      padding: 0.35rem 0.7rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      color: #e5f7ff;
-      background: radial-gradient(circle at top left, rgba(79, 195, 247, 0.18), rgba(15, 23, 42, 0.9));
-    }
-
-    .landing-badge-primary {
-      border-color: rgba(79, 195, 247, 0.9);
-      color: #4fc3f7;
-    }
-
-    .landing-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-bottom: 0.4rem;
-      width: 100%;
-    }
-
-    .auth-logo {
-      z-index: 0;
-    }
-
-    .auth-title {
-      z-index: 3;
-      padding: clamp(0.55rem, 1.6vw, 1.2rem) clamp(0.85rem, 2vw, 1.35rem);
-      border-radius: 999px;
-      background: radial-gradient(circle at 20% 20%, rgba(49, 196, 255, 0.16), rgba(12, 17, 28, 0.86));
-      border: 1px solid rgba(79, 195, 247, 0.45);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 26px rgba(49, 196, 255, 0.28);
-      backdrop-filter: blur(12px) saturate(110%);
-      letter-spacing: clamp(0.06em, 0.3vw, 0.18em);
-      max-width: min(96vw, 1080px);
-      text-align: center;
-      line-height: 1.1;
-      white-space: nowrap;
-      text-wrap: nowrap;
-    }
-
-    .landing-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.45rem;
-      padding: 0.7rem 1.4rem;
-      border-radius: 999px;
-      border: 1px solid transparent;
-      font-size: 0.9rem;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: none;
-      white-space: nowrap;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
-    }
-
-    .landing-btn-primary {
-      background: var(--tech-gradient);
-      color: #020617;
-      box-shadow: 0 12px 30px rgba(56, 189, 248, 0.45);
-    }
-
-    .landing-btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 16px 40px rgba(56, 189, 248, 0.6);
-    }
-
-    .landing-btn-ghost {
-      background: rgba(15, 23, 42, 0.8);
-      color: #e5f7ff;
-      border-color: rgba(148, 163, 184, 0.4);
-    }
-
-    .landing-btn-ghost:hover {
-      background: rgba(15, 23, 42, 1);
-      border-color: rgba(148, 163, 184, 0.8);
-      transform: translateY(-1px);
-    }
-
-    .landing-note {
-      font-size: 0.8rem;
-      color: #9ca3af;
-      margin-top: 0.6rem;
-    }
-
-    /* Layout interno card: testo + features + gif */
-    .landing-body {
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
-      gap: 1.8rem;
-      margin-top: 1.6rem;
-      width: 100%;
-    }
-
-    @media (max-width: 820px) {
-      .landing-body {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-
-    @media (max-width: 700px) {
-      .landing-actions {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .landing-btn {
-        width: 100%;
-        justify-content: center;
-      }
-
-      .landing-qs-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .landing-section-title {
-      font-size: 0.86rem;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: #9ca3af;
-      margin-bottom: 0.6rem;
-    }
-
-    .landing-features-title {
-      font-size: 1.02rem;
-      font-weight: 600;
-      margin-bottom: 0.6rem;
-    }
-
-    .landing-features-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      display: grid;
-      gap: 0.55rem;
-      font-size: 0.92rem;
-    }
-
-    .landing-feature-item {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 0.45rem;
-      align-items: flex-start;
-    }
-
-    .landing-feature-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      margin-top: 0.35rem;
-      background: radial-gradient(circle, #4fc3f7, transparent 70%);
-      box-shadow: 0 0 10px rgba(79, 195, 247, 0.8);
-      flex-shrink: 0;
-    }
-
-    .landing-feature-label strong {
-      font-weight: 600;
-    }
-
-    .landing-how {
-      margin-top: 1.2rem;
-      font-size: 0.9rem;
-      color: #9ca3af;
-      line-height: 1.6;
-    }
-
-    .landing-how code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size: 0.82rem;
-      padding: 0.15rem 0.35rem;
-      border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(148, 163, 184, 0.4);
-      color: #e5f7ff;
-    }
-
-    .landing-swipe {
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.4);
-    }
-
-    .landing-swipe img {
-      width: 100%;
-      display: block;
-    }
-
-    .landing-swipe-caption {
-      margin-top: 0.6rem;
-      font-size: 0.8rem;
-      color: #9ca3af;
-      text-align: center;
-    }
-
-    .landing-extra-note {
-      margin-top: 0.9rem;
-      font-size: 0.8rem;
-      color: #6b7280;
-    }
-
-    /* Quickstart card */
-    .landing-quickstart {
-      margin-top: 1.4rem;
-      padding: 1.1rem 1.1rem 1rem;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      border-radius: 14px;
-      background: radial-gradient(circle at top left, rgba(34, 193, 195, 0.16), rgba(15, 23, 42, 0.94));
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
-    }
-
-    .landing-quickstart h3 {
-      margin: 0 0 0.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      display: flex;
-      gap: 0.45rem;
-      align-items: center;
-    }
-
-    .landing-quickstart h3 span {
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: #22c1c3;
-    }
-
-    .landing-qs-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 0.7rem;
-    }
-
-    .landing-qs-step {
-      padding: 0.75rem 0.85rem;
-      border-radius: 12px;
-      border: 1px solid rgba(148, 163, 184, 0.25);
-      background: rgba(15, 23, 42, 0.88);
-      color: #e5f7ff;
-      display: grid;
-      gap: 0.4rem;
-    }
-
-    .landing-qs-step strong {
-      font-weight: 600;
-    }
-
-    .landing-qs-step code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      padding: 0.24rem 0.4rem;
-      border-radius: 10px;
-      background: rgba(79, 195, 247, 0.08);
-      border: 1px solid rgba(79, 195, 247, 0.3);
-      color: #bef2ff;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      word-break: break-word;
-      display: block;
-    }
-
-    .landing-qs-step small {
-      color: #9ca3af;
-      line-height: 1.5;
-    }
-
-    .landing-qs-footer {
-      margin-top: 0.8rem;
-      font-size: 0.85rem;
-      color: #9ca3af;
-    }
-
-    /* Founders section */
-    .landing-founders {
-      margin-top: 1.9rem;
-      border-top: 1px solid rgba(148, 163, 184, 0.25);
-      padding-top: 1.1rem;
-    }
-
-    .landing-founders-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-top: 0.4rem;
-    }
-
-    .landing-founder {
-      display: flex;
-      flex-direction: column;
-      gap: 0.1rem;
-      padding: 0.55rem 0.85rem;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      background: radial-gradient(circle at top left, rgba(79, 195, 247, 0.12), rgba(15, 23, 42, 0.95));
-      text-decoration: none;
-      color: #e5e7eb;
-      font-size: 0.8rem;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-    }
-
-    .landing-founder:hover {
-      border-color: rgba(79, 195, 247, 0.9);
-      box-shadow: 0 0 18px rgba(79, 195, 247, 0.35);
-      transform: translateY(-1px);
-    }
-
-    .landing-founder-name {
-      font-weight: 500;
-    }
-
-    .landing-founder-link {
-      font-size: 0.78rem;
-      color: #9ca3af;
-    }
-
-    footer {
-      text-align: center;
-      font-size: 0.8rem;
-      color: #9ca3af;
-      padding: 1.5rem 1rem 2rem;
-    }
-
-    footer a {
-      color: #4fc3f7;
-      text-decoration: none;
-    }
-
-    footer a:hover {
-      text-decoration: underline;
-    }
-
-    /* ============================ */
-    /* ANIMAZIONE INTRO LOGO + D2HA */
-    /* ============================ */
-
-    .auth-title,
-    .auth-logo {
-      transition:
-        top 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
-        left 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
-        transform 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
-        font-size 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
-        width 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
-        height 1.35s cubic-bezier(0.25, 0.9, 0.3, 1),
-        opacity 0.8s ease,
-        filter 1.35s ease;
-    }
-
-    /* Stato iniziale: logo + scritta grandi e centrati, card nascosta */
-    body.landing-intro .auth-title {
-      top: 36%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: clamp(2rem, 6vw, 3rem);
-      opacity: 1;
-      filter: drop-shadow(0 22px 45px rgba(56, 189, 248, 0.3));
-      letter-spacing: clamp(0.055em, 0.26vw, 0.1em);
-    }
-
-    body.landing-intro .auth-logo {
-      top: 52%;
-      left: 50%;
-      transform: translate(-50%, -30%);
-      width: clamp(320px, 34vw, 380px);
-      height: clamp(320px, 34vw, 380px);
-      opacity: 0.28;
-      filter: drop-shadow(0 32px 65px rgba(56, 189, 248, 0.45));
-    }
-
-    body.landing-intro .auth-overlay {
-      opacity: 0;
-      transform: translateY(30px);
-      pointer-events: none;
-      transition:
-        opacity 0.9s ease,
-        transform 0.9s ease;
-    }
-
-    /* Stato finale: logo a filligrana centrale, titolo in alto visibile */
-    body.landing-ready .auth-title {
-      top: 1.6rem;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: clamp(1.2rem, 3vw, 1.9rem);
-      opacity: 0.96;
-      letter-spacing: clamp(0.06em, 0.3vw, 0.16em);
-      text-shadow: 0 8px 26px rgba(56, 189, 248, 0.35);
-      max-width: min(94vw, 1100px);
-      text-align: center;
-    }
-
-    body.landing-ready .auth-logo {
-      opacity: 0;
-      transform: translate(-50%, -50%) scale(0.9);
-      pointer-events: none;
-    }
-
-    body.landing-ready .auth-overlay {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    body.landing-ready .landing-card::after {
-      opacity: 0.12;
-      transform: translateY(0);
-    }
-
-    @media (max-width: 640px) {
-      body.landing-intro .auth-title {
-        font-size: clamp(1.45rem, 6vw, 2.1rem);
-        letter-spacing: clamp(0.04em, 0.16vw, 0.08em);
-        padding-inline: clamp(0.5rem, 2vw, 0.9rem);
-      }
-
-      body.landing-ready .auth-title {
-        font-size: clamp(1.05rem, 3.8vw, 1.35rem);
-        letter-spacing: clamp(0.05em, 0.18vw, 0.1em);
-        padding-inline: clamp(0.55rem, 2vw, 1rem);
-      }
-
-      .landing-card {
-        padding: 1.6rem 1.4rem 1.8rem;
-      }
-    }
-  </style>
+  <meta name="description"
+    content="Control Docker containers and integrate with Home Assistant via MQTT autodiscovery." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./css/style.css" />
 </head>
-<body class="theme-dark landing-intro">
-  <div class="auth-page">
-    <!-- Canvas + animazione di sfondo -->
-    <canvas id="authCanvas" class="auth-canvas" aria-hidden="true"></canvas>
 
-    <!-- Logo e titolo “fluttuanti” -->
-    <div class="auth-title" aria-hidden="true">Docker 2 Home Assistant</div>
-    <div class="auth-logo" aria-hidden="true">
-      <!-- Assicurati che il file esista in docs/assets/logo.svg -->
-      <img src="./assets/logo.svg" alt="D2HA Logo">
-    </div>
+<body class="landing-intro">
 
-    <!-- Overlay con la card della landing -->
-    <div class="auth-overlay">
-      <div class="auth-card landing-card">
+  <!-- Background Canvas -->
+  <canvas id="authCanvas" class="canvas-bg"></canvas>
 
-        <!-- Header: titolo + badge + CTA -->
-        <div class="landing-header">
-          <h1 class="landing-title">Docker to Home Assistant (D2HA)</h1>
-          <p class="landing-subtitle">
-            D2HA is a modern web UI to monitor and control your Docker containers, with MQTT autodiscovery integration tailored for Home Assistant.
-            It keeps your stack visible, debuggable and easy to manage directly from your browser.
+  <!-- Floating Brand Elements -->
+  <div class="brand-title">Docker 2 Home Assistant</div>
+  <img src="./assets/logo.svg" alt="D2HA Logo" class="brand-logo">
+
+  <div class="page-wrapper">
+    <div class="content-container">
+      <div class="glass-card">
+
+        <!-- Hero Section -->
+        <header>
+          <h1 class="hero-title">Docker to Home Assistant</h1>
+          <p class="hero-subtitle">
+            A modern web UI to monitor and control Docker containers, featuring seamless MQTT autodiscovery for Home
+            Assistant.
           </p>
 
-          <div class="landing-badges">
-            <span class="landing-badge landing-badge-primary">Docker ➜ Home Assistant</span>
-            <span class="landing-badge">MQTT autodiscovery</span>
-            <span class="landing-badge">Light &amp; Dark theme</span>
-            <span class="landing-badge">Safe &amp; performance modes</span>
+          <div class="badge-group">
+            <span class="badge primary">Docker Native</span>
+            <span class="badge">MQTT Autodiscovery</span>
+            <span class="badge">Material Design</span>
           </div>
 
-          <div class="landing-actions">
-            <a class="landing-btn landing-btn-primary" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
-              <span>⭐ View on GitHub</span>
+          <div class="btn-group">
+            <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" class="btn btn-primary">
+              View on GitHub
             </a>
-            <a class="landing-btn landing-btn-ghost" href="./install/" target="_blank" rel="noopener noreferrer">
-              <span>⚡ Install</span>
-            </a>
-            <a class="landing-btn landing-btn-ghost" href="#quickstart">
-              <span>📦 Quick start</span>
+            <a href="./install/" class="btn btn-ghost">
+              Installation Guide
             </a>
           </div>
+        </header>
 
-          <div class="landing-note">
-            Self-hosted and Docker-first, designed for people who already live inside Home Assistant and want their containers to feel native.
-          </div>
-        </div>
-
-        <!-- Corpo: features + gif / UI preview -->
-        <div class="landing-body">
+        <!-- Main Content Grid -->
+        <div class="features-grid">
+          <!-- Features List -->
           <div>
-            <div class="landing-section-title">Features</div>
-            <div class="landing-features-title">What D2HA adds on top of Docker + Home Assistant</div>
-
-            <ul class="landing-features-list">
-              <li class="landing-feature-item">
-                <span class="landing-feature-dot"></span>
-                <span class="landing-feature-label">
-                  <strong>Live dashboard</strong> for container status, CPU, RAM and network usage – see at a glance what your host is doing.
-                </span>
+            <h3 style="margin-top:0; color:var(--text);">Key Features</h3>
+            <ul class="feature-list">
+              <li class="feature-item">
+                <div class="feature-icon"></div>
+                <div>
+                  <strong>Live Dashboard</strong>
+                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">Real-time CPU, RAM, and Network
+                    stats.</div>
+                </div>
               </li>
-              <li class="landing-feature-item">
-                <span class="landing-feature-dot"></span>
-                <span class="landing-feature-label">
-                  <strong>One-click controls</strong> to start, stop, restart or update containers directly from the web UI.
-                </span>
+              <li class="feature-item">
+                <div class="feature-icon"></div>
+                <div>
+                  <strong>One-Click Controls</strong>
+                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">Start, stop, and restart
+                    containers instantly.</div>
+                </div>
               </li>
-              <li class="landing-feature-item">
-                <span class="landing-feature-dot"></span>
-                <span class="landing-feature-label">
-                  <strong>MQTT autodiscovery</strong> that publishes sensors and switches following Home Assistant conventions.
-                </span>
+              <li class="feature-item">
+                <div class="feature-icon"></div>
+                <div>
+                  <strong>Home Assistant Ready</strong>
+                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">Automatic sensor creation via
+                    MQTT.</div>
+                </div>
               </li>
-              <li class="landing-feature-item">
-                <span class="landing-feature-dot"></span>
-                <span class="landing-feature-label">
-                  <strong>Safe mode</strong> to avoid destructive actions without an explicit confirmation.
-                </span>
-              </li>
-              <li class="landing-feature-item">
-                <span class="landing-feature-dot"></span>
-                <span class="landing-feature-label">
-                  <strong>Performance mode</strong> to tune how often the UI refreshes and how heavy the backend polling is.
-                </span>
-              </li>
-              <li class="landing-feature-item">
-                <span class="landing-feature-dot"></span>
-                <span class="landing-feature-label">
-                  <strong>Debug helpers</strong> (log views &amp; commands) to understand what Docker is actually doing when you click a button.
-                </span>
+              <li class="feature-item">
+                <div class="feature-icon"></div>
+                <div>
+                  <strong>Safe & Secure</strong>
+                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">2FA, Secure Mode, and HTTPS
+                    support.</div>
+                </div>
               </li>
             </ul>
 
-            <div class="landing-how">
-              <span class="landing-section-title" style="margin-bottom: 0.3rem;">How it fits your stack</span>
-              Install D2HA as a Docker container on the same host where you run the rest of your services,
-              point it to your Docker socket and MQTT broker, and it will publish entities that Home Assistant
-              can discover automatically. The goal is to keep your <code>docker-compose</code> world and your
-              <code>configuration.yaml</code> world in sync without manual glue.
-            </div>
-
-            <div class="landing-extra-note">
-              Requirements: Docker host (Linux is recommended), MQTT broker compatible with Home Assistant, and a Home Assistant instance to consume the entities.
-            </div>
-
-            <div class="landing-quickstart" id="quickstart">
-              <h3>
-                🚀 Quick start
-                <span>Up in under 30 seconds</span>
-              </h3>
-
-              <div class="landing-qs-grid">
-                <div class="landing-qs-step">
-                  <strong>1) Run the container</strong>
-                  <code>docker run -d -p 12021:12021 -v /var/run/docker.sock:/var/run/docker.sock:ro ghcr.io/arborae/docker2homeassistant:latest</code>
-                  <small>Mount the Docker socket in read-only mode. The UI will be available at <code>http://localhost:12021</code></small>
-                </div>
-                <div class="landing-qs-step">
-                  <strong>2) Secure the dashboard</strong>
-                  <small>On first login set a new password, optionally enable 2FA and decide if you want Safe Mode to require confirmations for destructive actions.</small>
-                </div>
-                <div class="landing-qs-step">
-                  <strong>3) Connect Home Assistant</strong>
-                  <small>Point D2HA to your MQTT broker to publish sensors and switches automatically. Home Assistant will discover entities without extra YAML.</small>
-                </div>
+            <!-- Quick Start -->
+            <div class="quick-start">
+              <h4 style="margin:0;">🚀 Quick Start</h4>
+              <div class="step-card">
+                <code>docker run -d -p 12021:12021 -v /var/run/docker.sock:/var/run/docker.sock:ro ghcr.io/arborae/docker2homeassistant:latest</code>
               </div>
-
-              <div class="landing-qs-footer">
-                Prefer Docker Compose? Follow the full install guide →
-                <a href="./install" target="_blank" rel="noopener noreferrer">docs/install</a>
-              </div>
+              <p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem;">
+                Open <a href="http://localhost:12021" style="color:var(--accent);">http://localhost:12021</a> to start.
+              </p>
             </div>
           </div>
 
+          <!-- Preview Column -->
           <div>
-            <div class="landing-section-title">Interface</div>
-            <div class="landing-features-title">Light &amp; dark theme preview</div>
-
-            <div class="landing-swipe">
-              <!-- Assicurati che questo file esista in docs/assets/d2ha_home_swipe.gif -->
-              <img src="./assets/d2ha_home_swipe.gif" alt="D2HA light and dark theme preview" />
+            <h3 style="margin-top:0; color:var(--text);">Interface</h3>
+            <div class="preview-window">
+              <img src="./assets/d2ha_home_swipe.gif" alt="D2HA Dashboard Preview">
             </div>
-            <div class="landing-swipe-caption">
-              Animated preview of the D2HA dashboard in light and dark theme.
-            </div>
+            <p style="text-align:center; font-size:0.85rem; color:var(--muted); margin-top:1rem;">
+              Available in both Light and Dark themes.
+            </p>
           </div>
         </div>
 
-        <!-- Founders / Maintainers -->
-        <div class="landing-founders">
-          <div class="landing-section-title">Maintainers</div>
-          <div class="landing-founders-list">
-            <a class="landing-founder" href="https://github.com/giosci1994" target="_blank" rel="noopener noreferrer">
-              <span class="landing-founder-name">Giovanni · giosci1994</span>
-              <span class="landing-founder-link">github.com/giosci1994</span>
-            </a>
-            <a class="landing-founder" href="https://github.com/chopin94" target="_blank" rel="noopener noreferrer">
-              <span class="landing-founder-name">Baldo · chopin94</span>
-              <span class="landing-founder-link">github.com/chopin94</span>
-            </a>
-          </div>
-        </div>
+        <!-- Footer -->
+        <footer>
+          <p>
+            Maintained by <a href="https://github.com/giosci1994" target="_blank">giosci1994</a> & <a
+              href="https://github.com/chopin94" target="_blank">chopin94</a>
+          </p>
+          <p style="font-size:0.8rem; opacity:0.6;">
+            &copy; 2024 Docker to Home Assistant
+          </p>
+        </footer>
+
       </div>
-
-      <footer>
-        Docker to Home Assistant (D2HA) ·
-        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">
-          View project on GitHub
-        </a>
-      </footer>
     </div>
   </div>
 
-  <!-- JS che disegna lo sfondo animato sul canvas -->
   <script src="./js/auth_background.js"></script>
-
-  <!-- Piccolo script per far partire l'animazione: logo + titolo centrati, poi card -->
   <script>
     window.addEventListener('load', () => {
-      const body = document.body;
-
       setTimeout(() => {
-        body.classList.add('landing-ready');
-        body.classList.remove('landing-intro');
-      }, 2200); // ritardo in millisecondi prima di mostrare la card (più lento)
+        document.body.classList.add('landing-ready');
+        document.body.classList.remove('landing-intro');
+      }, 1500);
     });
   </script>
 </body>
+
 </html>
