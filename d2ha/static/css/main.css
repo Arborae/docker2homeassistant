@@ -662,6 +662,12 @@ tr:hover {
     animation: spin 0.9s linear infinite;
 }
 
+.confirm-loading .spinner {
+    margin: 0 auto 16px;
+    width: 24px;
+    height: 24px;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -2067,4 +2073,117 @@ body.mobile-drawer-open .header-shell {
     background: var(--bg-card);
     overflow: visible !important;
     transform: none !important;
+}
+
+/* Stack & Container List (Aside) */
+details {
+    margin-bottom: 8px;
+    background: var(--bg-card-alt);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+summary {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    list-style: none;
+    transition: background 0.15s ease;
+}
+
+summary:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+summary::-webkit-details-marker {
+    display: none;
+}
+
+.stack-chip {
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--accent-surface);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+    font-weight: 600;
+}
+
+.container-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--border);
+}
+
+.stack-container-row {
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s ease;
+}
+
+.stack-container-row:last-child {
+    border-bottom: none;
+}
+
+.stack-container-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.stack-container-main {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stack-container-main div {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.stack-container-main small {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: monospace;
+    opacity: 0.8;
+}
+
+.container-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.log-link {
+    background: none;
+    border: none;
+    padding: 4px;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s ease, background 0.15s ease;
+}
+
+.log-link:hover {
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.log-link svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
 }
