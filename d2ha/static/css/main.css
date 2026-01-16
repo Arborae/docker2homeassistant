@@ -2249,8 +2249,9 @@ summary::-webkit-details-marker {
 
 .stat-box canvas {
     width: 100% !important;
-    height: 60px !important;
-    display: block;
+    height: auto !important;
+    flex: 1;
+    min-height: 0;
 }
 
 /* Scrollable Table */
@@ -2290,6 +2291,14 @@ summary::-webkit-details-marker {
     flex-direction: column;
     overflow: hidden;
     padding: 0;
+}
+
+.card-body-stretch {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .card-header-sm {
