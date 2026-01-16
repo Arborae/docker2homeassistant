@@ -155,6 +155,12 @@ nav {
     min-height: calc(100vh - 110px);
 }
 
+.layout.layout-single {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
 @media (max-width: 960px) {
     .layout {
         grid-template-columns: 1fr;
