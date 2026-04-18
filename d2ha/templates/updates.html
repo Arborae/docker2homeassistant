@@ -27,7 +27,10 @@
         <h3>Controllo aggiornamenti</h3>
         <div class="meta">{{ total }} container analizzati · {{ summary.images }} immagini installate</div>
       </div>
-      <div class="section-card-actions">
+      <div class="section-card-actions" style="display: flex; align-items: center; gap: 12px;">
+        <button class="btn-primary-glow" type="button" id="batch-update-btn" style="white-space:nowrap;">
+          🔄 Aggiorna Tutti
+        </button>
         <div class="performance-hint" id="updates-performance-hint">
           <div>
             <span class="hint-title">Modalità prestazioni attiva</span>
@@ -219,6 +222,138 @@
       </div>
     </div>
   </div>
+
+  <!-- ========== BATCH UPDATE MODAL ========== -->
+  <div class="batch-modal-backdrop" id="batch-modal" aria-hidden="true">
+    <div class="batch-modal">
+      <!-- FASE 1: Selezione -->
+      <div class="batch-phase" id="batch-phase-select">
+        <div class="batch-header">
+          <h3>Aggiorna Tutti</h3>
+          <button type="button" class="batch-close" id="batch-close-select">&#10005;</button>
+        </div>
+        <p class="batch-subtitle">Seleziona i container da aggiornare:</p>
+        <div class="batch-select-all">
+          <label><input type="checkbox" id="batch-select-all-cb" checked> Seleziona/Deseleziona tutti</label>
+        </div>
+        <div class="batch-list" id="batch-list"></div>
+        <div class="batch-actions">
+          <button type="button" class="btn btn-secondary" id="batch-cancel">Annulla</button>
+          <button type="button" class="btn btn-accent" id="batch-start">Continua</button>
+        </div>
+      </div>
+
+      <!-- FASE 2: Progresso -->
+      <div class="batch-phase" id="batch-phase-progress" style="display:none;">
+        <div class="batch-header">
+          <h3>Aggiornamento in corso</h3>
+        </div>
+        <div class="batch-progress-bar-container">
+          <div class="batch-progress-bar" id="batch-progress-bar"></div>
+        </div>
+        <div class="batch-progress-text" id="batch-progress-text">0 / 0 completati</div>
+        <div class="batch-progress-list" id="batch-progress-list"></div>
+      </div>
+
+      <!-- FASE 3: Riepilogo -->
+      <div class="batch-phase" id="batch-phase-summary" style="display:none;">
+        <div class="batch-header">
+          <h3>Aggiornamento completato</h3>
+        </div>
+        <div class="batch-summary-stats" id="batch-summary-stats"></div>
+        <div class="batch-progress-list" id="batch-summary-list"></div>
+        <div class="batch-actions">
+          <button type="button" class="btn btn-accent" id="batch-done">Chiudi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .batch-modal-backdrop {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.6);
+      display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    .batch-modal-backdrop.visible { display: flex; }
+    .batch-modal {
+      background: var(--bg-base); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); width: min(560px, 92vw);
+      max-height: 80vh; display: flex; flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: hidden;
+    }
+    .batch-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 12px; border-bottom: 1px solid var(--border);
+    }
+    .batch-header h3 { margin: 0; font-size: 1.1rem; }
+    .batch-close {
+      background: none; border: none; color: var(--muted); font-size: 1.2rem;
+      cursor: pointer; padding: 4px 8px; border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .batch-close:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+    .batch-subtitle { padding: 12px 20px 4px; color: var(--muted); font-size: 0.9rem; margin: 0; }
+    .batch-select-all {
+      padding: 8px 20px; border-bottom: 1px solid var(--border);
+      font-size: 0.85rem; color: var(--muted);
+    }
+    .batch-select-all label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .batch-list, .batch-progress-list {
+      flex: 1; overflow-y: auto; padding: 8px 16px; max-height: 45vh;
+    }
+    .batch-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.9rem; transition: background 0.15s;
+    }
+    .batch-item:hover { background: rgba(255,255,255,0.03); }
+    .batch-item label { display: flex; align-items: center; gap: 10px; flex: 1; cursor: pointer; }
+    .batch-item-info { flex: 1; }
+    .batch-item-name { font-weight: 600; color: var(--text); }
+    .batch-item-version { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+    .batch-item-version .arrow { color: var(--accent); margin: 0 4px; }
+    .batch-actions {
+      display: flex; gap: 10px; justify-content: flex-end;
+      padding: 14px 20px; border-top: 1px solid var(--border);
+    }
+    .batch-progress-bar-container {
+      margin: 16px 20px 8px; height: 8px; background: rgba(255,255,255,0.08);
+      border-radius: 8px; overflow: hidden;
+    }
+    .batch-progress-bar {
+      height: 100%; width: 0%; border-radius: 8px;
+      background: var(--accent-gradient);
+      transition: width 0.4s ease;
+    }
+    .batch-progress-text {
+      text-align: center; font-size: 0.85rem; color: var(--muted); padding: 0 20px 8px;
+    }
+    .batch-prog-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px; border-radius: 8px; font-size: 0.88rem;
+      margin-bottom: 4px; transition: background 0.2s;
+    }
+    .batch-prog-item.active { background: rgba(49,196,255,0.08); }
+    .batch-prog-item.done { opacity: 0.7; }
+    .batch-prog-item.error { opacity: 0.8; }
+    .batch-prog-icon { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+    .batch-prog-name { flex: 1; font-weight: 500; }
+    .batch-prog-status { font-size: 0.8rem; color: var(--muted); }
+    .batch-prog-item.active .batch-prog-status { color: var(--accent); }
+    .batch-prog-item.done .batch-prog-status { color: var(--accent-2); }
+    .batch-prog-item.error .batch-prog-status { color: #ff4a4a; }
+    .batch-summary-stats {
+      display: flex; gap: 16px; justify-content: center;
+      padding: 16px 20px; font-size: 0.95rem; font-weight: 600;
+    }
+    .batch-stat { display: flex; align-items: center; gap: 6px; }
+    .batch-stat.success { color: var(--accent-2); }
+    .batch-stat.fail { color: #ff4a4a; }
+    body.theme-light .batch-item:hover { background: rgba(0,0,0,0.02); }
+    body.theme-light .batch-prog-item.active { background: rgba(249,115,22,0.06); }
+  </style>
 
 
   {% include 'partials/notifications_script.html' %}
@@ -641,6 +776,161 @@
       } else {
         showModalResult(false, 'ID container non valido');
       }
+    });
+
+    // ========== BATCH UPDATE LOGIC ==========
+    const batchModal = document.getElementById('batch-modal');
+    const batchBtn = document.getElementById('batch-update-btn');
+    const batchList = document.getElementById('batch-list');
+    const batchSelectAllCb = document.getElementById('batch-select-all-cb');
+    const batchStart = document.getElementById('batch-start');
+    const batchCancel = document.getElementById('batch-cancel');
+    const batchCloseSelect = document.getElementById('batch-close-select');
+    const batchDone = document.getElementById('batch-done');
+    const phaseSelect = document.getElementById('batch-phase-select');
+    const phaseProgress = document.getElementById('batch-phase-progress');
+    const phaseSummary = document.getElementById('batch-phase-summary');
+
+    function getUpdatableContainers() {
+      const rows = Array.from(document.querySelectorAll('.container-row'));
+      return rows.filter(row => {
+        const pill = row.querySelector('[data-status-pill]');
+        return pill && pill.classList.contains('status-update-available');
+      }).map(row => {
+        const name = row.querySelector('strong')?.textContent || 'Unknown';
+        const image = row.querySelector('.small')?.textContent || '';
+        const installedTag = row.querySelector('[data-installed-tag]')?.textContent || 'n/d';
+        const remoteTag = row.querySelector('[data-remote-tag]')?.textContent || 'n/d';
+        return {
+          id: row.dataset.containerId,
+          name, image, installedTag, remoteTag, row
+        };
+      });
+    }
+
+    function openBatchModal() {
+      const containers = getUpdatableContainers();
+      if (containers.length === 0) {
+        alert('Nessun container con aggiornamenti disponibili.');
+        return;
+      }
+      batchList.innerHTML = '';
+      containers.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'batch-item';
+        div.innerHTML = `
+          <label>
+            <input type="checkbox" checked data-batch-id="${c.id}" data-batch-name="${c.name}">
+            <div class="batch-item-info">
+              <div class="batch-item-name">${c.name}</div>
+              <div class="batch-item-version">
+                ${c.installedTag} <span class="arrow">→</span> ${c.remoteTag}
+              </div>
+            </div>
+          </label>`;
+        batchList.appendChild(div);
+      });
+      batchSelectAllCb.checked = true;
+      phaseSelect.style.display = '';
+      phaseProgress.style.display = 'none';
+      phaseSummary.style.display = 'none';
+      batchModal.classList.add('visible');
+      batchModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeBatchModal() {
+      batchModal.classList.remove('visible');
+      batchModal.setAttribute('aria-hidden', 'true');
+    }
+
+    batchSelectAllCb?.addEventListener('change', () => {
+      const cbs = batchList.querySelectorAll('input[type=checkbox]');
+      cbs.forEach(cb => cb.checked = batchSelectAllCb.checked);
+    });
+
+    batchBtn?.addEventListener('click', openBatchModal);
+    batchCancel?.addEventListener('click', closeBatchModal);
+    batchCloseSelect?.addEventListener('click', closeBatchModal);
+    batchDone?.addEventListener('click', () => { closeBatchModal(); location.reload(); });
+    batchModal?.addEventListener('click', (e) => { if (e.target === batchModal) closeBatchModal(); });
+
+    batchStart?.addEventListener('click', async () => {
+      const selected = Array.from(batchList.querySelectorAll('input[type=checkbox]:checked')).map(cb => ({
+        id: cb.dataset.batchId,
+        name: cb.dataset.batchName
+      }));
+      if (selected.length === 0) return;
+
+      // Fase 2: Progresso
+      phaseSelect.style.display = 'none';
+      phaseProgress.style.display = '';
+
+      const progressList = document.getElementById('batch-progress-list');
+      const progressBar = document.getElementById('batch-progress-bar');
+      const progressText = document.getElementById('batch-progress-text');
+      progressList.innerHTML = '';
+
+      const items = selected.map(c => {
+        const el = document.createElement('div');
+        el.className = 'batch-prog-item';
+        el.innerHTML = `
+          <span class="batch-prog-icon">⬜</span>
+          <span class="batch-prog-name">${c.name}</span>
+          <span class="batch-prog-status">In attesa</span>`;
+        progressList.appendChild(el);
+        return { ...c, el };
+      });
+
+      let completed = 0, errors = 0;
+      const total = items.length;
+
+      for (const item of items) {
+        // Segna come in corso
+        item.el.className = 'batch-prog-item active';
+        item.el.querySelector('.batch-prog-icon').textContent = '⏳';
+        item.el.querySelector('.batch-prog-status').textContent = 'Aggiornamento...';
+        item.el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        try {
+          const res = await fetch(`/api/containers/${item.id}/full_update`, { method: 'POST' });
+          const data = await res.json();
+          if (data.success) {
+            item.el.className = 'batch-prog-item done';
+            item.el.querySelector('.batch-prog-icon').textContent = '✅';
+            item.el.querySelector('.batch-prog-status').textContent = 'Completato';
+            // Aggiorna la riga nella tabella sotto
+            const row = document.querySelector(`[data-container-id="${item.id}"]`);
+            if (row) {
+              if (data.container_id) updateRowContainerId(row, item.id, data.container_id);
+              refreshRow(row);
+            }
+            completed++;
+          } else {
+            throw new Error(data.error || 'Update fallito');
+          }
+        } catch (err) {
+          item.el.className = 'batch-prog-item error';
+          item.el.querySelector('.batch-prog-icon').textContent = '❌';
+          item.el.querySelector('.batch-prog-status').textContent = err.message || 'Errore';
+          errors++;
+        }
+
+        const done = completed + errors;
+        progressBar.style.width = `${(done / total) * 100}%`;
+        progressText.textContent = `${done} / ${total} completati`;
+      }
+
+      // Fase 3: Riepilogo
+      phaseProgress.style.display = 'none';
+      phaseSummary.style.display = '';
+
+      const summaryStats = document.getElementById('batch-summary-stats');
+      summaryStats.innerHTML = `
+        <div class="batch-stat success">✅ ${completed} aggiornati</div>
+        ${errors > 0 ? `<div class="batch-stat fail">❌ ${errors} errori</div>` : ''}`;
+
+      const summaryList = document.getElementById('batch-summary-list');
+      summaryList.innerHTML = progressList.innerHTML;
     });
   </script>
   </div>
