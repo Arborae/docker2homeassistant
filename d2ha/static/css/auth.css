@@ -1,56 +1,56 @@
 /* Auth animated tech background (login + wizard) */
 :root {
-  --bg: #0b1020;
-  --panel: rgba(17, 22, 36, 0.72);
-  --panel-2: rgba(26, 34, 52, 0.66);
+  --bg: #040710;
+  --panel: rgba(17, 24, 39, 0.45);
+  --panel-2: rgba(17, 24, 39, 0.35);
   --accent: #31c4ff;
   --accent-2: #7cffc3;
   --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
   --accent-glow: rgba(49, 196, 255, 0.35);
-  --accent-glow-soft: rgba(49, 196, 255, 0.18);
-  --accent-border-strong: rgba(49, 196, 255, 0.55);
-  --accent-border: rgba(49, 196, 255, 0.42);
-  --accent-border-soft: rgba(49, 196, 255, 0.28);
-  --accent-surface: rgba(49, 196, 255, 0.08);
-  --text: #e7ecf4;
-  --muted: #a7b1c6;
-  --border: rgba(255, 255, 255, 0.08);
+  --accent-glow-soft: rgba(49, 196, 255, 0.15);
+  --accent-border-strong: rgba(49, 196, 255, 0.4);
+  --accent-border: rgba(49, 196, 255, 0.2);
+  --accent-border-soft: rgba(49, 196, 255, 0.08);
+  --accent-surface: rgba(49, 196, 255, 0.06);
+  --text: #f3f4f6;
+  --muted: #9ca3af;
+  --border: rgba(255, 255, 255, 0.06);
   --shadow: 0 14px 42px rgba(0, 0, 0, 0.45);
-  --header-bg: linear-gradient(90deg, #0d111c, #12182a);
-  --stack-header-bg: linear-gradient(135deg, #141927, #0f131d);
-  --control-surface: #0f141f;
-  --auth-bg-1: #0a1024;
-  --auth-bg-2: #0f1b3f;
-  --auth-point: #8ee8ff;
-  --auth-line: #4ec9ff;
-  --auth-glow: rgba(78, 201, 255, 0.45);
+  --header-bg: rgba(6, 9, 16, 0.4);
+  --stack-header-bg: rgba(255, 255, 255, 0.015);
+  --control-surface: rgba(255, 255, 255, 0.03);
+  --auth-bg-1: #060913;
+  --auth-bg-2: #050a1b;
+  --auth-point: #31c4ff;
+  --auth-line: #1c7ba1;
+  --auth-glow: rgba(49, 196, 255, 0.45);
 }
 
 body.theme-light {
-  --bg: linear-gradient(135deg, #fff3e0, #ffe0c2);
-  --panel: rgba(255, 255, 255, 0.82);
-  --panel-2: rgba(255, 255, 255, 0.72);
-  --accent: #ff8a3d;
-  --accent-2: #ffce73;
+  --bg: #fafafa;
+  --panel: rgba(255, 255, 255, 0.7);
+  --panel-2: rgba(255, 255, 255, 0.5);
+  --accent: #f97316;
+  --accent-2: #fb923c;
   --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
-  --accent-glow: rgba(255, 138, 61, 0.25);
-  --accent-glow-soft: rgba(255, 138, 61, 0.18);
-  --accent-border-strong: rgba(255, 138, 61, 0.6);
-  --accent-border: rgba(255, 138, 61, 0.42);
-  --accent-border-soft: rgba(255, 138, 61, 0.25);
-  --accent-surface: rgba(255, 138, 61, 0.12);
-  --text: #0f172a;
-  --muted: #475569;
-  --border: rgba(15, 23, 42, 0.08);
-  --shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-  --header-bg: linear-gradient(90deg, #fff0e0, #ffe1bf);
-  --stack-header-bg: linear-gradient(135deg, #ffe8cc, #ffd6a5);
-  --control-surface: #fff7ed;
-  --auth-bg-1: #ffe9d6;
-  --auth-bg-2: #ffd0a1;
+  --accent-glow: rgba(249, 115, 22, 0.25);
+  --accent-glow-soft: rgba(249, 115, 22, 0.1);
+  --accent-border-strong: rgba(249, 115, 22, 0.35);
+  --accent-border: rgba(249, 115, 22, 0.15);
+  --accent-border-soft: rgba(249, 115, 22, 0.08);
+  --accent-surface: rgba(249, 115, 22, 0.06);
+  --text: #111827;
+  --muted: #6b7280;
+  --border: rgba(0, 0, 0, 0.05);
+  --shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+  --header-bg: rgba(250, 250, 250, 0.6);
+  --stack-header-bg: rgba(0, 0, 0, 0.01);
+  --control-surface: rgba(0, 0, 0, 0.02);
+  --auth-bg-1: #fafafa;
+  --auth-bg-2: #f4f5f7;
   --auth-point: #f97316;
-  --auth-line: #f59e0b;
-  --auth-glow: rgba(245, 158, 11, 0.3);
+  --auth-line: #ea580c;
+  --auth-glow: rgba(249, 115, 22, 0.3);
 }
 
 * {
@@ -138,16 +138,20 @@ body.theme-light {
 .auth-card {
   width: min(520px, 100%);
   margin: 0 auto;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0)),
-    linear-gradient(180deg, var(--accent-surface), rgba(124, 255, 195, 0.04)),
-    var(--panel);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 22px 24px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(10px) saturate(115%);
+  border-radius: 24px;
+  padding: 32px 36px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(16px) saturate(115%);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.theme-light .auth-card {
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.05);
 }
 
 .auth-card::before {
