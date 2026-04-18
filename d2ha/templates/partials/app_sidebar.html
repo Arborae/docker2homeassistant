@@ -1,0 +1,140 @@
+<nav class="app-sidebar" id="primaryNav" role="navigation">
+  <div class="sidebar-header">
+    <h1 class="header-title">D2HA</h1>
+  </div>
+  
+  <div class="sidebar-links">
+    <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
+    <a href="{{ url_for('ui.containers_view') }}" class="tab {{ 'active' if active_page == 'containers' else '' }}">{{ t("nav.containers") }}</a>
+    <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{ t("nav.images") }}</a>
+    <a href="{{ url_for('ui.volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{ t("nav.volumes") }}</a>
+    <a href="{{ url_for('ui.networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{ t("nav.networks") }}</a>
+    <a href="{{ url_for('ui.updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{ t("nav.updates") }}</a>
+    <a href="{{ url_for('ui.events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{ t("nav.events") }}</a>
+    <a href="{{ url_for('ui.autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
+  </div>
+  
+  <div class="sidebar-footer">
+    <div class="settings-area">
+      <button class="settings-toggle tab" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel" style="width: 100%; justify-content: flex-start; text-transform: none; letter-spacing: normal;">
+        <span class="settings-icon" aria-hidden="true" style="margin-right: 8px;">⚙️</span> {{ t('settings.title') }}
+      </button>
+      <div class="settings-panel" id="settingsPanel" role="region" aria-label="{{ t('settings.title') }}">
+        <div class="settings-header">
+          <span>{{ t('settings.title') }}</span>
+        </div>
+        <div class="settings-body">
+          <div class="settings-row">
+            <span>{{ t('settings.os') }}</span>
+            <strong>{{ system_info.os }}</strong>
+          </div>
+          <div class="settings-row">
+            <span>{{ t('settings.docker') }}</span>
+            <strong>{{ system_info.docker_version }}</strong>
+          </div>
+          <div class="settings-row">
+            <span>{{ t('settings.d2ha_version') }}</span>
+            <strong>{{ d2ha_version }}</strong>
+          </div>
+          <div class="settings-row">
+            <span>{{ t('settings.uptime') }}</span>
+            <strong>{{ system_info.uptime }}</strong>
+          </div>
+          <div class="settings-row">
+            <div>
+              <span>{{ t('nav.security') }}</span>
+              <p class="settings-hint">{{ t('settings.security_hint') }}</p>
+            </div>
+            <a class="settings-link settings-link-icon" href="{{ url_for('auth.security_settings') }}"
+              aria-label="Apri impostazioni di sicurezza">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 3l7 4v5c0 4.97-3.58 9.36-7 9.97-3.42-.61-7-5-7-9.97V7l7-4z" fill="none"
+                  stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+                <path d="M9.5 12.5l2 2 3-3.5" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </a>
+          </div>
+          <div class="settings-row settings-row-toggle">
+            <div>
+              <span>{{ t('performance_mode.label') }}</span>
+              <p class="settings-hint">{{ t('settings.performance_hint') }}</p>
+            </div>
+            <div class="switch" title="Riduce il carico iniziale e le frequenze di refresh">
+              <input type="checkbox" id="performance-mode-toggle" />
+              <span class="slider"></span>
+            </div>
+          </div>
+          <div class="settings-row settings-row-toggle">
+            <div>
+              <span>{{ t('compact_mode.label') }}</span>
+              <p class="settings-hint">{{ t('compact_mode.hint') }}</p>
+            </div>
+            <div class="switch" title="{{ t('compact_mode.hint') }}">
+              <input type="checkbox" id="compact-mode-toggle" />
+              <span class="slider"></span>
+            </div>
+          </div>
+          <div class="settings-row settings-row-toggle">
+            <div>
+              <span>{{ t('debug_mode.label') }}</span>
+              <p class="settings-hint">{{ t('settings.debug_hint') }}</p>
+            </div>
+            <div class="switch" title="{{ t('debug_mode.switch_title') }}">
+              <input type="checkbox" id="debug-mode-toggle" />
+              <span class="slider"></span>
+            </div>
+          </div>
+          <div class="settings-safe">
+            <div>
+              <div class="settings-row">
+                <span>{{ t('safe_mode.label') }}</span>
+                <div class="switch" title="Richiedi conferma per le operazioni sensibili">
+                  <input type="checkbox" id="safeModeToggle" {% if safe_mode_enabled %}checked{% endif %} />
+                  <span class="slider"></span>
+                </div>
+              </div>
+              <p class="settings-hint">{{ t('settings.safe_hint') }}</p>
+            </div>
+          </div>
+          <div class="settings-row settings-row-toggle">
+            <div>
+              <span>{{ t('theme.label') }}</span>
+              <p class="settings-hint">{{ t('theme.switch_label') }}</p>
+            </div>
+            <form method="post" action="{{ url_for('auth.set_theme') }}">
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <select name="theme" onchange="this.form.submit()">
+                {% for theme in SUPPORTED_THEMES %}
+                <option value="{{ theme }}" {% if get_current_theme()==theme %}selected{% endif %}>
+                  {{ t('theme.' + theme) }}
+                </option>
+                {% endfor %}
+              </select>
+            </form>
+          </div>
+          <div class="settings-row settings-row-toggle">
+            <div>
+              <span>{{ t('language.label') }}</span>
+              <p class="settings-hint">{{ t('wizard.step1.title') }}</p>
+            </div>
+            <form method="post" action="{{ url_for('auth.set_language') }}">
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <select name="lang" onchange="this.form.submit()">
+                {% for lang_code in SUPPORTED_LANGS %}
+                <option value="{{ lang_code }}" {% if get_current_lang()==lang_code %}selected{% endif %}>
+                  {{ t('language.italian') if lang_code == 'it' else t('language.english') }}
+                </option>
+                {% endfor %}
+              </select>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <a href="{{ url_for('auth.logout') }}" class="tab logout-link" style="justify-content: flex-start; margin-left: 0; width: 100%;">
+      <span style="margin-right: 8px;">🚪</span> {{ t("nav.logout") }}
+    </a>
+  </div>
+</nav>

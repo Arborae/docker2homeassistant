@@ -13,30 +13,10 @@
 <body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
   data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
   data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
-  <header>
-    <div class="header-shell">
-      {% include 'partials/notifications_panel.html' %}
-      <nav id="primaryNav" role="navigation">
-        <a href="{{ url_for('ui.index') }}" class="tab {{ 'active' if active_page == 'home' else '' }}">Home</a>
-        <a href="{{ url_for('ui.containers_view') }}"
-          class="tab {{ 'active' if active_page == 'containers' else '' }}">{{
-          t("nav.containers") }}</a>
-        <a href="{{ url_for('ui.images_view') }}" class="tab {{ 'active' if active_page == 'images' else '' }}">{{
-          t("nav.images") }}</a>
-        <a href="{{ url_for('ui.volumes_view') }}" class="tab {{ 'active' if active_page == 'volumes' else '' }}">{{
-          t("nav.volumes") }}</a>
-        <a href="{{ url_for('ui.networks_view') }}" class="tab {{ 'active' if active_page == 'networks' else '' }}">{{
-          t("nav.networks") }}</a>
-        <a href="{{ url_for('ui.updates') }}" class="tab {{ 'active' if active_page == 'updates' else '' }}">{{
-          t("nav.updates") }}</a>
-        <a href="{{ url_for('ui.events_view') }}" class="tab {{ 'active' if active_page == 'events' else '' }}">{{
-          t("nav.events") }}</a>
-        <a href="{{ url_for('ui.autodiscovery_view') }}"
-          class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
-        <a href="{{ url_for('auth.logout') }}" class="tab logout-link">{{ t("nav.logout") }}</a>
-      </nav>
-    </div>
-  </header>
+  {% include 'partials/app_sidebar.html' %}
+  <div class="main-wrapper">
+    {% include 'partials/app_topbar.html' %}
+
 
   {% include 'partials/flash_messages.html' %}
 
@@ -347,6 +327,7 @@
       applySafeModeLock(!!event.detail?.enabled);
     });
   </script>
+  </div>
 </body>
 
 </html>

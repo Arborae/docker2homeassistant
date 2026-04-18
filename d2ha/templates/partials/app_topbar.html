@@ -1,0 +1,69 @@
+<script>
+  (() => {
+    try {
+      if (localStorage.getItem('d2haCompactMode') === '1') {
+        document.body.classList.add('compact-mode');
+      }
+    } catch (err) {
+      console.warn('Unable to read compact mode preference', err);
+    }
+  })();
+</script>
+<header class="app-topbar">
+  <div class="topbar-left">
+    <button class="mobile-drawer-tab" id="mobileDrawerTab" type="button" aria-expanded="false" aria-controls="primaryNav"
+      aria-label="Apri o chiudi la barra laterale">
+      <span class="mobile-drawer-tab-icon" aria-hidden="true">☰</span>
+    </button>
+  </div>
+  <div class="topbar-right">
+    <div class="backend-area">
+      <button id="backend-status-indicator" class="backend-status backend-status-ok"
+        title="{{ t('settings.backend_status') }}" aria-label="{{ t('settings.backend_status') }}" aria-expanded="false"
+        aria-controls="backendPanel" type="button">
+        <svg class="backend-status-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M3 10.5c5.5-5.5 12.5-5.5 18 0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M6.5 14c3.25-3.25 7.75-3.25 11 0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M10 17.5c1.1-1.1 2.9-1.1 4 0" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="12" cy="20" r="1.25" fill="currentColor" />
+        </svg>
+      </button>
+      <div class="backend-panel" id="backendPanel" role="region" aria-label="{{ t('settings.backend_status') }}">
+        <div class="backend-panel-header">
+          <span>{{ t('settings.backend_status') }}</span>
+          <button type="button" class="backend-refresh-btn" id="backend-status-refresh-btn">{{ t('settings.refresh')
+            }}</button>
+        </div>
+        <p id="backend-status-last-update" class="backend-panel-text">{{ t('backend_status.no_recent_update') }}</p>
+      </div>
+    </div>
+    
+    <div class="debug-indicator" data-debug-indicator title="{{ t('debug_mode.label') }}"
+      aria-label="{{ t('debug_mode.label') }}">
+      <span class="debug-indicator-icon" aria-hidden="true">🐞</span>
+      <span class="debug-indicator-text">{{ t('debug_mode.label') }}</span>
+    </div>
+
+    <div class="header-clock" id="header-clock" aria-label="{{ t('clock.label') }}" role="button" tabindex="0"
+      aria-expanded="false">
+      <div class="header-clock-time" id="header-clock-time"></div>
+      <div class="header-clock-date" id="header-clock-date"></div>
+    </div>
+
+    <div class="notif-area">
+      <button class="notif-toggle" id="notifToggle" aria-expanded="false" aria-controls="notifPanel">
+        <span class="notif-icon" aria-hidden="true">🔔</span>
+        <span class="notif-badge" id="notifBadge">0</span>
+      </button>
+      <div class="notif-panel" id="notifPanel" role="region" aria-label="{{ t('settings.notifications') }}">
+        <div class="notif-header">
+          <span>{{ t('settings.notifications') }}</span>
+        </div>
+        <div class="notif-list" id="notifList"></div>
+      </div>
+    </div>
+  </div>
+</header>
