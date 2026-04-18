@@ -84,8 +84,7 @@ a {
 }
 
 /* APP SHELL (Sidebar + Topbar) */
-.app-sidebar {
-    width: 250px;
+.app-sidebar { width: 280px;
     height: 100vh;
     position: fixed;
     top: 0;
@@ -127,9 +126,7 @@ a {
     border-top: 1px solid var(--border);
 }
 
-.main-wrapper {
-    margin-left: 250px;
-    width: calc(100% - 250px);
+.main-wrapper { margin-left: 280px; width: calc(100% - 280px);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -200,7 +197,7 @@ body.theme-light .tab:hover {
 
 .layout {
     display: grid;
-    grid-template-columns: minmax(260px, 320px) 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 18px;
     padding: 18px;
     flex: 1;

@@ -22,41 +22,6 @@
   {% include 'partials/flash_messages.html' %}
 
   <div class="layout">
-    <aside>
-      <p class="aside-title">{{ t('home.aside_title') }}</p>
-      {% for stack in stacks %}
-      <details open>
-        <summary>
-          <span>{{ t('home.no_stack') if stack.name == '_no_stack' else stack.name }}</span>
-          <span class="stack-chip">{{ stack.containers|length }} {{ t('home.stack_container_label') }}</span>
-        </summary>
-        <ul class="container-list">
-          {% for c in stack.containers %}
-          <li class="stack-container-row">
-            <div class="stack-container-main">
-              <div>{{ c.name }}</div>
-              <small>{{ c.image }}</small>
-            </div>
-            {% set status = c.status.lower() %}
-            <div class="container-actions">
-              <button class="log-link" type="button" data-open-home-logs data-container-id="{{ c.id }}"
-                data-container-name="{{ c.name }}" title="{{ t('home.log.open').format(name=c.name) }}"
-                aria-label="{{ t('home.log.open').format(name=c.name) }}">
-                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                  <path d="M7 4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h10a2 2 0 0 0 2-2V8.5L13.5 4H7zm6 5V5.5L17.5 9H13z" />
-                </svg>
-              </button>
-              <span
-                class="status-indicator {% if status == 'running' %}status-running{% elif status == 'paused' %}status-paused{% else %}status-stopped{% endif %}"
-                title="{{ c.status }}" aria-label="{{ c.status }}"></span>
-            </div>
-          </li>
-          {% endfor %}
-        </ul>
-      </details>
-      {% endfor %}
-    </aside>
-
     <main>
       <div class="card">
         <div class="flex-between">

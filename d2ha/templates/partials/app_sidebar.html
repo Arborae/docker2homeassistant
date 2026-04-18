@@ -14,6 +14,43 @@
     <a href="{{ url_for('ui.autodiscovery_view') }}" class="tab {{ 'active' if active_page == 'autodiscovery' else '' }}">{{ t("nav.autodiscovery") }}</a>
   </div>
   
+  {% if active_page == 'home' and stacks is defined %}
+  <div class="sidebar-stacks" style="overflow-y: auto; flex: 1; border-top: 1px solid var(--border); padding-top: 12px; margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+      <p class="aside-title" style="margin: 0 0 10px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; padding: 0 10px;">{{ t('home.aside_title') }}</p>
+      {% for stack in stacks %}
+      <details open>
+        <summary>
+          <span>{{ t('home.no_stack') if stack.name == '_no_stack' else stack.name }}</span>
+          <span class="stack-chip">{{ stack.containers|length }} {{ t('home.stack_container_label') }}</span>
+        </summary>
+        <ul class="container-list">
+          {% for c in stack.containers %}
+          <li class="stack-container-row">
+            <div class="stack-container-main">
+              <div>{{ c.name }}</div>
+              <small>{{ c.image }}</small>
+            </div>
+            {% set status = c.status.lower() %}
+            <div class="container-actions">
+              <button class="log-link" type="button" data-open-home-logs data-container-id="{{ c.id }}"
+                data-container-name="{{ c.name }}" title="{{ t('home.log.open').format(name=c.name) }}"
+                aria-label="{{ t('home.log.open').format(name=c.name) }}">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path d="M7 4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h10a2 2 0 0 0 2-2V8.5L13.5 4H7zm6 5V5.5L17.5 9H13z" />
+                </svg>
+              </button>
+              <span
+                class="status-indicator {% if status == 'running' %}status-running{% elif status == 'paused' %}status-paused{% else %}status-stopped{% endif %}"
+                title="{{ c.status }}" aria-label="{{ c.status }}"></span>
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+      </details>
+      {% endfor %}
+  </div>
+  {% endif %}
+  
   <div class="sidebar-footer">
     <div class="settings-area">
       <button class="settings-toggle tab" id="settingsToggle" aria-expanded="false" aria-controls="settingsPanel" style="width: 100%; justify-content: flex-start; text-transform: none; letter-spacing: normal;">
