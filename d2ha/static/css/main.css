@@ -128,12 +128,11 @@ a {
 }
 
 .main-wrapper {
-    margin-left: 250px;
-    width: calc(100% - 250px);
+    flex: 1;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    transition: margin-left 0.3s ease, width 0.3s ease;
+    min-width: 0;
 }
 
 .app-topbar {
