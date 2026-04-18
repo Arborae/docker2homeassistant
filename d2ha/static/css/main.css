@@ -725,7 +725,7 @@ body.theme-light tr:hover td {
 }
 
 .modal {
-    background: var(--panel-2);
+    background: var(--bg-base);
     border: 1px solid var(--border);
     border-radius: 16px;
     width: min(1100px, 100%);
