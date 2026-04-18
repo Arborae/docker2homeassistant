@@ -76,7 +76,8 @@ body {
     background-attachment: fixed;
     color: var(--text);
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 a {
@@ -88,9 +89,6 @@ a {
 .app-sidebar {
     width: 250px;
     height: 100vh;
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
     flex-shrink: 0;
     background: var(--bg-card);
     border-right: 1px solid var(--border);
@@ -98,8 +96,7 @@ a {
     flex-direction: column;
     padding: 18px 14px;
     z-index: 100;
-    backdrop-filter: var(--blur-strong);
-    -webkit-backdrop-filter: var(--blur-strong);
+    overflow-y: auto;
     transition: transform 0.3s ease;
 }
 
@@ -131,10 +128,11 @@ a {
 
 .main-wrapper {
     flex: 1;
-    min-height: 100vh;
+    min-width: 0;
+    height: 100vh;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    min-width: 0;
 }
 
 .app-topbar {
