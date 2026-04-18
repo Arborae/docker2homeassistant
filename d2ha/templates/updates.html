@@ -352,6 +352,29 @@
 
     const trackButtons = Array.from(document.querySelectorAll('[data-save-track]'));
 
+    function updateRowContainerId(row, oldId, newId) {
+      if (oldId === newId || !newId) return;
+      row.dataset.containerId = newId;
+
+      const form = row.querySelector('form.full-update-form');
+      if (form) form.dataset.containerId = newId;
+
+      const trackInput = row.querySelector(`[data-update-track="${oldId}"]`);
+      if (trackInput) {
+        trackInput.id = `track-${newId}`;
+        trackInput.dataset.updateTrack = newId;
+      }
+      
+      const label = row.querySelector(`label[for="track-${oldId}"]`);
+      if (label) label.setAttribute('for', `track-${newId}`);
+
+      const btn = row.querySelector(`[data-save-track][data-container-id="${oldId}"]`);
+      if (btn) btn.dataset.containerId = newId;
+
+      const feedback = row.querySelector(`[data-track-feedback="${oldId}"]`);
+      if (feedback) feedback.dataset.trackFeedback = newId;
+    }
+
     function applyStatus(row, state) {
       const pill = row.querySelector('[data-status-pill]');
       if (!pill) return;
@@ -451,9 +474,15 @@
           if (data?.line) pushLog(data.line, 'LOG');
         });
 
-        source.addEventListener('result', () => {
+        source.addEventListener('result', (evt) => {
+          const streamData = safeParseEvent(evt);
           const row = document.querySelector(`[data-container-id="${containerId}"]`);
-          if (row) refreshRow(row);
+          if (row) {
+             if (streamData && streamData.container_id) {
+                 updateRowContainerId(row, containerId, streamData.container_id);
+             }
+             refreshRow(row);
+          }
         });
 
         source.addEventListener('end', () => {
@@ -616,7 +645,10 @@
           const row = document.querySelector(`[data-container-id="${containerId}"]`);
 
           if (data.success) {
-            if (row) refreshRow(row);
+            if (row) {
+                 if (data.container_id) updateRowContainerId(row, containerId, data.container_id);
+                 refreshRow(row);
+            }
             showModalResult(true, `Container "${containerName}" aggiornato con successo!`);
           } else {
             console.error('Update failed:', data.error);

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   d2ha_server:
     build:

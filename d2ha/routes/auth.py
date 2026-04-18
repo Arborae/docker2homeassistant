@@ -2,6 +2,7 @@ import time
 from functools import wraps
 
 import pyotp
+from urllib.parse import urlparse
 from flask import Blueprint, flash, redirect, render_template, request, session, url_for, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -61,6 +62,19 @@ def is_onboarding_done():
 def _get_remote_addr():
     return request.headers.get("X-Forwarded-For", request.remote_addr or "unknown")
 
+def _safe_next_url(raw_next):
+    """Validate the 'next' redirect target to prevent open-redirect attacks."""
+    if not raw_next:
+        return None
+    parsed = urlparse(raw_next)
+    # Block absolute URLs pointing to external hosts
+    if parsed.netloc and parsed.netloc != request.host:
+        return None
+    # Only allow relative paths (no scheme://)
+    if parsed.scheme and parsed.scheme not in ("http", "https"):
+        return None
+    return raw_next
+
 def _build_qr_code_data_uri(data: str) -> str:
     # Importing here to avoid circular dependencies or scope issues if moved
     import base64
@@ -98,7 +112,7 @@ def login():
     # Actually, app.py had FAILED_LOGINS global. Let's make it module-level here.
     
     config = get_auth_config()
-    next_url = request.args.get("next")
+    next_url = _safe_next_url(request.args.get("next"))
 
     remote_addr = _get_remote_addr()
     if is_login_blocked(remote_addr):
@@ -565,10 +579,10 @@ def is_login_blocked(remote_addr: str) -> bool:
     attempts = FAILED_LOGINS[remote_addr]
 
     # cleanup old attempts
-    FAILED_LOGINS[remote_addr] = [t for t in attempts if now - t < CLEANUP_WINDOW]
+    FAILED_LOGINS[remote_addr] = [ts for ts in attempts if now - ts < CLEANUP_WINDOW]
     attempts = FAILED_LOGINS[remote_addr]
 
-    recent_attempts = [t for t in attempts if now - t < BLOCK_WINDOW]
+    recent_attempts = [ts for ts in attempts if now - ts < BLOCK_WINDOW]
     return len(recent_attempts) >= MAX_FAILED
 
 def register_failed_login(remote_addr: str) -> None:

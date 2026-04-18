@@ -1,6 +1,7 @@
-flask
-docker
-paho-mqtt
-python-dotenv
-pyotp
-qrcode[pil]
+flask>=3.0,<4.0
+docker>=7.0,<8.0
+paho-mqtt>=2.0,<3.0
+python-dotenv>=1.0,<2.0
+pyotp>=2.9,<3.0
+qrcode[pil]>=8.0,<9.0
+requests>=2.31,<3.0

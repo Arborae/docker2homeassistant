@@ -726,6 +726,13 @@
         removeRow(row);
         return;
       }
+      if (data?.container_id && data.container_id !== row.dataset.containerId) {
+         const oldId = row.dataset.containerId;
+         row.dataset.containerId = data.container_id;
+         row.querySelectorAll('[data-container-id]').forEach(el => el.dataset.containerId = data.container_id);
+         rowIndex.set(data.container_id, row);
+         rowIndex.delete(oldId);
+      }
       if (data?.container) {
         setRowFromOverview(row, data.container);
       } else {
@@ -1104,7 +1111,22 @@
       try {
         const res = await fetch(`/api/containers/${currentContainerId}/full_update`, { method: 'POST' });
         if (!res.ok) throw new Error('fail');
-        showToast('Aggiornamento avviato', { type: 'success' });
+        const data = await res.json();
+        
+        if (data.container_id && data.container_id !== currentContainerId) {
+            const oldId = currentContainerId;
+            currentContainerId = data.container_id;
+            
+            const row = rowIndex.get(oldId);
+            if (row) {
+                row.dataset.containerId = currentContainerId;
+                row.querySelectorAll('[data-container-id]').forEach(el => el.dataset.containerId = currentContainerId);
+                rowIndex.set(currentContainerId, row);
+                rowIndex.delete(oldId);
+            }
+        }
+        
+        showToast('Aggiornamento completato', { type: 'success' });
         await updateUpdates(true);
       } catch (err) {
         showToast('Impossibile avviare l\'aggiornamento', { type: 'error' });

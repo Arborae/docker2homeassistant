@@ -1,3 +1,5 @@
+import sys
+import traceback
 from typing import Any, Dict, List
 from flask import Blueprint, Response, current_app, jsonify, request, stream_with_context
 from .auth import onboarding_required, _publish_current_state
@@ -281,20 +283,21 @@ def api_container_full_update(container_id):
     docker_service = current_app.docker_service
     
     try:
-        docker_service.recreate_container_with_latest_image(container_id)
+        new_id = docker_service.recreate_container_with_latest_image(container_id)
+        lookup_id = new_id if new_id else container_id
         
         docker_service.refresh_overview_cache()
         _publish_current_state()
         
-        result = _find_container_overview_entry(container_id)
+        result = _find_container_overview_entry(lookup_id)
         return jsonify({
             "success": True,
-            "container_id": container_id,
+            "container_id": lookup_id,
+            "old_container_id": container_id,
             "container": result,
         })
     except Exception as exc:
         print(f"[DEBUG] Exception occurred: {exc}", file=sys.stderr, flush=True)
-        import traceback
         traceback.print_exc()
         return jsonify({
             "success": False,
@@ -380,7 +383,9 @@ def api_container_action_stream(container_id, action):
                         "message": "Pull immagine e ricreazione container",
                     },
                 )
-                docker_service.recreate_container_with_latest_image(container_id)
+                new_id = docker_service.recreate_container_with_latest_image(container_id)
+                if new_id:
+                    container_id = new_id
 
             yield _sse_event(
                 "status", {"state": "completed", "action": action, "container_id": container_id}

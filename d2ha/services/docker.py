@@ -1,5 +1,6 @@
 import logging
 import os
+import platform
 import re
 import shutil
 import threading
@@ -47,9 +48,9 @@ class DockerService:
     def _load_host_name(self) -> str:
         try:
             info = self.docker_client.info()
-            return info.get("Name") or os.uname().nodename
+            return info.get("Name") or platform.node()
         except Exception:
-            return os.uname().nodename
+            return platform.node()
 
     def is_engine_running(self) -> bool:
         try:
@@ -1630,6 +1631,7 @@ class DockerService:
             new_c = self.docker_client.containers.get(new_container_id)
             print(f"[DOCKER] Verification - container image: {new_c.image.id[:19]}", file=sys.stderr, flush=True)
             print(f"[DOCKER] === Full update completed for {name} ===", file=sys.stderr, flush=True)
+            return new_container_id
         except Exception as e:
             print(f"[DOCKER] Create/start failed: {e}", file=sys.stderr, flush=True)
             raise RuntimeError(f"Errore nella creazione/avvio del container {name}: {e}") from e
