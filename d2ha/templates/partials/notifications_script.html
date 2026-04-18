@@ -851,10 +851,10 @@
     if (!notifBadgeEl) return;
     if (count > 0) {
       notifBadgeEl.textContent = count;
-      notifBadgeEl.style.visibility = 'visible';
+      notifBadgeEl.style.display = 'inline-flex';
     } else {
       notifBadgeEl.textContent = '0';
-      notifBadgeEl.style.visibility = 'hidden';
+      notifBadgeEl.style.display = 'none';
     }
   }
 
