@@ -6,6 +6,7 @@
   <p>{{ t('setup_modes.description') }}</p>
 
   <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label class="auth-choice" style="display:flex;align-items:flex-start;gap:10px;">
       <input type="checkbox" name="safe_mode_enabled" {% if safe_mode_enabled %}checked{% endif %}>
       <div>

@@ -27,6 +27,7 @@
         <div class="actions-row">
           <form id="delete-unused-form" method="post" action="{{ url_for('ui.delete_unused_images') }}"
             data-safe-confirm="Eliminare tutte le immagini non utilizzate?" data-safe-modal="external">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-accent" type="submit" id="delete-unused-btn">Elimina immagini non in uso</button>
           </form>
         </div>
@@ -64,6 +65,7 @@
             <td data-label="Azioni">
               <form method="post" action="{{ url_for('ui.delete_image', image_id=img.id) }}"
                 data-safe-confirm="Eliminare l'immagine {{ img.short_id }}?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
               </form>
             </td>

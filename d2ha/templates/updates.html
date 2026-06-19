@@ -148,6 +148,7 @@
                   <form class="full-update-form" data-container-name="{{ c.name }}" data-container-id="{{ c.id }}"
                     method="post" action="#" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?"
                     data-safe-modal="external">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button class="btn-primary-glow" type="submit">Aggiorna immagine</button>
                   </form>
                   <div class="field" style="margin-top: 8px;">

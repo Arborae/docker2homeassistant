@@ -152,6 +152,7 @@
               <p class="settings-hint">{{ t('theme.switch_label') }}</p>
             </div>
             <form method="post" action="{{ url_for('auth.set_theme') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="next" value="{{ request.path }}">
               <select name="theme" onchange="this.form.submit()">
                 {% for theme in SUPPORTED_THEMES %}
@@ -168,6 +169,7 @@
               <p class="settings-hint">{{ t('wizard.step1.title') }}</p>
             </div>
             <form method="post" action="{{ url_for('auth.set_language') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="next" value="{{ request.path }}">
               <select name="lang" onchange="this.form.submit()">
                 {% for lang_code in SUPPORTED_LANGS %}

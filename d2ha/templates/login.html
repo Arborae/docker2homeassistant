@@ -8,6 +8,7 @@
   {% endif %}
 
   <form method="post" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div>
       <label for="username">{{ t("login.username") }}</label>
       <input type="text" id="username" name="username" required />

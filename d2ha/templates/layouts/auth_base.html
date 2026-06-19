@@ -42,6 +42,7 @@
         <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">
           <h2>{{ t('settings.title') }}</h2>
           <form method="post" action="{{ url_for('auth.set_language') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="next" value="{{ request.path }}">
             <label for="onboarding-lang">{{ t('language.label') }}</label>
             <select id="onboarding-lang" name="lang" onchange="this.form.submit()">
@@ -53,6 +54,7 @@
             </select>
           </form>
           <form method="post" action="{{ url_for('auth.set_theme') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="next" value="{{ request.path }}">
             <label for="onboarding-theme">{{ t('theme.label') }}</label>
             <select id="onboarding-theme" name="theme" onchange="this.form.submit()">

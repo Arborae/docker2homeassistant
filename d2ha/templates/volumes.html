@@ -27,6 +27,7 @@
         <div class="actions-row">
           <form id="delete-unused-volumes" method="post" action="{{ url_for('ui.delete_unused_volumes') }}"
             data-safe-confirm="Eliminare tutti i volumi non utilizzati?" data-safe-modal="external">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-accent" type="submit">Elimina volumi non utilizzati</button>
           </form>
         </div>
@@ -68,6 +69,7 @@
             <td data-label="Azioni">
               <form method="post" action="{{ url_for('ui.delete_volume') }}"
                 data-safe-confirm="Eliminare il volume {{ volume.name }}?" data-safe-modal="external">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="volume_name" value="{{ volume.name }}" />
                 <input type="hidden" name="volume_type" value="{{ volume.type }}" />
                 <button class="btn btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>

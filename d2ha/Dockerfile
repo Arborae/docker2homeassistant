@@ -19,4 +19,8 @@ COPY . .
 
 EXPOSE 12021
 
-CMD ["python", "app.py"]
+# Use gunicorn as production WSGI server.
+# --workers 1: single worker because the app uses background threads (overview refresher, MQTT).
+# --timeout 120: long timeout for heavy operations like full_update (pull + recreate).
+# --access-logfile -: write access logs to stdout for docker log collection.
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:12021", "--timeout", "120", "--access-logfile", "-", "app:app"]

@@ -38,6 +38,7 @@
           <p class="muted small" style="margin-top: 4px; margin-bottom: 16px;">Configura il logout automatico per
             inattività.</p>
           <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="update_session_timeout" />
             <div class="form-control">
               <label>Password attuale</label>
@@ -77,6 +78,7 @@
           <p class="muted small" style="margin-top: 4px; margin-bottom: 16px;">Aggiorna username e/o password. Richiede
             la password attuale e, se attiva, anche un codice 2FA.</p>
           <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="change_credentials" />
 
             <div class="form-row">
@@ -144,6 +146,7 @@
 
           {% if not two_factor_enabled %}
           <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="enable_2fa" />
             <div class="form-control">
               <label>Password attuale</label>
@@ -160,6 +163,7 @@
           </form>
           {% else %}
           <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="disable_2fa" />
             <div class="form-row">
               <div class="form-control">
@@ -211,6 +215,7 @@
               </div>
 
               <form method="POST" style="margin-top: 20px;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="action" value="confirm_enable_2fa" />
                 <div class="form-control">
                   <label>Inserisci un codice generato dall'app</label>

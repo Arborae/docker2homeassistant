@@ -95,6 +95,10 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(ui_bp)
 app.register_blueprint(api_bp)
 
+# CSRF Protection
+from csrf import init_csrf
+init_csrf(app)
+
 # Logging Configuration
 class SensitiveDataFilter(logging.Filter):
     def __init__(self, sensitive_values: Optional[list] = None):

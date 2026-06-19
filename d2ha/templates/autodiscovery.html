@@ -58,6 +58,7 @@
     </section>
 
     <form id="autodiscovery-form" class="stacks" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <section class="section-card">
         <div class="section-card-header">
           <div class="title">

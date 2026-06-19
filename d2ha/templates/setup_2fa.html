@@ -25,6 +25,7 @@
   </div>
 
   <form method="post" autocomplete="off" class="auth-actions-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="token">{{ t('setup_2fa.token_label') }}</label>
     <input type="text" id="token" name="token" pattern="\d{6}" inputmode="numeric" autocomplete="one-time-code" />
     <div class="actions">
