@@ -935,6 +935,18 @@
       const row = document.createElement('div');
       row.className = 'notif-item';
       row.dataset.id = item.id;
+      row.style.cursor = 'pointer';
+
+      row.addEventListener('click', () => {
+        dismissNotification(item);
+        if (item.id === 'unused-images') {
+          window.location.href = '/ui/images';
+        } else if (item.id === 'updates-pending') {
+          window.location.href = '/ui/updates';
+        } else if (item.id === 'critical-events') {
+          window.location.href = '/ui/home'; // Redirect to home/logs
+        }
+      });
 
       const content = document.createElement('div');
       content.className = 'notif-content';

@@ -28,7 +28,6 @@
       <div class="section-card-body stack-content">
         <table class="responsive-table">
           <colgroup>
-            <col class="col-select">
             <col class="col-name">
             <col class="col-status">
             <col class="col-uptime">
@@ -41,7 +40,6 @@
           </colgroup>
           <thead>
             <tr>
-              <th class="select-col" aria-label="Seleziona"></th>
               <th>Nome</th>
               <th>Stato</th>
               <th>Uptime</th>
@@ -57,13 +55,6 @@
             {% for c in stack.containers %}
             <tr class="row-clickable" data-container-id="{{ c.id }}" data-container-name="{{ c.name }}"
               data-container-status="{{ c.status.lower() }}">
-              <td class="select-col" data-label="Seleziona">
-                <label class="checkbox">
-                  <input type="checkbox" class="container-select" value="{{ c.id }}" data-container-name="{{ c.name }}"
-                    aria-label="Seleziona {{ c.name }}">
-                  <span class="checkmark"></span>
-                </label>
-              </td>
               <td data-label="Nome">
                 <div><strong>{{ c.name }}</strong></div>
                 <div class="meta">{{ c.image }}</div>
@@ -114,11 +105,15 @@
                 {% endif %}
               </td>
               <td class="actions-cell" data-label="Azioni">
-                <div class="actions">
-                  <button class="btn-primary-glow" type="button" data-open-modal data-container-id="{{ c.id }}"
-                    data-container-name="{{ c.name }}">Dettagli</button>
-                  <button class="btn-primary-glow" type="button" data-open-modal data-tab="logs"
-                    data-container-id="{{ c.id }}" data-container-name="{{ c.name }}">Logs</button>
+                <div class="actions" style="display: flex; gap: 8px; flex-wrap: nowrap; align-items: center;">
+                  <button class="btn btn-ghost" type="button" data-open-modal data-container-id="{{ c.id }}"
+                    data-container-name="{{ c.name }}" style="padding: 6px 12px; font-size: 0.85rem;">Dettagli</button>
+                  <button class="btn btn-ghost" type="button" data-open-modal data-tab="logs"
+                    data-container-id="{{ c.id }}" data-container-name="{{ c.name }}" style="padding: 6px 12px; font-size: 0.85rem;">Logs</button>
+                  <label class="btn btn-secondary container-select-btn" style="padding: 6px 12px; font-size: 0.85rem; cursor: pointer; margin: 0;">
+                    <input type="checkbox" class="container-select" value="{{ c.id }}" data-container-name="{{ c.name }}" style="display: none;">
+                    <span class="select-text">Seleziona</span>
+                  </label>
                 </div>
               </td>
             </tr>
@@ -157,109 +152,110 @@
         <button class="modal-tab" data-tab="updates">{{ t("nav.updates") }}</button>
       </div>
       <div class="modal-body">
-        <div class="tab-panel active" data-panel="info">
+        <div class="tab-panel active" data-panel="info" style="padding: 10px;">
 
-          <!-- Top Row: Resources (Left) & Labels (Right) -->
-          <div class="grid grid-cols-2-lg" style="gap: 20px; margin-bottom: 24px;">
+          <!-- Top Row: Resources & Labels -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 24px;">
             <!-- Resources -->
-            <div class="card card-stretch">
-              <div class="card-header-sm">
-                <h4>Risorse Live</h4>
-              </div>
-              <div class="card-body-stretch">
-                <div class="stats-row">
-                  <div class="stat-box">
-                    <div class="kv" style="border:none; padding:0;"><span>CPU</span><strong id="stat-cpu">-</strong>
-                    </div>
-                    <canvas id="chart-cpu"></canvas>
+            <div style="background: var(--panel-2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-soft);">
+              <h4 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--accent);">Risorse Live</h4>
+              <div class="stats-row" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 16px;">
+                <div class="stat-box" style="text-align: center;">
+                  <div class="kv" style="border:none; padding:0; justify-content: center; gap: 8px;">
+                    <span style="color: var(--muted); font-size: 0.85rem;">CPU</span>
+                    <strong id="stat-cpu" style="font-size: 1.1rem;">-</strong>
                   </div>
-                  <div class="stat-box">
-                    <div class="kv" style="border:none; padding:0;"><span>RAM</span><strong id="stat-ram">-</strong>
-                    </div>
-                    <canvas id="chart-ram"></canvas>
+                  <canvas id="chart-cpu"></canvas>
+                </div>
+                <div class="stat-box" style="text-align: center;">
+                  <div class="kv" style="border:none; padding:0; justify-content: center; gap: 8px;">
+                    <span style="color: var(--muted); font-size: 0.85rem;">RAM</span>
+                    <strong id="stat-ram" style="font-size: 1.1rem;">-</strong>
                   </div>
-                  <div class="stat-box">
-                    <div class="kv" style="border:none; padding:0;"><span>Net</span><strong id="stat-net">-</strong>
-                    </div>
-                    <canvas id="chart-net"></canvas>
+                  <canvas id="chart-ram"></canvas>
+                </div>
+                <div class="stat-box" style="text-align: center;">
+                  <div class="kv" style="border:none; padding:0; justify-content: center; gap: 8px;">
+                    <span style="color: var(--muted); font-size: 0.85rem;">NET</span>
+                    <strong id="stat-net" style="font-size: 1.1rem;">-</strong>
                   </div>
+                  <canvas id="chart-net"></canvas>
                 </div>
               </div>
             </div>
 
             <!-- Labels -->
-            <div class="card card-stretch">
-              <div class="card-header-sm">
-                <h4>Label</h4>
-              </div>
-              <div class="scrollable-table scrollable-auto">
-                <table class="table-kv" id="info-labels"></table>
+            <div style="background: var(--panel-2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-soft);">
+              <h4 style="margin: 0 0 16px 0; font-size: 1.1rem; color: var(--accent);">Label</h4>
+              <div class="scrollable-table scrollable-auto" style="max-height: 200px; overflow-y: auto;">
+                <table class="table-kv" id="info-labels" style="width: 100%;"></table>
               </div>
             </div>
           </div>
 
           <!-- Middle Row: Metrics -->
-          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 24px;">
-            <div class="field">
-              <h4>Stato</h4>
-              <div id="info-status" class="badge">-</div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px;">
+            <div style="background: var(--panel-2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-soft); text-align: center;">
+              <h4 style="margin: 0 0 10px 0; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Stato</h4>
+              <div id="info-status" class="badge" style="font-size: 1.05rem; padding: 6px 16px; border-radius: 999px;">-</div>
             </div>
-            <div class="field">
-              <h4>Uptime</h4>
-              <div id="info-uptime" style="font-weight:700; font-size:1.1rem;">-</div>
+            <div style="background: var(--panel-2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-soft); text-align: center;">
+              <h4 style="margin: 0 0 10px 0; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Uptime</h4>
+              <div id="info-uptime" style="font-weight:800; font-size:1.25rem; color: var(--text);">-</div>
             </div>
-            <div class="field">
-              <h4>Riavvio</h4>
-              <div id="info-restart" style="font-weight:700; font-size:1.1rem;">-</div>
+            <div style="background: var(--panel-2); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-soft); text-align: center;">
+              <h4 style="margin: 0 0 10px 0; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Riavvi</h4>
+              <div id="info-restart" style="font-weight:800; font-size:1.25rem; color: var(--text);">-</div>
             </div>
           </div>
 
           <!-- Bottom Columns: Details & Env -->
-          <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
             <!-- Left Column: Details -->
-            <div style="display:flex; flex-direction:column; gap:16px;">
+            <div style="background: var(--panel-2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-soft); display:flex; flex-direction:column; gap:20px;">
+              <h4 style="margin: 0; font-size: 1.1rem; color: var(--accent);">Dettagli Generali</h4>
               <div class="field">
-                <h4>Immagine</h4>
-                <div id="info-image" style="word-break:break-all;">-</div>
-                <div class="muted" id="info-short-id" style="font-family:monospace; font-size:0.8rem;"></div>
+                <div class="muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Immagine</div>
+                <div id="info-image" style="word-break:break-all; font-weight: 600; color: var(--text);">-</div>
+                <div class="muted" id="info-short-id" style="font-family:monospace; font-size:0.8rem; margin-top: 2px;"></div>
               </div>
               <div class="field">
-                <h4>Command</h4>
+                <div class="muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Comando</div>
                 <div id="info-command" class="muted"
-                  style="font-family:monospace; font-size:0.85rem; word-break:break-all; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
+                  style="font-family:monospace; font-size:0.85rem; word-break:break-all; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                   -</div>
               </div>
               <div class="field">
-                <h4>Reti</h4>
-                <div id="info-networks" class="muted">-</div>
+                <div class="muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Reti</div>
+                <div id="info-networks" class="muted" style="color: var(--text);">-</div>
               </div>
               <div class="field">
-                <h4>Porte</h4>
-                <div id="info-ports" class="muted">-</div>
+                <div class="muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Porte</div>
+                <div id="info-ports" class="muted" style="color: var(--text);">-</div>
               </div>
               <div class="field">
-                <h4>Volumi</h4>
-                <div id="info-volumes" class="muted">-</div>
+                <div class="muted" style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Volumi</div>
+                <div id="info-volumes" class="muted" style="color: var(--text);">-</div>
               </div>
             </div>
 
             <!-- Right Column: Environment -->
-            <div style="display:flex; flex-direction:column; gap:16px;">
-              <div class="field">
-                <h4>Environment</h4>
-                <div class="scrollable-table">
-                  <table class="table-kv" id="info-env"></table>
-                </div>
+            <div style="background: var(--panel-2); border: 1px solid var(--border); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-soft); display:flex; flex-direction:column; gap:16px;">
+              <h4 style="margin: 0; font-size: 1.1rem; color: var(--accent);">Variabili d'ambiente</h4>
+              <div class="scrollable-table" style="max-height: 400px; overflow-y: auto;">
+                <table class="table-kv" id="info-env" style="width: 100%;"></table>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="tab-panel logs-panel" data-panel="logs">
-          <div class="controls">
-            <label class="muted"><input type="checkbox" id="logs-auto" checked> Auto-refresh</label>
-            <label class="muted">Linee
-              <select id="logs-tail" class="select">
+        <div class="tab-panel logs-panel" data-panel="logs" style="padding: 10px; gap: 16px; display: flex; flex-direction: column;">
+          <div class="inline-controls" style="background: var(--panel-2); border: 1px solid var(--border); padding: 14px 18px; border-radius: 12px; box-shadow: var(--shadow-soft); display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
+            <label class="muted" style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" id="logs-auto" checked style="width: 16px; height: 16px; accent-color: var(--accent);"> Auto-refresh
+            </label>
+            <label class="muted" style="display: flex; align-items: center; gap: 8px;">Linee
+              <select id="logs-tail" class="select" style="min-width: auto;">
                 <option value="10">10</option>
                 <option value="50">50</option>
                 <option value="100" selected>100</option>
@@ -268,8 +264,8 @@
                 <option value="all">Senza limiti</option>
               </select>
             </label>
-            <label class="muted">Severità
-              <select id="logs-severity" class="select">
+            <label class="muted" style="display: flex; align-items: center; gap: 8px;">Severità
+              <select id="logs-severity" class="select" style="min-width: auto;">
                 <option value="all" selected>Tutte</option>
                 <option value="error">Errori</option>
                 <option value="warn">Warning</option>
@@ -278,9 +274,12 @@
                 <option value="other">Altro</option>
               </select>
             </label>
-            <button class="inline-btn" id="logs-refresh">Aggiorna ora</button>
+            <div style="flex: 1;"></div>
+            <button class="btn btn-accent" id="logs-refresh" style="padding: 6px 14px; font-size: 0.85rem;">
+              🔄 Aggiorna ora
+            </button>
           </div>
-          <pre class="logs-area" id="logs-output">Seleziona un container...</pre>
+          <pre class="logs-area" id="logs-output" style="border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--bg-base); font-size: 0.9rem; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">Seleziona un container...</pre>
         </div>
 
         <div class="tab-panel" data-panel="updates">

@@ -145,11 +145,15 @@
         <div class="modal-title" id="home-log-title">{{ t('home.log.title') }}</div>
         <button class="modal-close" id="home-log-close" aria-label="{{ t('home.log.close') }}">✕</button>
       </div>
-      <div class="modal-body">
-        <div class="inline-controls">
-          <label class="muted"><input type="checkbox" id="home-log-auto" checked> {{ t('home.log.auto') }}</label>
-          <label class="muted">{{ t('home.log.lines') }}
-            <select id="home-log-tail" class="select">
+      <div class="modal-body" style="padding: 24px; gap: 16px; display: flex; flex-direction: column;">
+        <div class="inline-controls" style="background: var(--panel-2); border: 1px solid var(--border); padding: 14px 18px; border-radius: 12px; box-shadow: var(--shadow-soft);">
+          <label class="muted" style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="home-log-auto" checked style="width: 16px; height: 16px; accent-color: var(--accent);">
+            {{ t('home.log.auto') }}
+          </label>
+          <label class="muted" style="display: flex; align-items: center; gap: 8px;">
+            {{ t('home.log.lines') }}
+            <select id="home-log-tail" class="select" style="min-width: auto;">
               <option value="10">10</option>
               <option value="50">50</option>
               <option value="100" selected>100</option>
@@ -158,8 +162,9 @@
               <option value="all">{{ t('home.log.unlimited') }}</option>
             </select>
           </label>
-          <label class="muted">{{ t('home.log.severity') }}
-            <select id="home-log-severity" class="select">
+          <label class="muted" style="display: flex; align-items: center; gap: 8px;">
+            {{ t('home.log.severity') }}
+            <select id="home-log-severity" class="select" style="min-width: auto;">
               <option value="all" selected>{{ t('home.log.all') }}</option>
               <option value="error">{{ t('home.log.errors') }}</option>
               <option value="warn">{{ t('home.log.warnings') }}</option>
@@ -168,9 +173,12 @@
               <option value="other">{{ t('home.log.other') }}</option>
             </select>
           </label>
-          <button class="inline-btn" id="home-log-refresh">{{ t('home.log.refresh') }}</button>
+          <div style="flex: 1;"></div>
+          <button class="btn btn-accent" id="home-log-refresh" style="padding: 6px 14px; font-size: 0.85rem;">
+            🔄 {{ t('home.log.refresh') }}
+          </button>
         </div>
-        <pre class="logs-area" id="home-log-output">{{ t('home.log.placeholder') }}</pre>
+        <pre class="logs-area" id="home-log-output" style="border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--bg-base); font-size: 0.9rem; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">{{ t('home.log.placeholder') }}</pre>
       </div>
     </div>
   </div>

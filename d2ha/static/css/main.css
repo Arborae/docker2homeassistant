@@ -561,6 +561,11 @@ main {
     font-size: 0.9rem;
 }
 
+.select option {
+    background-color: var(--bg-base);
+    color: var(--text);
+}
+
 .input {
     min-width: 200px;
 }
@@ -1113,19 +1118,24 @@ body.theme-light .safe-confirm-actions .btn[data-safe-confirm] {
 /* Bulk Bar */
 .bulk-bar {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
-    padding: 12px 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 12px 24px;
     display: none;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.25);
-    z-index: 30;
+    gap: 24px;
+    box-shadow: var(--shadow-strong);
+    z-index: 50;
     color: var(--text);
+    backdrop-filter: var(--blur-strong);
+    -webkit-backdrop-filter: var(--blur-strong);
+    width: max-content;
+    max-width: 90vw;
 }
 
 .bulk-bar.visible {
@@ -1534,11 +1544,43 @@ body.theme-light .safe-confirm-actions .btn[data-safe-confirm] {
 .pill-used {
     background: rgba(124, 255, 195, 0.15);
     color: #7cffc3;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.pill-used::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #7cffc3;
+    box-shadow: 0 0 8px #7cffc3;
 }
 
 .pill-unused {
     background: rgba(255, 99, 71, 0.15);
     color: #ff8a7a;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.pill-unused::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff8a7a;
+    box-shadow: 0 0 8px #ff8a7a;
 }
 
 /* Buttons varieties */
