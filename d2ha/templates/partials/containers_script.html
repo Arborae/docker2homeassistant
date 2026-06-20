@@ -431,6 +431,16 @@ const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]')
       const visible = count > 0;
       bulkBar.classList.toggle('visible', visible);
       bulkBar.setAttribute('aria-hidden', visible ? 'false' : 'true');
+
+      // Update row highlighting
+      document.querySelectorAll('.row-clickable').forEach(row => {
+        const cb = row.querySelector('.container-select');
+        if (cb && cb.checked) {
+          row.classList.add('selected');
+        } else {
+          row.classList.remove('selected');
+        }
+      });
     };
 
     const toggleSelection = (input) => {
