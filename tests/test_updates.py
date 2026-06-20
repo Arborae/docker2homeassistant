@@ -44,6 +44,11 @@ def create_docker_service():
 def test_updates_page_handles_docker_errors_gracefully():
     app_module = load_app_module()
 
+    # Routes now live in blueprints; the updates view is in routes.ui and the
+    # onboarding gate is in routes.auth.
+    import routes.ui as ui_module
+    import routes.auth as auth_module
+
     app_module.docker_service.collect_containers_info_for_updates = mock.Mock(
         side_effect=Exception("boom")
     )
@@ -51,12 +56,11 @@ def test_updates_page_handles_docker_errors_gracefully():
     app_module.docker_service.get_host_info = mock.Mock(return_value={})
     app_module.docker_service.get_disk_usage = mock.Mock(return_value={})
 
-    app_module.is_onboarding_done = lambda: True
-
     with app_module.app.test_request_context("/updates"):
         session["user"] = app_module.get_auth_config().get("username")
-        with mock.patch.object(app_module, "render_template", return_value="OK"):
-            response = app_module.updates()
+        with mock.patch.object(auth_module, "is_onboarding_done", return_value=True), \
+             mock.patch.object(ui_module, "render_template", return_value="OK"):
+            response = ui_module.updates()
             flashes = get_flashed_messages(with_categories=True)
 
     assert response == "OK"

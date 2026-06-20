@@ -1,17 +1,22 @@
 import time
-from flask import Blueprint, flash, redirect, render_template, request, url_for, current_app, jsonify
+from flask import Blueprint, flash, redirect, render_template, request, url_for, current_app, jsonify, send_from_directory
+import os
 from .auth import onboarding_required, _publish_current_state
 from services.utils import human_bytes
 from services.preferences import AutodiscoveryPreferences
 
+import threading
+
 ui_bp = Blueprint("ui", __name__)
 
 _notifications_cache = {}
+_notifications_lock = threading.Lock()
 
 def _build_notifications_summary(force: bool = False) -> dict:
     now = time.time()
-    if not force and now - _notifications_cache.get("ts", 0.0) < 15:
-        return _notifications_cache.get("data", {})
+    with _notifications_lock:
+        if not force and now - _notifications_cache.get("ts", 0.0) < 15:
+            return _notifications_cache.get("data", {})
     
     docker_service = current_app.docker_service
 
@@ -55,7 +60,8 @@ def _build_notifications_summary(force: bool = False) -> dict:
         "critical_events": critical_events,
     }
 
-    _notifications_cache.update({"ts": now, "data": summary})
+    with _notifications_lock:
+        _notifications_cache.update({"ts": now, "data": summary})
     return summary
 
 
@@ -152,6 +158,11 @@ def _build_home_context():
     return stacks, summary
 
 
+@ui_bp.route("/sw.js", methods=["GET"])
+def service_worker():
+    return send_from_directory(os.path.join(current_app.root_path, 'static'), 'sw.js', mimetype='application/javascript')
+
+
 @ui_bp.route("/", methods=["GET"])
 @ui_bp.route("/home", methods=["GET"])
 @onboarding_required
@@ -206,7 +217,12 @@ def delete_unused_images():
 @ui_bp.route("/images/<path:image_id>/delete", methods=["POST"])
 @onboarding_required
 def delete_image(image_id):
-    current_app.docker_service.remove_image(image_id)
+    try:
+        current_app.docker_service.remove_image(image_id)
+        flash("Immagine rimossa.", "success")
+    except Exception as exc:
+        current_app.logger.warning("Failed to remove image %s: %s", image_id, exc)
+        flash("Impossibile rimuovere l'immagine. Potrebbe essere in uso da un container.", "error")
     return redirect(url_for("ui.images_view"))
 
 
@@ -301,6 +317,8 @@ def updates():
         containers_info = []
     stack_map = {}
     for c in containers_info:
+        if mqtt_manager.is_self_container(c):
+            continue
         stack_name = c.get("stack", "_no_stack")
         stack_map.setdefault(stack_name, []).append(c)
 

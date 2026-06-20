@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="{{ get_current_lang() }}">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  {% include 'partials/pwa_head.html' %}
+  <title>{% block title %}D2HA{% endblock %}</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=2.7">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}?v=2.7">
+  
+  {% block head_extra %}{% endblock %}
+</head>
+
+<body class="theme-{{ get_current_theme() }}" 
+      data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
+      data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
+      data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
+      
+  {% include 'partials/app_sidebar.html' %}
+  
+  <div class="main-wrapper">
+    {% include 'partials/app_topbar.html' %}
+    {% include 'partials/flash_messages.html' %}
+
+    {% block content %}{% endblock %}
+
+    {% include 'partials/notifications_script.html' %}
+    {% block scripts_extra %}{% endblock %}
+    {% include 'partials/app_mobile_nav.html' %}
+    
+    <div id="install-banner" class="install-banner" style="display: none;">
+      <div class="install-banner-content">
+        <div class="install-icon">📲</div>
+        <div class="install-text">
+          <strong>Installa D2HA</strong>
+          <span>Aggiungi l'app per un'esperienza perfetta.</span>
+        </div>
+      </div>
+      <button id="install-btn" class="btn btn-primary" style="padding:4px 10px; font-size:0.8rem;">Installa</button>
+      <button id="install-close" class="btn btn-ghost" style="padding:4px 8px;">✕</button>
+    </div>
+
+    <div id="ios-install-banner" class="install-banner" style="display: none;">
+      <div class="install-banner-content">
+        <div class="install-icon">📲</div>
+        <div class="install-text">
+          <strong>Installa D2HA</strong>
+          <span>Tocca l'icona Condividi in basso e poi "Aggiungi a Schermata Home".</span>
+        </div>
+      </div>
+      <button id="ios-install-close" class="btn btn-ghost" style="padding:4px 8px;">✕</button>
+    </div>
+
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register("/sw.js").catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+        });
+      }
+
+      // PWA Install Prompt Logic
+      let deferredPrompt;
+      const installBanner = document.getElementById('install-banner');
+      const installBtn = document.getElementById('install-btn');
+      const installClose = document.getElementById('install-close');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (!localStorage.getItem('pwa_banner_closed')) {
+          installBanner.style.display = 'flex';
+        }
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+          }
+          installBanner.style.display = 'none';
+        });
+      }
+
+      if (installClose) {
+        installClose.addEventListener('click', () => {
+          installBanner.style.display = 'none';
+          localStorage.setItem('pwa_banner_closed', 'true');
+        });
+      }
+
+      // iOS Detection for PWA
+      const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+      const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone);
+
+      if (isIos() && !isInStandaloneMode() && !localStorage.getItem('ios_pwa_banner_closed')) {
+        const iosBanner = document.getElementById('ios-install-banner');
+        if (iosBanner) {
+          iosBanner.style.display = 'flex';
+          document.getElementById('ios-install-close').addEventListener('click', () => {
+            iosBanner.style.display = 'none';
+            localStorage.setItem('ios_pwa_banner_closed', 'true');
+          });
+        }
+      }
+
+      // Prevent pinch-to-zoom on iOS
+      document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+      });
+      // Prevent multi-touch pinch on Android
+      document.addEventListener('touchmove', function(e) {
+        if (e.touches.length > 1) {
+          e.preventDefault();
+        }
+      }, { passive: false });
+      // Prevent double-tap to zoom
+      let lastTouchEnd = 0;
+      document.addEventListener('touchend', function(event) {
+        let now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      }, false);
+    </script>
+  </div>
+</body>
+
+</html>

@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>D2HA - Loading</title>
+  {% include 'partials/pwa_head.html' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
 </head>
@@ -38,11 +39,12 @@
   <script>
     window.d2haSplashConfig = {
       targetUrl: {{ target_url | tojson }},
-    healthUrl: { { url_for('health_check_override') | tojson } }
+      healthUrl: {{ url_for('health_check_override') | tojson }}
     };
   </script>
   <script src="{{ url_for('static', filename='js/auth_background.js') }}"></script>
   <script src="{{ url_for('static', filename='js/splash.js') }}"></script>
+  {% include 'partials/pwa_register.html' %}
 </body>
 
 </html>

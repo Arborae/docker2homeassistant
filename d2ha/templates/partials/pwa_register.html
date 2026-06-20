@@ -1,0 +1,11 @@
+<script>
+  // Register the service worker on every entry page so the PWA install
+  // criteria are met regardless of where the user lands (login, splash, app).
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.warn('ServiceWorker registration failed:', err);
+      });
+    });
+  }
+</script>

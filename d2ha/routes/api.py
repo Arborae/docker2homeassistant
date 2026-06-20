@@ -1,5 +1,3 @@
-import sys
-import traceback
 from typing import Any, Dict, List
 from flask import Blueprint, Response, current_app, jsonify, request, stream_with_context
 from .auth import onboarding_required, _publish_current_state
@@ -281,6 +279,16 @@ def api_delete_unused_images_stream():
 def api_container_full_update(container_id):
     """Perform full container update (pull image + recreate) without requiring debug mode."""
     docker_service = current_app.docker_service
+    mqtt_manager = current_app.mqtt_manager
+    
+    container_info = _find_container_overview_entry(container_id)
+    if container_info and mqtt_manager.is_self_container(container_info):
+        return jsonify({
+            "success": False,
+            "error": "Non è possibile aggiornare questo container (Docker2HomeAssistant) dall'interfaccia. Usa docker pull / docker compose up -d.",
+            "container_id": container_id,
+        }), 400
+        
     
     try:
         new_id = docker_service.recreate_container_with_latest_image(container_id)
@@ -297,8 +305,7 @@ def api_container_full_update(container_id):
             "container": result,
         })
     except Exception as exc:
-        print(f"[DEBUG] Exception occurred: {exc}", file=sys.stderr, flush=True)
-        traceback.print_exc()
+        current_app.logger.exception("Full update failed for container %s", container_id)
         return jsonify({
             "success": False,
             "error": str(exc) or "Update failed",
@@ -318,9 +325,20 @@ def api_container_action(container_id, action):
         "kill",
     }
     
+    if action == "full_update":
+        return jsonify({"error": "Usa l'endpoint specifico /full_update"}), 400
+        
+    
     if action not in allowed_actions:
         return jsonify({"error": "Azione non supportata"}), 400
-        
+
+    # Destructive actions require explicit confirmation when safe mode is on.
+    if action in ("delete", "kill"):
+        payload = request.get_json(force=True, silent=True) or {}
+        confirmed = bool(payload.get("confirm")) or request.args.get("confirm") == "1"
+        if is_safe_mode_enabled() and not confirmed:
+            return jsonify({"error": "Modalità sicura attiva: conferma richiesta"}), 403
+
     docker_service = current_app.docker_service
     try:
         docker_service.apply_simple_action(container_id, action)
@@ -358,6 +376,12 @@ def api_container_action_stream(container_id, action):
 
     if action not in allowed_actions:
         return jsonify({"error": "Azione non supportata"}), 400
+
+    # Destructive actions require explicit confirmation when safe mode is on.
+    if action == "delete":
+        confirmed = request.args.get("confirm") == "1"
+        if is_safe_mode_enabled() and not confirmed:
+            return jsonify({"error": "Modalità sicura attiva: conferma richiesta"}), 403
 
     def generate():
         yield _sse_event(
@@ -480,7 +504,10 @@ def api_container_updates(container_id):
 @onboarding_required
 def api_container_updates_frequency(container_id):
     data = request.get_json(force=True, silent=True) or {}
-    minutes = int(data.get("minutes", 60))
+    try:
+        minutes = int(data.get("minutes", 60))
+    except (TypeError, ValueError):
+        return jsonify({"error": "Valore 'minutes' non valido"}), 400
     minutes = current_app.docker_service.set_update_frequency(container_id, minutes)
     return jsonify({"minutes": minutes})
 

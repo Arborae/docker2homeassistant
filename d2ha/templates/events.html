@@ -1,26 +1,9 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
+{% extends "layouts/app_base.html" %}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Eventi</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
-  {% include 'partials/notifications_styles.html' %}
-</head>
+{% block title %}D2HA – Eventi{% endblock %}
 
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
-  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
-  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
-  {% include 'partials/app_sidebar.html' %}
-  <div class="main-wrapper">
-    {% include 'partials/app_topbar.html' %}
-
-
-  {% include 'partials/flash_messages.html' %}
-
-  <main>
+{% block content %}
+<main>
     <section class="card filters">
       <form method="get" class="filters" aria-label="Filtri eventi">
         <label>
@@ -53,7 +36,7 @@
         <div class="badge">{{ selected_hours }}h di cronologia · Severità: {{ 'Tutte' if selected_severity == 'all' else
           selected_severity|title }}</div>
       </div>
-      <table aria-label="Registro eventi di sistema">
+      <table class="responsive-table" aria-label="Registro eventi di sistema">
         <thead>
           <tr>
             <th>Data</th>
@@ -93,8 +76,5 @@
       </table>
     </section>
   </main>
-  {% include 'partials/notifications_script.html' %}
-  </div>
-</body>
+{% endblock %}
 
-</html>

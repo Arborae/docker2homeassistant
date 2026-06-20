@@ -1,285 +1,209 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
+{% extends "layouts/app_base.html" %}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Sicurezza</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
-  {% include 'partials/notifications_styles.html' %}
-</head>
+{% block title %}D2HA – Sicurezza{% endblock %}
 
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
-  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
-  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
-  {% include 'partials/app_sidebar.html' %}
-  <div class="main-wrapper">
-    {% include 'partials/app_topbar.html' %}
+{% block content %}
+<main>
+  <section class="section-summary-bar" style="margin-bottom: 8px;">
+    <div>
+      <h3>Impostazioni di sicurezza</h3>
+      <div class="meta" style="margin-top: 4px;">Questa pagina ti permette di aggiornare le credenziali admin e gestire la 2FA.<br>L'account controlla Docker su questo host: usa password robuste e preferisci sempre la 2FA.</div>
+    </div>
+  </section>
 
+  <!-- Griglia affiancata -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 450px), 1fr)); gap: 20px; align-items: start;">
 
-  {% include 'partials/flash_messages.html' %}
-
-  <div class="layout layout-single">
-    <main>
-      <div class="page-header">
-        <div class="page-eyebrow">Configurazione</div>
-        <h1 class="page-title">Impostazioni di sicurezza</h1>
-        <p class="page-subtitle">Questa pagina ti permette di aggiornare le credenziali admin e gestire la 2FA.
-          L'account controlla Docker su questo host: usa password robuste e preferisci sempre la 2FA.</p>
+    <!-- Session Timeout Card -->
+    <section class="section-card" style="margin: 0;">
+      <div class="section-card-header">
+        <div class="title">⏱ Timeout di sessione</div>
       </div>
-
-      <div class="grid">
-        <!-- Session Timeout Card -->
-        <div class="card">
-          <div class="flex-between">
-            <h2>Timeout di sessione</h2>
-          </div>
-          <p class="muted small" style="margin-top: 4px; margin-bottom: 16px;">Configura il logout automatico per
-            inattività.</p>
-          <form method="POST">
+      <div class="section-card-body">
+        <p class="muted small" style="margin-bottom: 16px;">Configura il logout automatico per inattività.</p>
+        <form method="POST">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="action" value="update_session_timeout" />
+          <input type="hidden" name="action" value="update_session_timeout" />
+          
+          <div class="form-row" style="margin-bottom: 16px;">
             <div class="form-control">
-              <label>Password attuale</label>
-              <div class="password-input-wrapper">
-                <input class="input" type="password" name="current_password" autocomplete="current-password" required />
-                <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
-                  title="{{ t('password.toggle.show') }}">👁</button>
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Password attuale</label>
+              <div class="password-input-wrapper" style="position: relative;">
+                <input class="input" type="password" name="current_password" autocomplete="current-password" required style="width: 100%;" />
               </div>
             </div>
 
             {% if two_factor_enabled %}
             <div class="form-control">
-              <label>Codice 2FA corrente</label>
-              <input class="input" type="text" name="current_totp_code" inputmode="numeric"
-                autocomplete="one-time-code" />
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Codice 2FA corrente</label>
+              <input class="input" type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" style="width: 100%;" />
             </div>
             {% endif %}
-
-            <div class="form-control">
-              <label>{{ t('security.session_timeout_label') }}</label>
-              <div class="status-chip"
-                style="margin-bottom:8px; background:transparent; padding:0; border:none; color:var(--muted); font-weight:400;">
-                {{ t('security.session_timeout_hint') }}</div>
-              <input class="input" type="number" name="session_timeout_minutes" min="1" max="1440"
-                value="{{ session_timeout_minutes }}" required />
-            </div>
-
-            <div class="actions" style="margin-top: 12px;">
-              <button type="submit" class="btn-primary-glow">Salva timeout</button>
-            </div>
-          </form>
-        </div>
-
-        <!-- Credentials Card -->
-        <div class="card">
-          <h2>Cambia credenziali</h2>
-          <p class="muted small" style="margin-top: 4px; margin-bottom: 16px;">Aggiorna username e/o password. Richiede
-            la password attuale e, se attiva, anche un codice 2FA.</p>
-          <form method="POST">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="action" value="change_credentials" />
-
-            <div class="form-row">
-              <div class="form-control">
-                <label>Password attuale</label>
-                <div class="password-input-wrapper">
-                  <input class="input" type="password" name="current_password" autocomplete="current-password"
-                    required />
-                  <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
-                    title="{{ t('password.toggle.show') }}">👁</button>
-                </div>
-              </div>
-              {% if two_factor_enabled %}
-              <div class="form-control">
-                <label>Codice 2FA corrente</label>
-                <input class="input" type="text" name="current_totp_code" inputmode="numeric"
-                  autocomplete="one-time-code" />
-              </div>
-              {% endif %}
-            </div>
-
-            <div class="form-control">
-              <label>Nuovo username (facoltativo)</label>
-              <input class="input" type="text" name="new_username" value="{{ current_username }}"
-                autocomplete="username" />
-            </div>
-
-            <div class="form-row">
-              <div class="form-control">
-                <label>Nuova password (facoltativa)</label>
-                <div class="password-input-wrapper">
-                  <input class="input" type="password" name="new_password" autocomplete="new-password" />
-                  <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
-                    title="{{ t('password.toggle.show') }}">👁</button>
-                </div>
-              </div>
-              <div class="form-control">
-                <label>Conferma nuova password</label>
-                <div class="password-input-wrapper">
-                  <input class="input" type="password" name="new_password_confirm" autocomplete="new-password" />
-                  <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
-                    title="{{ t('password.toggle.show') }}">👁</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="actions" style="margin-top: 12px; align-items: center;">
-              <button type="submit" class="btn-primary-glow">Aggiorna credenziali</button>
-              <span class="small muted">Minimo 10 caratteri e niente "admin".</span>
-            </div>
-          </form>
-        </div>
-
-        <!-- 2FA Card -->
-        <div class="card">
-          <div class="flex-between">
-            <h2>Autenticazione a due fattori</h2>
-            <div class="status-chip {{ 'success' if two_factor_enabled else 'danger' }}">
-              <span class="dot"></span>
-              <span>{{ 'Attiva' if two_factor_enabled else 'Disattivata' }}</span>
-            </div>
           </div>
-          <p class="muted small" style="margin-top: 4px; margin-bottom: 16px;">Proteggi l'accesso con un secondo fattore
-            TOTP (Google Authenticator, Aegis...).</p>
 
-          {% if not two_factor_enabled %}
-          <form method="POST">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="action" value="enable_2fa" />
-            <div class="form-control">
-              <label>Password attuale</label>
-              <div class="password-input-wrapper">
-                <input class="input" type="password" name="current_password" autocomplete="current-password" required />
-                <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
-                  title="{{ t('password.toggle.show') }}">👁</button>
-              </div>
-            </div>
-            <div class="actions" style="margin-top: 12px;">
-              <button type="submit" class="btn-primary-glow">Abilita 2FA</button>
-              <span class="small muted">Richiede conferma con un codice generato.</span>
-            </div>
-          </form>
-          {% else %}
-          <form method="POST">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="hidden" name="action" value="disable_2fa" />
-            <div class="form-row">
-              <div class="form-control">
-                <label>Password attuale</label>
-                <div class="password-input-wrapper">
-                  <input class="input" type="password" name="current_password" autocomplete="current-password"
-                    required />
-                  <button type="button" class="password-toggle" aria-label="{{ t('password.toggle.show') }}"
-                    title="{{ t('password.toggle.show') }}">👁</button>
-                </div>
-              </div>
-              <div class="form-control">
-                <label>Codice 2FA corrente</label>
-                <input class="input" type="text" name="current_totp_code" inputmode="numeric"
-                  autocomplete="one-time-code" required />
-              </div>
-            </div>
-            <div class="actions" style="margin-top: 12px;">
-              <button type="submit" class="btn btn-danger">Disabilita 2FA</button>
-              <span class="small muted">Servono password e codice valido.</span>
-            </div>
-          </form>
-          {% endif %}
-
-          {% if pending_2fa_setup and provisioning_uri %}
-          <div class="debug-panel" style="margin-top: 20px; height: auto; border: 1px dashed var(--accent-border);">
-            <div class="debug-header">
-              <div class="debug-title" style="font-size: 1rem;">Setup 2FA in sospeso</div>
-            </div>
-            <div class="debug-body" style="padding: 16px; display: block;">
-              <p style="margin-bottom: 12px;">Scansiona il QR o inserisci la chiave segreta, quindi verifica con un
-                codice generato.</p>
-
-              <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
-                {% if qr_code_data_uri %}
-                <div style="background: white; padding: 10px; border-radius: 12px;">
-                  <img src="{{ qr_code_data_uri }}" alt="QR 2FA" width="160" height="160" style="display: block;" />
-                </div>
-                {% endif %}
-                <div style="flex: 1; min-width: 200px;">
-                  <div class="form-control">
-                    <label>Segreto</label>
-                    <code
-                      style="background: rgba(255,255,255,0.1); padding: 8px; border-radius: 6px; display: block;">{{ totp_secret or 'n/d' }}</code>
-                  </div>
-                  <div class="small muted" style="word-break: break-all; margin-top: 8px;">URI: {{ provisioning_uri }}
-                  </div>
-                </div>
-              </div>
-
-              <form method="POST" style="margin-top: 20px;">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <input type="hidden" name="action" value="confirm_enable_2fa" />
-                <div class="form-control">
-                  <label>Inserisci un codice generato dall'app</label>
-                  <div style="display: flex; gap: 10px;">
-                    <input class="input" type="text" name="verify_totp_code" inputmode="numeric"
-                      autocomplete="one-time-code" required placeholder="000000" style="max-width: 200px;" />
-                    <button type="submit" class="btn-primary-glow">Conferma e abilita 2FA</button>
-                  </div>
-                </div>
-              </form>
-            </div>
+          <div class="form-control" style="margin-bottom: 16px;">
+            <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">{{ t('security.session_timeout_label') }}</label>
+            <div class="helper" style="margin-bottom: 8px;">{{ t('security.session_timeout_hint') }}</div>
+            <input class="input" type="number" name="session_timeout_minutes" min="1" max="1440" value="{{ session_timeout_minutes }}" required style="max-width: 200px;" />
           </div>
-          {% endif %}
-        </div>
+
+          <div class="actions" style="margin-top: 24px;">
+            <button type="submit" class="btn-primary-glow">Salva timeout</button>
+          </div>
+        </form>
       </div>
-    </main>
+    </section>
+
+    <!-- Credentials Card -->
+    <section class="section-card" style="margin: 0;">
+      <div class="section-card-header">
+        <div class="title">🔑 Cambia credenziali</div>
+      </div>
+      <div class="section-card-body">
+        <p class="muted small" style="margin-bottom: 16px;">Aggiorna username e/o password. Richiede la password attuale e, se attiva, anche un codice 2FA.</p>
+        <form method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="change_credentials" />
+
+          <div class="form-row" style="margin-bottom: 16px;">
+            <div class="form-control">
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Password attuale</label>
+              <div class="password-input-wrapper" style="position: relative;">
+                <input class="input" type="password" name="current_password" autocomplete="current-password" required style="width: 100%;" />
+              </div>
+            </div>
+            {% if two_factor_enabled %}
+            <div class="form-control">
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Codice 2FA corrente</label>
+              <input class="input" type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" style="width: 100%;" />
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="form-control" style="margin-bottom: 16px;">
+            <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Nuovo username (facoltativo)</label>
+            <input class="input" type="text" name="new_username" value="{{ current_username }}" autocomplete="username" style="width: 100%;" />
+          </div>
+
+          <div class="form-row" style="margin-bottom: 16px;">
+            <div class="form-control">
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Nuova password (facoltativa)</label>
+              <div class="password-input-wrapper" style="position: relative;">
+                <input class="input" type="password" name="new_password" autocomplete="new-password" style="width: 100%;" />
+              </div>
+            </div>
+            <div class="form-control">
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Conferma password</label>
+              <div class="password-input-wrapper" style="position: relative;">
+                <input class="input" type="password" name="new_password_confirm" autocomplete="new-password" style="width: 100%;" />
+              </div>
+            </div>
+          </div>
+
+          <div class="actions" style="display: flex; align-items: center; gap: 16px; margin-top: 24px;">
+            <button type="submit" class="btn-primary-glow">Aggiorna</button>
+            <span class="small muted">Min. 10 caratteri.</span>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- 2FA Card -->
+    <section class="section-card" style="margin: 0;">
+      <div class="section-card-header">
+        <div class="title">🛡 Autenticazione a due fattori</div>
+        {% if two_factor_enabled %}
+          <div class="section-card-badge" style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; border-color: rgba(46, 204, 113, 0.3);">Attiva</div>
+        {% else %}
+          <div class="section-card-badge" style="background: rgba(255, 99, 71, 0.15); color: #ff8a7a; border-color: rgba(255, 99, 71, 0.3);">Disattivata</div>
+        {% endif %}
+      </div>
+      <div class="section-card-body">
+        <p class="muted small" style="margin-bottom: 16px;">Proteggi l'accesso con un secondo fattore TOTP (Google Authenticator, Aegis...).</p>
+
+        {% if not two_factor_enabled %}
+        <form method="POST" style="max-width: 450px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="enable_2fa" />
+          
+          <div class="form-control" style="margin-bottom: 16px;">
+            <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Password attuale</label>
+            <div class="password-input-wrapper" style="position: relative;">
+              <input class="input" type="password" name="current_password" autocomplete="current-password" required style="width: 100%;" />
+            </div>
+          </div>
+          
+          <div class="actions" style="display: flex; align-items: center; gap: 16px; margin-top: 24px;">
+            <button type="submit" class="btn-primary-glow">Abilita 2FA</button>
+            <span class="small muted">Richiede conferma con codice.</span>
+          </div>
+        </form>
+        {% else %}
+        <form method="POST" style="max-width: 450px;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="disable_2fa" />
+          
+          <div class="form-row" style="margin-bottom: 16px;">
+            <div class="form-control">
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Password attuale</label>
+              <div class="password-input-wrapper" style="position: relative;">
+                <input class="input" type="password" name="current_password" autocomplete="current-password" required style="width: 100%;" />
+              </div>
+            </div>
+            <div class="form-control">
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Codice 2FA corrente</label>
+              <input class="input" type="text" name="current_totp_code" inputmode="numeric" autocomplete="one-time-code" required style="width: 100%;" />
+            </div>
+          </div>
+          
+          <div class="actions" style="display: flex; align-items: center; gap: 16px; margin-top: 24px;">
+            <button type="submit" class="btn btn-delete" style="padding: 10px 18px; border-radius: 99px; font-weight: 800;">Disabilita 2FA</button>
+            <span class="small muted">Servono password e codice.</span>
+          </div>
+        </form>
+        {% endif %}
+
+        {% if pending_2fa_setup and provisioning_uri %}
+        <div style="margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.02); border: 1px dashed var(--accent-border); border-radius: var(--radius-md);">
+          <h4 style="margin: 0 0 12px 0; color: var(--accent);">Setup 2FA in sospeso</h4>
+          <p class="small muted" style="margin-bottom: 16px;">Scansiona il QR o inserisci la chiave segreta, quindi verifica con un codice generato.</p>
+
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 20px;">
+            {% if qr_code_data_uri %}
+            <div style="background: white; padding: 12px; border-radius: 12px; box-shadow: var(--shadow-soft);">
+              <img src="{{ qr_code_data_uri }}" alt="QR 2FA" width="160" height="160" style="display: block;" />
+            </div>
+            {% endif %}
+            <div style="flex: 1; min-width: 200px;">
+              <div class="form-control">
+                <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Segreto</label>
+                <code style="background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; display: block; font-size: 1.1rem; letter-spacing: 0.1em; border: 1px solid var(--border);">{{ totp_secret or 'n/d' }}</code>
+              </div>
+              <div class="small muted" style="word-break: break-all; margin-top: 8px;">URI: {{ provisioning_uri }}</div>
+            </div>
+          </div>
+
+          <form method="POST" style="max-width: 600px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="confirm_enable_2fa" />
+            
+            <div class="form-control" style="margin-bottom: 16px;">
+              <label style="font-weight: 700; color: var(--muted); font-size: 0.85rem; text-transform: uppercase;">Inserisci un codice generato dall'app</label>
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <input class="input" type="text" name="verify_totp_code" inputmode="numeric" autocomplete="one-time-code" required placeholder="000000" style="width: 150px; text-align: center; font-size: 1.2rem; letter-spacing: 0.2em;" />
+                <button type="submit" class="btn-primary-glow">Conferma e abilita</button>
+              </div>
+            </div>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
   </div>
+</main>
+{% endblock %}
 
-  <script>
-    (function enhancePasswordInputs() {
-      const showLabel = '{{ t('password.toggle.show') }}';
-      const hideLabel = '{{ t('password.toggle.hide') }}';
-
-      document.querySelectorAll('input[type="password"]').forEach((input) => {
-        const existingWrapper = input.closest('.password-input-wrapper');
-        const wrapper = existingWrapper || (() => {
-          const created = document.createElement('div');
-          created.className = 'password-input-wrapper';
-          input.parentNode.insertBefore(created, input);
-          created.appendChild(input);
-          return created;
-        })();
-
-        let toggle = wrapper.querySelector('.password-toggle');
-        if (!toggle) {
-          toggle = document.createElement('button');
-          toggle.type = 'button';
-          toggle.className = 'password-toggle';
-          wrapper.appendChild(toggle);
-        }
-
-        if (toggle.dataset.bound === 'true') return;
-
-        const updateState = (isHidden) => {
-          toggle.setAttribute('aria-label', isHidden ? showLabel : hideLabel);
-          toggle.title = isHidden ? showLabel : hideLabel;
-          toggle.textContent = isHidden ? '👁' : '🙈';
-        };
-
-        updateState(true);
-
-        toggle.addEventListener('click', () => {
-          const isHidden = input.type === 'password';
-          input.type = isHidden ? 'text' : 'password';
-          updateState(!isHidden);
-        });
-
-        toggle.dataset.bound = 'true';
-      });
-    })();
-  </script>
-
-  {% include 'partials/notifications_script.html' %}
-  </div>
-</body>
-
-</html>
+{% block scripts_extra %}
+{% include 'partials/security_script.html' %}
+{% endblock %}

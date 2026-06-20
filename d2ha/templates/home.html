@@ -1,27 +1,13 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
+{% extends "layouts/app_base.html" %}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Home</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+{% block title %}D2HA – Home{% endblock %}
+
+{% block head_extra %}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  {% include 'partials/notifications_styles.html' %}
-</head>
+{% endblock %}
 
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
-  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
-  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
-  {% include 'partials/app_sidebar.html' %}
-  <div class="main-wrapper">
-    {% include 'partials/app_topbar.html' %}
-
-
-  {% include 'partials/flash_messages.html' %}
-
-  <div class="layout">
+{% block content %}
+<div class="layout">
     
 
     <main>
@@ -188,10 +174,10 @@
       </div>
     </div>
   </div>
+{% endblock %}
 
-  {% include 'partials/notifications_script.html' %}
-
-  <script>
+{% block scripts_extra %}
+<script>
     const initialData = {{ { "summary": summary, "stacks": stacks }| tojson }};
     const homeText = {
       totalLabel: "{{ t('home.total_label') }}",
@@ -276,11 +262,11 @@
       const html = filteredLines
         .map((line) => {
           const levelClass = getLogLevel(line);
-          return `<div class="log-line ${levelClass}"><span class="log-bullet">•</span><span>${escapeLogHtml(line)}</span></div>`;
+          return `<div class="log-line ${levelClass}"><span class="log-bullet">•</span><span>${escapeLogHtml(line)}</span>`;
         })
         .join('');
 
-      homeLogOutput.innerHTML = html || `<div class="muted">${homeText.noLogs}</div>`;
+      homeLogOutput.innerHTML = html || `<div class="muted">${homeText.noLogs}`;
     };
 
     const updateHomeLogs = async () => {
@@ -642,7 +628,4 @@
       startOverviewPolling();
     });
   </script>
-  </div>
-</body>
-
-</html>
+{% endblock %}
