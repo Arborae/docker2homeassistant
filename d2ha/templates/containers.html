@@ -249,37 +249,39 @@
           </div>
         </div>
 
-        <div class="tab-panel logs-panel" data-panel="logs" style="padding: 10px; gap: 16px; display: flex; flex-direction: column;">
-          <div class="inline-controls" style="background: var(--panel-2); border: 1px solid var(--border); padding: 14px 18px; border-radius: 12px; box-shadow: var(--shadow-soft); display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
-            <label class="muted" style="display: flex; align-items: center; gap: 8px;">
-              <input type="checkbox" id="logs-auto" checked style="width: 16px; height: 16px; accent-color: var(--accent);"> Auto-refresh
-            </label>
-            <label class="muted" style="display: flex; align-items: center; gap: 8px;">Linee
-              <select id="logs-tail" class="select" style="min-width: auto;">
-                <option value="10">10</option>
-                <option value="50">50</option>
-                <option value="100" selected>100</option>
-                <option value="150">150</option>
-                <option value="500">500</option>
-                <option value="all">Senza limiti</option>
-              </select>
-            </label>
-            <label class="muted" style="display: flex; align-items: center; gap: 8px;">Severità
-              <select id="logs-severity" class="select" style="min-width: auto;">
-                <option value="all" selected>Tutte</option>
-                <option value="error">Errori</option>
-                <option value="warn">Warning</option>
-                <option value="info">Info</option>
-                <option value="debug">Debug</option>
-                <option value="other">Altro</option>
-              </select>
-            </label>
-            <div style="flex: 1;"></div>
-            <button class="btn btn-accent" id="logs-refresh" style="padding: 6px 14px; font-size: 0.85rem;">
-              🔄 Aggiorna ora
-            </button>
+        <div class="tab-panel logs-panel" data-panel="logs">
+          <div style="padding: 10px; gap: 16px; display: flex; flex-direction: column; height: 100%;">
+            <div class="inline-controls" style="background: var(--panel-2); border: 1px solid var(--border); padding: 14px 18px; border-radius: 12px; box-shadow: var(--shadow-soft); display: flex; flex-wrap: wrap; gap: 16px; align-items: center;">
+              <label class="muted" style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="logs-auto" checked style="width: 16px; height: 16px; accent-color: var(--accent);"> Auto-refresh
+              </label>
+              <label class="muted" style="display: flex; align-items: center; gap: 8px;">Linee
+                <select id="logs-tail" class="select" style="min-width: auto;">
+                  <option value="10">10</option>
+                  <option value="50">50</option>
+                  <option value="100" selected>100</option>
+                  <option value="150">150</option>
+                  <option value="500">500</option>
+                  <option value="all">Senza limiti</option>
+                </select>
+              </label>
+              <label class="muted" style="display: flex; align-items: center; gap: 8px;">Severità
+                <select id="logs-severity" class="select" style="min-width: auto;">
+                  <option value="all" selected>Tutte</option>
+                  <option value="error">Errori</option>
+                  <option value="warn">Warning</option>
+                  <option value="info">Info</option>
+                  <option value="debug">Debug</option>
+                  <option value="other">Altro</option>
+                </select>
+              </label>
+              <div style="flex: 1;"></div>
+              <button class="btn btn-accent" id="logs-refresh" style="padding: 6px 14px; font-size: 0.85rem;">
+                🔄 Aggiorna ora
+              </button>
+            </div>
+            <pre class="logs-area" id="logs-output" style="border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--bg-base); font-size: 0.9rem; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">Seleziona un container...</pre>
           </div>
-          <pre class="logs-area" id="logs-output" style="border: 1px solid var(--border); border-radius: 12px; padding: 16px; background: var(--bg-base); font-size: 0.9rem; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">Seleziona un container...</pre>
         </div>
 
         <div class="tab-panel" data-panel="updates">

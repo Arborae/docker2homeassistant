@@ -583,4 +583,57 @@ const statusClasses = {
       const summaryList = document.getElementById('batch-summary-list');
       summaryList.innerHTML = progressList.innerHTML;
     });
+
+    // Inline selection logic
+    const tableCheckboxes = document.querySelectorAll('.container-select');
+    const bulkBar = document.getElementById('bulk-bar');
+    const bulkCount = document.getElementById('bulk-count');
+    const bulkUpdateBtn = document.getElementById('bulk-update-btn');
+
+    function updateBulkBar() {
+      const selected = Array.from(document.querySelectorAll('.container-select:checked'));
+      if (selected.length > 0) {
+        if(bulkCount) bulkCount.textContent = selected.length;
+        if(bulkBar) {
+          bulkBar.classList.add('visible');
+          bulkBar.setAttribute('aria-hidden', 'false');
+        }
+      } else {
+        if(bulkBar) {
+          bulkBar.classList.remove('visible');
+          bulkBar.setAttribute('aria-hidden', 'true');
+        }
+      }
+
+      document.querySelectorAll('.container-row').forEach(row => row.classList.remove('selected'));
+      selected.forEach(cb => {
+        const row = cb.closest('.container-row');
+        if (row) row.classList.add('selected');
+      });
+    }
+
+    tableCheckboxes.forEach(cb => cb.addEventListener('change', updateBulkBar));
+
+    bulkUpdateBtn?.addEventListener('click', () => {
+      const selected = Array.from(document.querySelectorAll('.container-select:checked')).map(cb => ({
+        id: cb.value,
+        name: cb.dataset.containerName
+      }));
+      if (selected.length === 0) return;
+
+      batchModal.classList.add('visible');
+      batchModal.setAttribute('aria-hidden', 'false');
+
+      // Populate batchList temporarily so batchStart works
+      batchList.innerHTML = '';
+      selected.forEach(c => {
+         const div = document.createElement('div');
+         div.innerHTML = `<label><input type="checkbox" checked data-batch-id="${escapeHtml(c.id)}" data-batch-name="${escapeHtml(c.name)}"></label>`;
+         batchList.appendChild(div);
+      });
+
+      // Trigger batch update progress phase automatically
+      batchStart.click();
+    });
+
 </script>

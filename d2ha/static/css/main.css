@@ -432,6 +432,7 @@ main {
     cursor: pointer;
     box-shadow: 0 4px 14px var(--accent-glow);
     transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, filter 0.2s ease;
+    white-space: nowrap;
 }
 
 .btn-primary-glow:hover {
@@ -453,6 +454,7 @@ main {
     justify-content: center;
     font-weight: 800;
     box-shadow: var(--shadow-soft);
+    white-space: nowrap;
 }
 
 .btn:hover {
@@ -499,6 +501,7 @@ main {
     color: var(--accent);
     border-color: var(--accent-border);
     font-weight: 800;
+    white-space: nowrap;
 }
 
 .btn-ghost:hover {
@@ -613,6 +616,10 @@ tr:hover td {
 
 body.theme-light tr:hover td {
     background: rgba(0, 0, 0, 0.02);
+}
+
+tr.selected td {
+    background: rgba(49, 196, 255, 0.08);
 }
 
 .row-clickable {
@@ -1903,10 +1910,10 @@ body[data-performance-mode="1"] .performance-hint {
 
     .responsive-table td>* {
         text-align: right;
-        width: 100%;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
+        max-width: calc(100% - 130px);
     }
 
     .responsive-table .pill-row {

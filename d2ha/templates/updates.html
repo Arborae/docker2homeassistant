@@ -128,12 +128,18 @@
               </td>
               <td class="actions-cell" data-label="Azioni">
                 <div class="actions">
-                  <form class="full-update-form" data-container-name="{{ c.name }}" data-container-id="{{ c.id }}"
-                    method="post" action="#" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?"
-                    data-safe-modal="external">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button class="btn-primary-glow" type="submit">Aggiorna immagine</button>
-                  </form>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                    <form class="full-update-form" data-container-name="{{ c.name }}" data-container-id="{{ c.id }}"
+                      method="post" action="#" data-safe-confirm="Aggiornare l'immagine di {{ c.name }}?"
+                      data-safe-modal="external" style="margin: 0;">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button class="btn-primary-glow" type="submit" style="padding: 6px 12px; font-size: 0.85rem;">Aggiorna immagine</button>
+                    </form>
+                    <label class="btn btn-secondary container-select-btn" style="padding: 6px 12px; font-size: 0.85rem; cursor: pointer; margin: 0;">
+                      <input type="checkbox" class="container-select" value="{{ c.id }}" data-container-name="{{ c.name }}" style="display: none;">
+                      <span class="select-text">Seleziona</span>
+                    </label>
+                  </div>
                   <div class="field" style="margin-top: 8px;">
                     <label class="small" for="track-{{ c.id }}">Tag da monitorare</label>
                     <div class="input-row">
@@ -164,6 +170,13 @@
     <option value="dev"></option>
     <option value="nightly"></option>
   </datalist>
+
+  <div class="bulk-bar" id="bulk-bar" aria-hidden="true">
+    <div class="bulk-summary"><span id="bulk-count">0</span> container selezionati</div>
+    <div class="bulk-actions">
+      <button class="btn-primary-glow" type="button" id="bulk-update-btn">🔄 Aggiorna selezionati</button>
+    </div>
+  </div>
 
   <div class="debug-overlay" id="debug-overlay" aria-hidden="true">
     <div class="debug-panel">

@@ -270,7 +270,7 @@
       const html = filteredLines
         .map((line) => {
           const levelClass = getLogLevel(line);
-          return `<div class="log-line ${levelClass}"><span class="log-bullet">•</span><span>${escapeLogHtml(line)}</span>`;
+          return `<div class="log-line ${levelClass}"><span class="log-bullet">•</span><span>${escapeLogHtml(line)}</span></div>`;
         })
         .join('');
 
