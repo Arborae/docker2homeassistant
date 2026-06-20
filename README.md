@@ -114,12 +114,11 @@ Niente database, niente dipendenze pesanti: solo Docker, Flask e – se vuoi –
 ### Gestione aggiornamenti
 
 - Analisi di tutti i container installati.
-- Confronto **versione installata vs versione remota**.
-- Lettura automatica di label OCI per:
-  - versione immagine;
-  - changelog;
-  - breaking changes.
-- Azione “Aggiorna immagine” per eseguire pull + ricreazione container.
+- Confronto **versione installata vs versione remota** (basato sul digest dell'immagine).
+- Lettura di **versione, changelog e breaking changes** da label/annotations OCI dell'immagine; in fallback, changelog/breaking dalle **release GitHub** del repo sorgente.
+  - Imposta `D2HA_GITHUB_TOKEN` (token GitHub di sola lettura su repo pubblici) per alzare il rate limit della GitHub API (**60 → 5000 richieste/ora**) e mantenere affidabile il rilevamento del changelog.
+  - Nota: per immagini che non pubblicano queste informazioni (molte immagini Docker Hub generiche) changelog/versione possono non essere disponibili — il confronto digest resta comunque affidabile.
+- Azione “Aggiorna immagine” per eseguire pull + ricreazione container, con **avanzamento live** (fase, percentuale di download e log) nel popup di aggiornamento.
 
 ### Dettaglio container
 
@@ -328,6 +327,10 @@ services:
       # MQTT_DISCOVERY_PREFIX: "homeassistant"
       # MQTT_NODE_ID: "d2ha_server"
       # MQTT_STATE_INTERVAL: "5"
+
+      # (Opzionale) Token GitHub di sola lettura su repo pubblici: alza il rate
+      # limit della GitHub API (60 -> 5000 req/ora) per il rilevamento changelog/breaking.
+      # D2HA_GITHUB_TOKEN: "ghp_xxx"
 
     # Se vuoi buildare localmente invece di usare l'immagine:
     # build:
