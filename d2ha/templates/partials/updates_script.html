@@ -20,66 +20,9 @@ const statusClasses = {
     let refreshIntervalMs = pollingDefaults.intervalMs;
     let refreshTimer = null;
     let autoScanEnabled = !(window.d2haSettings?.performanceMode);
-    const debugOverlay = document.getElementById('debug-overlay');
-    const debugTitle = document.getElementById('debug-title');
-    const debugCommands = document.getElementById('debug-commands');
-    const debugLogs = document.getElementById('debug-logs');
-    const debugClose = document.getElementById('debug-close');
-    const debugClear = document.getElementById('debug-clear');
-    const debugEnabled = document.body.dataset.debugMode === '1';
-    const debugStreamSupported = debugEnabled && typeof EventSource !== 'undefined';
-    let activeDebugStream = null;
-
     const safeParseEvent = (evt) => {
       try { return JSON.parse(evt.data); }
       catch (e) { return {}; }
-    };
-
-    const clearDebugOverlay = () => {
-      debugCommands.innerHTML = '';
-      debugLogs.innerHTML = '';
-    };
-
-    const openDebugOverlay = (title) => {
-      if (!debugStreamSupported) return;
-      clearDebugOverlay();
-      debugTitle.textContent = title;
-      debugOverlay.classList.add('visible');
-      debugOverlay.setAttribute('aria-hidden', 'false');
-    };
-
-    const closeDebugOverlay = () => {
-      if (activeDebugStream) {
-        activeDebugStream.close();
-        activeDebugStream = null;
-      }
-      debugOverlay.classList.remove('visible');
-      debugOverlay.setAttribute('aria-hidden', 'true');
-    };
-
-    const pushCommand = (text) => {
-      if (!debugEnabled) return;
-      const row = document.createElement('div');
-      row.className = 'command';
-      row.textContent = text;
-      debugCommands.appendChild(row);
-      debugCommands.scrollTop = debugCommands.scrollHeight;
-    };
-
-    const pushLog = (text, tag = 'LOG') => {
-      if (!debugEnabled) return;
-      const row = document.createElement('div');
-      row.className = 'debug-log-line';
-      const badge = document.createElement('span');
-      badge.className = 'tag';
-      badge.textContent = tag;
-      const body = document.createElement('span');
-      body.className = 'text';
-      body.textContent = text;
-      row.appendChild(badge);
-      row.appendChild(body);
-      debugLogs.appendChild(row);
-      debugLogs.scrollTop = debugLogs.scrollHeight;
     };
 
     const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
@@ -213,59 +156,6 @@ const statusClasses = {
       rows.forEach(row => refreshRow(row));
     }
 
-    function startUpdateDebugStream(containerId, containerName) {
-      if (!debugStreamSupported) return Promise.reject(new Error('Debug disabilitato'));
-
-      return new Promise((resolve, reject) => {
-        openDebugOverlay(`PULL – ${containerName || containerId}`);
-        pushCommand(`Richiesta aggiornamento per ${containerName || containerId}`);
-
-        const source = new EventSource(`/api/containers/${containerId}/actions/pull/stream`);
-        activeDebugStream = source;
-        let ended = false;
-
-        source.addEventListener('command', (evt) => {
-          const data = safeParseEvent(evt);
-          if (data?.message) pushCommand(data.message);
-        });
-
-        source.addEventListener('status', (evt) => {
-          const data = safeParseEvent(evt);
-          if (data?.state) pushLog(`Stato: ${data.state}`, 'STAT');
-        });
-
-        source.addEventListener('log', (evt) => {
-          const data = safeParseEvent(evt);
-          if (data?.line) pushLog(data.line, 'LOG');
-        });
-
-        source.addEventListener('result', (evt) => {
-          const streamData = safeParseEvent(evt);
-          const row = document.querySelector(`[data-container-id="${containerId}"]`);
-          if (row) {
-             if (streamData && streamData.container_id) {
-                 updateRowContainerId(row, containerId, streamData.container_id);
-             }
-             refreshRow(row);
-          }
-        });
-
-        source.addEventListener('end', () => {
-          ended = true;
-          pushLog('Stream concluso', 'DONE');
-          source.close();
-          activeDebugStream = null;
-          resolve();
-        });
-
-        source.addEventListener('error', () => {
-          pushLog('Stream interrotto', 'ERR');
-          source.close();
-          activeDebugStream = null;
-          if (!ended) reject(new Error('Stream interrotto'));
-        });
-      });
-    }
     function startUpdatesPolling() {
       clearInterval(refreshTimer);
       if (!autoScanEnabled) return;
@@ -294,7 +184,44 @@ const statusClasses = {
     const confirmLoading = document.getElementById('confirm-loading');
     const confirmResult = document.getElementById('confirm-result');
     const confirmActions = document.getElementById('confirm-actions');
+    const confirmPhase = document.getElementById('confirm-phase');
+    const confirmProgress = document.getElementById('confirm-progress');
+    const confirmProgressFill = document.getElementById('confirm-progress-fill');
+    const confirmProgressText = document.getElementById('confirm-progress-text');
+    const confirmLogline = document.getElementById('confirm-logline');
     let pendingForm = null;
+    let updateInProgress = false;
+    let activeUpdateStream = null;
+
+    const updatePhaseLabels = {
+      start: 'Avvio…',
+      inspect: 'Lettura del container…',
+      stopping: 'Arresto e rimozione del container…',
+      cleanup: 'Rimozione vecchia immagine…',
+      pull: 'Scaricamento immagine…',
+      pulled: 'Immagine pronta',
+      recreate: 'Creazione e avvio del nuovo container…',
+      done: 'Completato',
+    };
+
+    function setUpdatePhase(text) {
+      if (confirmPhase && text) confirmPhase.textContent = text;
+    }
+    function setUpdateProgress(percent, label) {
+      if (!confirmProgress) return;
+      confirmProgress.style.display = 'block';
+      if (percent === null || percent === undefined) {
+        confirmProgressFill.classList.add('indeterminate');
+        confirmProgressText.textContent = label || '';
+      } else {
+        confirmProgressFill.classList.remove('indeterminate');
+        confirmProgressFill.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+        confirmProgressText.textContent = label || `${percent}%`;
+      }
+    }
+    function setUpdateLog(text) {
+      if (confirmLogline && text) confirmLogline.textContent = text;
+    }
 
     function resetModalState() {
       messageEl.style.display = 'block';
@@ -311,6 +238,12 @@ const statusClasses = {
       confirmResult.style.display = 'none';
       confirmActions.style.display = 'none';
       confirmTitle.textContent = 'Aggiornamento in corso';
+      // Reset progress UI
+      if (confirmPhase) confirmPhase.textContent = 'Preparazione…';
+      if (confirmProgress) confirmProgress.style.display = 'none';
+      if (confirmProgressFill) { confirmProgressFill.style.width = '0%'; confirmProgressFill.classList.remove('indeterminate'); }
+      if (confirmProgressText) confirmProgressText.textContent = '';
+      if (confirmLogline) confirmLogline.textContent = '';
     }
 
     function showModalResult(success, message) {
@@ -335,8 +268,58 @@ const statusClasses = {
     }
 
     function closeConfirm() {
+      // Don't let the user dismiss the modal while an update is mid-flight.
+      if (updateInProgress) return;
       pendingForm = null;
       modal.classList.remove('visible');
+    }
+
+    function startFullUpdateStream(containerId) {
+      if (typeof EventSource === 'undefined') {
+        return Promise.reject(Object.assign(new Error('EventSource non supportato'), { unsupported: true }));
+      }
+      return new Promise((resolve, reject) => {
+        const source = new EventSource(`/api/containers/${containerId}/full_update/stream`);
+        activeUpdateStream = source;
+        let settled = false;
+        let resultData = null;
+        let sameImage = false;
+
+        const finish = (fn, arg) => {
+          if (settled) return;
+          settled = true;
+          source.close();
+          activeUpdateStream = null;
+          fn(arg);
+        };
+
+        source.addEventListener('progress', (evt) => {
+          const d = safeParseEvent(evt);
+          if (typeof d.same_image === 'boolean') sameImage = d.same_image;
+          if (d.phase && updatePhaseLabels[d.phase]) setUpdatePhase(updatePhaseLabels[d.phase]);
+          if (d.phase === 'pull' && typeof d.percent === 'number') {
+            const lbl = d.total
+              ? `${formatBytes(d.current)} / ${formatBytes(d.total)} · ${d.percent}%`
+              : `${d.percent}%`;
+            setUpdateProgress(d.percent, lbl);
+          } else if (d.phase === 'pulled') {
+            setUpdateProgress(100, '100%');
+          } else {
+            setUpdateProgress(null, '');
+          }
+          if (d.message) setUpdateLog(d.message);
+        });
+
+        source.addEventListener('result', (evt) => { resultData = safeParseEvent(evt); });
+        source.addEventListener('fail', (evt) => {
+          const d = safeParseEvent(evt);
+          finish(reject, new Error(d.message || 'Aggiornamento fallito'));
+        });
+        source.addEventListener('end', () => {
+          finish(resolve, Object.assign({}, resultData, { same_image: sameImage }));
+        });
+        source.onerror = () => { finish(reject, Object.assign(new Error('Connessione interrotta'), { transport: true })); };
+      });
     }
 
     document.querySelectorAll('.full-update-form').forEach(form => {
@@ -371,60 +354,68 @@ const statusClasses = {
       });
     });
 
-    debugClose?.addEventListener('click', closeDebugOverlay);
-    debugClear?.addEventListener('click', clearDebugOverlay);
-    debugOverlay?.addEventListener('click', (evt) => {
-      if (evt.target === debugOverlay) closeDebugOverlay();
-    });
-
     cancelBtn.addEventListener('click', closeConfirm);
     modal.addEventListener('click', (evt) => {
       if (evt.target === modal) closeConfirm();
     });
+
+    function finalizeUpdatedRow(containerId, newContainerId) {
+      const row = document.querySelector(`[data-container-id="${containerId}"]`);
+      if (!row) return;
+      if (newContainerId && newContainerId !== containerId) {
+        updateRowContainerId(row, containerId, newContainerId);
+      }
+      refreshRow(row);
+    }
+
+    async function updateViaPost(containerId, containerName) {
+      try {
+        const res = await fetch(`/api/containers/${containerId}/full_update`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        const data = await res.json();
+        if (data.success) {
+          finalizeUpdatedRow(containerId, data.container_id);
+          showModalResult(true, `Container "${containerName}" aggiornato con successo!`);
+        } else {
+          showModalResult(false, data.error || 'Errore durante l\'aggiornamento');
+        }
+      } catch (err) {
+        showModalResult(false, 'Errore di connessione al server');
+      }
+    }
 
     confirmBtn.addEventListener('click', async () => {
       if (!pendingForm) return;
 
       const containerId = pendingForm.dataset.containerId;
       const containerName = pendingForm.dataset.containerName || 'container';
+      if (!containerId) { showModalResult(false, 'ID container non valido'); return; }
 
-      // Show loading state
       showModalLoading();
+      updateInProgress = true;
 
-      if (debugStreamSupported && containerId) {
-        try {
-          await startUpdateDebugStream(containerId, containerName);
-          closeConfirm();
+      // Primary path: streamed update with live progress (works without debug mode).
+      try {
+        const result = await startFullUpdateStream(containerId);
+        updateInProgress = false;
+        finalizeUpdatedRow(containerId, result && result.container_id);
+        showModalResult(true, (result && result.same_image)
+          ? `"${containerName}" era già all'ultima versione.`
+          : `Container "${containerName}" aggiornato con successo!`);
+        return;
+      } catch (err) {
+        updateInProgress = false;
+        if (err && err.unsupported) {
+          // Browser without EventSource: fall back to the blocking POST.
+          await updateViaPost(containerId, containerName);
           return;
-        } catch (err) {
-          console.warn('Stream debug non disponibile, procedo con API POST', err);
         }
-      }
-
-      // Fallback: use POST API endpoint
-      if (containerId) {
-        try {
-          const res = await fetch(`/api/containers/${containerId}/full_update`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-          const data = await res.json();
-
-          const row = document.querySelector(`[data-container-id="${containerId}"]`);
-
-          if (data.success) {
-            if (row) {
-                 if (data.container_id) updateRowContainerId(row, containerId, data.container_id);
-                 refreshRow(row);
-            }
-            showModalResult(true, `Container "${containerName}" aggiornato con successo!`);
-          } else {
-            console.error('Update failed:', data.error);
-            showModalResult(false, data.error || 'Errore durante l\'aggiornamento');
-          }
-        } catch (err) {
-          console.error('Update request failed:', err);
-          showModalResult(false, 'Errore di connessione al server');
+        if (err && err.transport) {
+          // Connection dropped, but the update runs decoupled on the server.
+          showModalResult(false, 'Connessione persa durante lo streaming. L\'aggiornamento prosegue in background: aggiorna la pagina tra qualche istante.');
+          setTimeout(() => finalizeUpdatedRow(containerId, null), 5000);
+          return;
         }
-      } else {
-        showModalResult(false, 'ID container non valido');
+        showModalResult(false, (err && err.message) || 'Errore durante l\'aggiornamento');
       }
     });
 
