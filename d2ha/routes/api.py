@@ -1,3 +1,5 @@
+import queue
+import threading
 from typing import Any, Dict, List
 from flask import Blueprint, Response, current_app, jsonify, request, stream_with_context
 from .auth import onboarding_required, _publish_current_state
@@ -311,6 +313,70 @@ def api_container_full_update(container_id):
             "error": str(exc) or "Update failed",
             "container_id": container_id,
         }), 500
+
+
+@api_bp.route("/containers/<container_id>/full_update/stream", methods=["GET"])
+@onboarding_required
+def api_container_full_update_stream(container_id):
+    """Full container update streamed as SSE progress events (no debug mode required).
+
+    The actual update runs in a background thread decoupled from the SSE
+    connection, so a client disconnect mid-pull never leaves the container
+    removed-but-not-recreated.
+    """
+    docker_service = current_app.docker_service
+    mqtt_manager = current_app.mqtt_manager
+
+    container_info = _find_container_overview_entry(container_id)
+    if container_info and mqtt_manager.is_self_container(container_info):
+        return jsonify({
+            "error": "Non è possibile aggiornare questo container (Docker2HomeAssistant) dall'interfaccia. Usa docker pull / docker compose up -d.",
+            "container_id": container_id,
+        }), 400
+
+    app_obj = current_app._get_current_object()
+    events: "queue.Queue" = queue.Queue()
+
+    def worker():
+        new_id = container_id
+        with app_obj.app_context():
+            try:
+                for event in docker_service.iter_recreate_container_with_latest_image(container_id):
+                    if event.get("phase") == "done" and event.get("new_container_id"):
+                        new_id = event["new_container_id"]
+                    events.put(("progress", event))
+                try:
+                    docker_service.refresh_overview_cache()
+                    _publish_current_state()
+                except Exception:
+                    app_obj.logger.exception("Post-update refresh failed for %s", new_id)
+                result = _find_container_overview_entry(new_id)
+                events.put(("result", {
+                    "success": True,
+                    "container_id": new_id,
+                    "old_container_id": container_id,
+                    "container": result,
+                }))
+            except Exception as exc:
+                app_obj.logger.exception("Streamed full update failed for %s", container_id)
+                events.put(("fail", {"message": str(exc) or "Update failed", "container_id": container_id}))
+            finally:
+                events.put(("end", {"container_id": new_id}))
+                events.put(None)
+
+    threading.Thread(target=worker, name=f"full-update-{container_id[:12]}", daemon=True).start()
+
+    def generate():
+        while True:
+            item = events.get()
+            if item is None:
+                break
+            event_type, data = item
+            yield _sse_event(event_type, data)
+
+    headers = {"Cache-Control": "no-cache", "X-Accel-Buffering": "no"}
+    return Response(stream_with_context(generate()), mimetype="text/event-stream", headers=headers)
+
 
 @api_bp.route("/containers/<container_id>/<action>", methods=["POST"])
 @onboarding_required

@@ -20,11 +20,12 @@ from ..utils import build_stable_id, format_timedelta, human_bytes
 
 class DockerImagesUpdatesMixin:
     def _extract_version(self, labels: dict) -> Optional[str]:
+        # Note: org.opencontainers.image.revision is intentionally excluded — it is
+        # a VCS commit SHA, not a human version, and showing it as "version" misleads.
         for key in (
             "io.hass.version",
             "org.opencontainers.image.version",
             "version",
-            "org.opencontainers.image.revision",
         ):
             val = labels.get(key)
             if val:
@@ -141,7 +142,11 @@ class DockerImagesUpdatesMixin:
                 "Accept": "application/vnd.github.v3+json",
                 "User-Agent": "Docker2HomeAssistant/1.0"
             }
-            
+            # Optional token lifts the unauthenticated 60 req/hour limit to 5000.
+            gh_token = os.environ.get("D2HA_GITHUB_TOKEN", "").strip()
+            if gh_token:
+                headers["Authorization"] = f"Bearer {gh_token}"
+
             response = requests.get(url, headers=headers, timeout=10)
             if response.status_code == 200:
                 releases = response.json()
@@ -327,7 +332,6 @@ class DockerImagesUpdatesMixin:
             annotations.get("io.hass.version")
             or annotations.get("org.opencontainers.image.version")
             or annotations.get("version")
-            or annotations.get("org.opencontainers.image.revision")
             or reference_tag
             or remote_short
         )
@@ -599,13 +603,60 @@ class DockerImagesUpdatesMixin:
 
         return clean_tag
 
-    def recreate_container_with_latest_image(self, container_id: str):
-        self.logger.info("Starting full update for container %s", container_id)
+    @staticmethod
+    def _aggregate_pull_progress(line: Dict[str, Any], layers: Dict[str, Dict[str, int]]) -> Dict[str, Any]:
+        """Fold one `docker pull` stream line into the aggregate progress state.
 
-        # Step 1: Get container info before stopping it
+        Returns a progress event dict (overall downloaded/total bytes + percent).
+        `force` is set on layer status transitions so callers can emit promptly.
+        """
+        status = (line.get("status") or "").strip()
+        layer_id = line.get("id")
+        detail = line.get("progressDetail") or {}
+        force = False
+
+        if layer_id:
+            entry = layers.setdefault(layer_id, {"current": 0, "total": 0, "status": ""})
+            if entry["status"] != status:
+                entry["status"] = status
+                force = True
+            if detail.get("total"):
+                entry["total"] = int(detail.get("total") or entry["total"])
+                entry["current"] = int(detail.get("current") or entry["current"])
+            elif status in ("Pull complete", "Already exists", "Download complete"):
+                if entry["total"]:
+                    entry["current"] = entry["total"]
+
+        total = sum(l["total"] for l in layers.values())
+        current = sum(min(l["current"], l["total"]) for l in layers.values() if l["total"])
+        percent = round(current / total * 100) if total else None
+
+        message = status if not layer_id else f"{status} {layer_id[:12]}".strip()
+        return {
+            "phase": "pull",
+            "status": status,
+            "layer": layer_id,
+            "current": current,
+            "total": total,
+            "percent": percent,
+            "layers": len(layers),
+            "message": message,
+            "force": force,
+        }
+
+    def iter_recreate_container_with_latest_image(self, container_id: str) -> Iterable[Dict[str, Any]]:
+        """Full container update as a generator of progress events.
+
+        Each yielded item is a dict with a ``phase`` key. The terminal event has
+        phase ``done`` and a ``new_container_id``. Errors are raised (callers wrap
+        and surface them). The blocking :meth:`recreate_container_with_latest_image`
+        is a thin wrapper that drains this generator.
+        """
+        self.logger.info("Starting full update for container %s", container_id)
+        yield {"phase": "start", "message": "Avvio aggiornamento…"}
+
         try:
             c = self.docker_client.containers.get(container_id)
-            self.logger.debug("Found container: %s", c.name)
         except Exception as e:
             self.logger.warning("Container not found: %s", container_id)
             raise RuntimeError(f"Container non trovato: {container_id}") from e
@@ -620,59 +671,53 @@ class DockerImagesUpdatesMixin:
         host_config = attrs.get("HostConfig", {}) or {}
         networks = attrs.get("NetworkSettings", {}).get("Networks", {}) or {}
 
-        self.logger.debug(
-            "Container: %s | image ref: %s | current image ID: %s",
-            name, image_ref, old_image_id,
-        )
+        yield {"phase": "inspect", "message": f"Container «{name}»", "image_ref": image_ref}
 
-        # Step 2: STOP AND REMOVE the container FIRST
+        # Stop and remove the existing container first.
+        yield {"phase": "stopping", "message": "Arresto e rimozione del container…"}
         try:
-            self.logger.debug("Stopping and removing container: %s", name)
             self.docker_api.remove_container(c.id, force=True)
-            self.logger.debug("Container removed")
         except Exception as e:
             self.logger.error("Remove container failed: %s", e)
             raise RuntimeError(f"Errore nella rimozione del container {name}: {e}") from e
 
-        # Step 3: NOW we can remove the image tag to force fresh pull
+        # Drop the old image tag to force a fresh pull.
+        yield {"phase": "cleanup", "message": "Rimozione vecchia immagine…"}
         try:
-            self.logger.debug("Removing old image tag: %s", image_ref)
             self.docker_api.remove_image(image_ref, force=False, noprune=True)
-            self.logger.debug("Old image tag removed - will force fresh pull")
         except Exception as untag_err:
-            self.logger.debug("Could not remove image tag (will try pull anyway): %s", untag_err)
+            self.logger.debug("Could not remove image tag (will pull anyway): %s", untag_err)
 
-        # Step 4: Pull fresh image
+        # Pull the fresh image, streaming layer download progress.
+        yield {"phase": "pull", "message": f"Scaricamento immagine {image_ref}…", "percent": 0}
+        layers: Dict[str, Dict[str, int]] = {}
+        last_emit = 0.0
         try:
-            self.logger.debug("Pulling fresh image: %s", image_ref)
-
             for line in self.docker_api.pull(image_ref, stream=True, decode=True):
-                status = line.get("status", "")
-                progress = line.get("progress", "")
-                if status and ("Pulling" in status or "Downloading" in status
-                               or "Extracting" in status or "Pull complete" in status):
-                    self.logger.debug("%s %s", status, progress)
-
+                if line.get("error"):
+                    raise RuntimeError(line.get("error"))
+                event = self._aggregate_pull_progress(line, layers)
+                now = time.time()
+                if event["force"] or now - last_emit >= 0.2:
+                    last_emit = now
+                    yield event
             pulled_image = self.docker_client.images.get(image_ref)
             new_image_id = pulled_image.id if pulled_image else "unknown"
-            self.logger.debug("Pulled image ID: %s", new_image_id)
-
-            if old_image_id and new_image_id == old_image_id:
-                self.logger.info("No update available on registry for %s (same image ID)", name)
-            else:
-                self.logger.info(
-                    "New image downloaded for %s (old: %s, new: %s)",
-                    name, old_image_id[:19] if old_image_id else "none", new_image_id[:19],
-                )
         except Exception as e:
             self.logger.error("Pull failed: %s", e)
             raise RuntimeError(f"Errore nel pull dell'immagine {image_ref}: {e}") from e
 
-        # Step 5: Create and start new container
-        networking_config = None
-        if networks:
-            networking_config = {"EndpointsConfig": networks}
+        same_image = bool(old_image_id and new_image_id == old_image_id)
+        yield {
+            "phase": "pulled",
+            "percent": 100,
+            "same_image": same_image,
+            "message": "Immagine già all'ultima versione" if same_image else "Immagine scaricata",
+        }
 
+        # Recreate and start the container with the freshly pulled image.
+        yield {"phase": "recreate", "message": "Creazione e avvio del nuovo container…"}
+        networking_config = {"EndpointsConfig": networks} if networks else None
         create_kwargs: Dict[str, Any] = {
             "image": image_ref,
             "name": name,
@@ -684,29 +729,34 @@ class DockerImagesUpdatesMixin:
             "working_dir": config.get("WorkingDir"),
             "user": config.get("User"),
         }
-
         if config.get("Volumes"):
             create_kwargs["volumes"] = list(config["Volumes"].keys())
-
         if networking_config:
             create_kwargs["networking_config"] = networking_config
 
         try:
-            self.logger.debug("Creating new container: %s", name)
             new_container = self.docker_api.create_container(**create_kwargs)
             new_container_id = new_container.get("Id")
-
             self.docker_api.start(new_container_id)
-            self.logger.info("Container %s started successfully", name)
-
-            # Verify
-            new_c = self.docker_client.containers.get(new_container_id)
-            self.logger.debug("Verification - container image: %s", new_c.image.id[:19])
             self.logger.info("Full update completed for %s", name)
-            return new_container_id
         except Exception as e:
             self.logger.error("Create/start failed: %s", e)
             raise RuntimeError(f"Errore nella creazione/avvio del container {name}: {e}") from e
+
+        yield {
+            "phase": "done",
+            "message": "Aggiornamento completato",
+            "new_container_id": new_container_id,
+            "same_image": same_image,
+        }
+
+    def recreate_container_with_latest_image(self, container_id: str):
+        """Blocking full update; returns the new container id (drains the generator)."""
+        new_container_id = None
+        for event in self.iter_recreate_container_with_latest_image(container_id):
+            if event.get("phase") == "done":
+                new_container_id = event.get("new_container_id")
+        return new_container_id
 
     def list_images_overview(self) -> List[Dict[str, Any]]:
         containers = self.docker_client.containers.list(all=True)

@@ -181,39 +181,36 @@
     </div>
   </div>
 
-  <div class="debug-overlay" id="debug-overlay" aria-hidden="true">
-    <div class="debug-panel">
-      <div class="debug-header">
-        <div>
-          <div class="debug-eyebrow">Debug live</div>
-          <div class="debug-title" id="debug-title">Stream aggiornamento</div>
-        </div>
-        <div class="debug-actions">
-          <button class="inline-btn" type="button" id="debug-clear">Pulisci</button>
-          <button class="inline-btn" type="button" id="debug-close">Chiudi</button>
-        </div>
-      </div>
-      <div class="debug-body">
-        <div class="debug-column">
-          <div class="debug-subtitle">Comandi</div>
-          <div class="debug-list" id="debug-commands"></div>
-        </div>
-        <div class="debug-column">
-          <div class="debug-subtitle">Log live</div>
-          <div class="debug-log" id="debug-logs"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <style>
+    .update-progress { margin: 12px 0 4px; }
+    .update-progress-track {
+      width: 100%; height: 8px; border-radius: 999px;
+      background: rgba(127, 127, 127, 0.25); overflow: hidden;
+    }
+    .update-progress-fill {
+      height: 100%; width: 0%; border-radius: 999px;
+      background: var(--accent, #3b82f6);
+      transition: width 0.25s ease;
+    }
+    .update-progress-fill.indeterminate {
+      width: 35% !important; animation: d2ha-indef 1.1s ease-in-out infinite;
+    }
+    @keyframes d2ha-indef { 0% { margin-left: -35%; } 100% { margin-left: 100%; } }
+    .update-progress-pct { margin: 6px 0 0; opacity: 0.8; }
+    #confirm-logline { font-family: ui-monospace, monospace; opacity: 0.75; min-height: 1.2em; }
+  </style>
   <div class="safe-confirm-backdrop" id="confirm-modal">
     <div class="safe-confirm-modal">
       <h3 class="safe-confirm-title" id="confirm-title">Aggiornare l'immagine?</h3>
       <p id="confirm-message" class="safe-confirm-message small"></p>
       <div id="confirm-loading" class="confirm-loading" style="display: none;">
         <div class="spinner"></div>
-        <p class="loading-text">Aggiornamento in corso...</p>
-        <p class="loading-hint small">Pull immagine, rimozione e ricreazione container</p>
+        <p class="loading-text" id="confirm-phase">Aggiornamento in corso...</p>
+        <div class="update-progress" id="confirm-progress" style="display: none;">
+          <div class="update-progress-track"><div class="update-progress-fill" id="confirm-progress-fill"></div></div>
+          <p class="update-progress-pct small" id="confirm-progress-text"></p>
+        </div>
+        <p class="loading-hint small" id="confirm-logline">Pull immagine, rimozione e ricreazione container</p>
       </div>
       <p id="confirm-result" class="confirm-result small" style="display: none;"></p>
       <div class="safe-confirm-actions" id="confirm-actions">
