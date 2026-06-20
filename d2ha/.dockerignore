@@ -1,0 +1,8 @@
+# Keep secrets, runtime data and build cruft out of the image
+__pycache__/
+*.pyc
+.venv/
+auth_config.json
+autodiscovery_preferences.json
+data/
+.env
