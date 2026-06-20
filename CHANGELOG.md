@@ -5,7 +5,7 @@ Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
 Il formato si ispira a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/)
 e il progetto adotta un versionamento di tipo [SemVer](https://semver.org/lang/it/).
 
-## [0.2.0] - 2026-06-20
+## [0.3.0] - 2026-06-20
 
 ### Added
 - **PWA installabile**: aggiunti `manifest.json` e service worker (`sw.js`); l'app è ora
@@ -49,7 +49,7 @@ e il progetto adotta un versionamento di tipo [SemVer](https://semver.org/lang/i
 - Chiuso un edge case di open-redirect (`/\host`) nella validazione del parametro `next`.
 - Redazione dei valori sensibili nei log (secret key, password MQTT, hash/segreti).
 
-## [0.1.x]
+## [0.2.3 e precedenti]
 
 - Versioni precedenti: dashboard Docker, gestione container/immagini/volumi/reti,
   aggiornamenti via label OCI, integrazione MQTT/Home Assistant, autenticazione con
