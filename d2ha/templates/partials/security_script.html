@@ -1,0 +1,43 @@
+<script>
+  (function enhancePasswordInputs() {
+    const showLabel = '{{ t("password.toggle.show") }}';
+    const hideLabel = '{{ t("password.toggle.hide") }}';
+
+    document.querySelectorAll('input[type="password"]').forEach((input) => {
+      const existingWrapper = input.closest('.password-input-wrapper');
+      const wrapper = existingWrapper || (() => {
+        const created = document.createElement('div');
+        created.className = 'password-input-wrapper';
+        input.parentNode.insertBefore(created, input);
+        created.appendChild(input);
+        return created;
+      })();
+
+      let toggle = wrapper.querySelector('.password-toggle');
+      if (!toggle) {
+        toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'password-toggle';
+        wrapper.appendChild(toggle);
+      }
+
+      if (toggle.dataset.bound === 'true') return;
+
+      const updateState = (isHidden) => {
+        toggle.setAttribute('aria-label', isHidden ? showLabel : hideLabel);
+        toggle.title = isHidden ? showLabel : hideLabel;
+        toggle.textContent = isHidden ? '👁' : '🙈';
+      };
+
+      updateState(true);
+
+      toggle.addEventListener('click', () => {
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        updateState(!isHidden);
+      });
+
+      toggle.dataset.bound = 'true';
+    });
+  })();
+</script>

@@ -5,10 +5,14 @@ from typing import Any, Dict
 
 from werkzeug.security import generate_password_hash
 
+import threading
+
 AUTH_CONFIG_PATH = os.environ.get(
     "D2HA_AUTH_CONFIG_PATH",
     os.path.join(os.path.dirname(__file__), "auth_config.json"),
 )
+
+_auth_lock = threading.Lock()
 
 
 _DEFAULT_CONFIG = {
@@ -36,26 +40,27 @@ def _ensure_parent_dir(path: str) -> None:
 
 
 def ensure_default_auth_config() -> Dict[str, Any]:
-    if not os.path.exists(AUTH_CONFIG_PATH):
-        username = os.environ.get("D2HA_ADMIN_USERNAME", "admin")
-        timestamp = _now_ts()
-        default_config: Dict[str, Any] = {
-            **_DEFAULT_CONFIG,
-            "username": username,
-            "created_at": timestamp,
-            "updated_at": timestamp,
-        }
-        try:
-            _ensure_parent_dir(AUTH_CONFIG_PATH)
-            with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
-                json.dump(default_config, fp, indent=2)
+    with _auth_lock:
+        if not os.path.exists(AUTH_CONFIG_PATH):
+            username = os.environ.get("D2HA_ADMIN_USERNAME", "admin")
+            timestamp = _now_ts()
+            default_config: Dict[str, Any] = {
+                **_DEFAULT_CONFIG,
+                "username": username,
+                "created_at": timestamp,
+                "updated_at": timestamp,
+            }
             try:
-                os.chmod(AUTH_CONFIG_PATH, 0o600)
+                _ensure_parent_dir(AUTH_CONFIG_PATH)
+                with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
+                    json.dump(default_config, fp, indent=2)
+                try:
+                    os.chmod(AUTH_CONFIG_PATH, 0o600)
+                except Exception:
+                    pass
             except Exception:
-                pass
-        except Exception:
+                return default_config
             return default_config
-        return default_config
 
     return load_auth_config()
 
@@ -81,11 +86,12 @@ def _apply_defaults(config: Dict[str, Any]) -> Dict[str, Any]:
 
 def load_auth_config() -> Dict[str, Any]:
     try:
-        with open(AUTH_CONFIG_PATH, "r", encoding="utf-8") as fp:
-            raw = json.load(fp)
-            if isinstance(raw, dict):
-                return _apply_defaults(raw)
-            return _apply_defaults({})
+        with _auth_lock:
+            with open(AUTH_CONFIG_PATH, "r", encoding="utf-8") as fp:
+                raw = json.load(fp)
+                if isinstance(raw, dict):
+                    return _apply_defaults(raw)
+                return _apply_defaults({})
     except FileNotFoundError:
         return ensure_default_auth_config()
     except Exception:
@@ -97,12 +103,13 @@ def save_auth_config(config: Dict[str, Any]) -> None:
     config.setdefault("created_at", _now_ts())
     config["updated_at"] = _now_ts()
     _ensure_parent_dir(AUTH_CONFIG_PATH)
-    with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
-        json.dump(config, fp, indent=2)
-    try:
-        os.chmod(AUTH_CONFIG_PATH, 0o600)
-    except Exception:
-        pass
+    with _auth_lock:
+        with open(AUTH_CONFIG_PATH, "w", encoding="utf-8") as fp:
+            json.dump(config, fp, indent=2)
+        try:
+            os.chmod(AUTH_CONFIG_PATH, 0o600)
+        except Exception:
+            pass
 
 
 # Alias for backward compatibility

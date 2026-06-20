@@ -1,0 +1,941 @@
+<script>
+const stackToggles = Array.from(document.querySelectorAll('[data-stack-toggle]'));
+    stackToggles.forEach((header) => {
+      const btn = header.querySelector('.section-toggle-btn, .stack-toggle-btn');
+      const content = header.nextElementSibling;
+      const card = header.closest('.section-card');
+      const chevron = btn ? btn.querySelector('.chevron') : null;
+      if (!btn || !content) return;
+
+      const setExpanded = (expanded) => {
+        content.classList.toggle('collapsed', !expanded);
+        if (card) card.classList.toggle('collapsed', !expanded);
+        btn.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        if (chevron) chevron.textContent = expanded ? '▾' : '▸';
+      };
+
+      setExpanded(true);
+
+      const toggle = () => {
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        setExpanded(!isExpanded);
+      };
+
+      btn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        toggle();
+      });
+
+      header.addEventListener('click', (event) => {
+        if (event.target === btn || btn.contains(event.target)) return;
+        toggle();
+      });
+    });
+
+    const modalEl = document.getElementById('container-modal');
+    const modalTitle = document.getElementById('modal-title');
+    const modalSubtitle = document.getElementById('modal-subtitle');
+    const tabButtons = Array.from(document.querySelectorAll('.modal-tab'));
+    const tabPanels = Array.from(document.querySelectorAll('.tab-panel'));
+    const logOutput = document.getElementById('logs-output');
+    const logAuto = document.getElementById('logs-auto');
+    const logTail = document.getElementById('logs-tail');
+    const logSeverity = document.getElementById('logs-severity');
+    const logRefreshBtn = document.getElementById('logs-refresh');
+    const updatesFrequency = document.getElementById('updates-frequency');
+    const updatesSave = document.getElementById('updates-save');
+    const updatesCheck = document.getElementById('updates-check');
+    const updatesFeedback = document.getElementById('updates-feedback');
+    const toastContainer = document.getElementById('toast-container');
+    const bulkBar = document.getElementById('bulk-bar');
+    const bulkCount = document.getElementById('bulk-count');
+    const bulkButtons = Array.from(document.querySelectorAll('[data-bulk-action]'));
+    const selectionInputs = Array.from(document.querySelectorAll('.container-select'));
+    const actionButtons = Array.from(document.querySelectorAll('[data-action-btn]'));
+    const debugOverlay = document.getElementById('debug-overlay');
+    const debugTitle = document.getElementById('debug-title');
+    const debugCommands = document.getElementById('debug-commands');
+    const debugLogs = document.getElementById('debug-logs');
+    const debugClose = document.getElementById('debug-close');
+    const debugClear = document.getElementById('debug-clear');
+
+    const rowIndex = new Map();
+    Array.from(document.querySelectorAll('tr[data-container-id]')).forEach((row) => {
+      rowIndex.set(row.dataset.containerId, row);
+    });
+
+    const actionPendingLabels = {
+      start: 'Avvio...',
+      stop: 'Arresto...',
+      restart: 'Riavvio...',
+      pause: 'Pausa...',
+      unpause: 'Ripresa...',
+      delete: 'Eliminazione...'
+    };
+
+    const actionSuccessLabels = {
+      start: 'avviato',
+      stop: 'fermato',
+      restart: 'riavviato',
+      pause: 'messo in pausa',
+      unpause: 'ripreso',
+      delete: 'eliminato'
+    };
+
+    let currentContainerId = null;
+    let statsInterval = null;
+    let logsInterval = null;
+    let lastLogs = '';
+    let statsHistory = { cpu: [], ram: [], net: [] };
+    let lastNet = null;
+    const selectedContainers = new Map();
+    const pollingDefaults = { statsIntervalMs: 3000, logsIntervalMs: 4000, historyLimit: 40 };
+    const pollingPerformance = { statsIntervalMs: 5000, logsIntervalMs: 7000, historyLimit: 20 };
+    let statsIntervalMs = pollingDefaults.statsIntervalMs;
+    let logsIntervalMs = pollingDefaults.logsIntervalMs;
+    let statsSampleLimit = pollingDefaults.historyLimit;
+    let activeTab = 'info';
+    const debugEnabled = document.body.dataset.debugMode === '1';
+    const debugStreamSupported = debugEnabled && typeof EventSource !== 'undefined';
+    let activeDebugStream = null;
+
+    const safeParseEvent = (evt) => {
+      try { return JSON.parse(evt.data); }
+      catch (e) { return {}; }
+    };
+
+    const clearDebugOverlay = () => {
+      if (!debugOverlay) return;
+      debugCommands.innerHTML = '';
+      debugLogs.innerHTML = '';
+    };
+
+    const openDebugOverlay = (title) => {
+      if (!debugStreamSupported) return;
+      clearDebugOverlay();
+      debugTitle.textContent = title;
+      debugOverlay.classList.add('visible');
+      debugOverlay.setAttribute('aria-hidden', 'false');
+    };
+
+    const closeDebugOverlay = () => {
+      if (activeDebugStream) {
+        activeDebugStream.close();
+        activeDebugStream = null;
+      }
+      if (!debugOverlay) return;
+      debugOverlay.classList.remove('visible');
+      debugOverlay.setAttribute('aria-hidden', 'true');
+    };
+
+    const pushCommand = (text) => {
+      if (!debugEnabled || !debugCommands) return;
+      const row = document.createElement('div');
+      row.className = 'command';
+      row.textContent = text;
+      debugCommands.appendChild(row);
+      debugCommands.scrollTop = debugCommands.scrollHeight;
+    };
+
+    const pushLog = (text, tag = 'LOG') => {
+      if (!debugEnabled || !debugLogs) return;
+      const row = document.createElement('div');
+      row.className = 'debug-log-line';
+      const badge = document.createElement('span');
+      badge.className = 'tag';
+      badge.textContent = tag;
+      const body = document.createElement('span');
+      body.className = 'text';
+      body.textContent = text;
+      row.appendChild(badge);
+      row.appendChild(body);
+      debugLogs.appendChild(row);
+      debugLogs.scrollTop = debugLogs.scrollHeight;
+    };
+
+    const statusClassFor = (status) => {
+      const s = (status || '').toLowerCase();
+      if (s === 'running') return 'status-running';
+      if (s === 'restarting') return 'status-restarting';
+      if (s === 'paused') return 'status-paused';
+      if (s === 'exited' || s === 'stopped') return 'status-exited';
+      return 'status-paused';
+    };
+
+    const syncActionButtons = (row) => {
+      const status = (row?.dataset.containerStatus || '').toLowerCase();
+      const isRunning = status === 'running' || status === 'restarting';
+      const isPaused = status === 'paused';
+
+      const startBtn = row?.querySelector('[data-action="start"]');
+      const stopBtn = row?.querySelector('[data-action="stop"]');
+      const pauseBtn = row?.querySelector('[data-action="pause"]');
+      const unpauseBtn = row?.querySelector('[data-action="unpause"]');
+
+      if (startBtn) startBtn.classList.toggle('hidden', isRunning || isPaused);
+      if (stopBtn) stopBtn.classList.toggle('hidden', !isRunning && !isPaused);
+      if (pauseBtn) pauseBtn.classList.toggle('hidden', !isRunning || isPaused);
+      if (unpauseBtn) unpauseBtn.classList.toggle('hidden', !isPaused);
+    };
+
+    const renderNetworks = (networks = []) => {
+      if (!networks.length) return '<span class="meta">Nessuna rete</span>';
+      return '<div class="meta">' + networks.map((net) => `<div>${net.name}${net.ip ? ' – ' + net.ip : ''}</div>`).join('') + '</div>';
+    };
+
+    const renderPorts = (ports = {}) => {
+      if (ports.mode === 'host') return '<div class="meta">Modalità host</div>';
+      if (ports.bindings && ports.bindings.length) {
+        return `<div class="meta">${ports.bindings.map((p) => `<div>${p}</div>`).join('')}</div>`;
+      }
+      return '<span class="meta">Nessuna porta esposta</span>';
+    };
+
+    const setRowFromOverview = (row, info) => {
+      if (!row || !info) return;
+
+      clearRowPending(row, false);
+
+      row.dataset.containerStatus = (info.status || '').toLowerCase();
+      const statusCell = row.querySelector('[data-field="status"] .status-pill');
+      if (statusCell) {
+        statusCell.className = `status-pill ${statusClassFor(info.status)}`;
+        statusCell.textContent = info.status;
+      }
+
+      const uptimeCell = row.querySelector('[data-field="uptime"]');
+      if (uptimeCell) uptimeCell.textContent = info.uptime || '-';
+
+      const cpuCell = row.querySelector('[data-field="cpu"]');
+      if (cpuCell) cpuCell.textContent = `${info.cpu_percent ?? '-'}%`;
+
+      const ramCell = row.querySelector('[data-field="ram"]');
+      if (ramCell) ramCell.textContent = `${info.mem_usage || '-'} (${info.mem_percent ?? '-'}%)`;
+
+      const restartCell = row.querySelector('[data-field="restart"]');
+      if (restartCell) restartCell.textContent = info.restarts ?? '-';
+
+      const networksCell = row.querySelector('[data-field="networks"]');
+      if (networksCell) networksCell.innerHTML = renderNetworks(info.networks);
+
+      const portsCell = row.querySelector('[data-field="ports"]');
+      if (portsCell) portsCell.innerHTML = renderPorts(info.ports);
+
+      syncActionButtons(row);
+    };
+
+    const setRowPending = (row, label = 'In corso...') => {
+      if (!row) return;
+      row.dataset.pending = '1';
+      row.querySelectorAll('[data-action-btn]').forEach((btn) => {
+        btn.disabled = true;
+        btn.classList.add('loading');
+      });
+
+      const statusCell = row.querySelector('[data-field="status"] .status-pill');
+      if (!statusCell) return;
+      statusCell.dataset.prevText = statusCell.textContent;
+      statusCell.dataset.prevClass = statusCell.className;
+      statusCell.className = 'status-pill status-pending';
+      statusCell.textContent = label;
+      const spin = document.createElement('span');
+      spin.className = 'spinner';
+      statusCell.prepend(spin);
+    };
+
+    const clearRowPending = (row, restoreStatus = false) => {
+      if (!row) return;
+      row.dataset.pending = '';
+      row.querySelectorAll('[data-action-btn]').forEach((btn) => {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      });
+
+      const statusCell = row.querySelector('[data-field="status"] .status-pill');
+      if (!statusCell) return;
+      const prevText = statusCell.dataset.prevText;
+      const prevClass = statusCell.dataset.prevClass;
+      const spinner = statusCell.querySelector('.spinner');
+      if (spinner) spinner.remove();
+      if (restoreStatus && prevText) {
+        statusCell.textContent = prevText;
+        statusCell.className = prevClass || 'status-pill';
+      }
+      delete statusCell.dataset.prevText;
+      delete statusCell.dataset.prevClass;
+    };
+
+    const removeRow = (row) => {
+      if (!row) return;
+      const id = row.dataset.containerId;
+      selectedContainers.delete(id);
+      rowIndex.delete(id);
+      row.remove();
+      updateBulkBar();
+    };
+
+    const fetchContainerAction = async (id, action, confirm = false) => {
+      const url = `/api/containers/${id}/${action}${confirm ? '?confirm=1' : ''}`;
+      const res = await fetch(url, { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' } });
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || 'Request failed');
+      }
+      return res.json();
+    };
+
+    const startActionDebugStream = (containerId, action, row, confirm = false) => {
+      if (!debugStreamSupported) return Promise.reject(new Error('Debug non attivo'));
+
+      return new Promise((resolve, reject) => {
+        const name = row?.dataset.containerName || 'Container';
+        openDebugOverlay(`${action.toUpperCase()} – ${name}`);
+        pushCommand(`Richiesta ${action} per ${name}`);
+
+        const streamUrl = `/api/containers/${containerId}/actions/${action}/stream${confirm ? '?confirm=1' : ''}`;
+        const source = new EventSource(streamUrl);
+        activeDebugStream = source;
+        let lastResult = null;
+        let ended = false;
+
+        source.addEventListener('command', (evt) => {
+          const data = safeParseEvent(evt);
+          if (data?.message) pushCommand(data.message);
+        });
+
+        source.addEventListener('status', (evt) => {
+          const data = safeParseEvent(evt);
+          if (data?.state) pushLog(`Stato: ${data.state}`, 'STAT');
+        });
+
+        source.addEventListener('log', (evt) => {
+          const data = safeParseEvent(evt);
+          if (data?.line) pushLog(data.line, 'LOG');
+        });
+
+        source.addEventListener('result', (evt) => {
+          const data = safeParseEvent(evt);
+          lastResult = data;
+          applyActionResult(row, data);
+        });
+
+        source.addEventListener('end', (evt) => {
+          ended = true;
+          const data = safeParseEvent(evt);
+          pushLog('Stream concluso', 'DONE');
+          source.close();
+          activeDebugStream = null;
+          resolve(lastResult || data);
+        });
+
+        source.addEventListener('error', () => {
+          pushLog('Stream interrotto', 'ERR');
+          source.close();
+          activeDebugStream = null;
+          if (!ended) reject(new Error('Stream interrotto'));
+        });
+      });
+    };
+
+    const applyActionResult = (row, data) => {
+      if (!row) return;
+      if (data?.removed) {
+        removeRow(row);
+        return;
+      }
+      if (data?.container_id && data.container_id !== row.dataset.containerId) {
+         const oldId = row.dataset.containerId;
+         row.dataset.containerId = data.container_id;
+         row.querySelectorAll('[data-container-id]').forEach(el => el.dataset.containerId = data.container_id);
+         rowIndex.set(data.container_id, row);
+         rowIndex.delete(oldId);
+      }
+      if (data?.container) {
+        setRowFromOverview(row, data.container);
+      } else {
+        clearRowPending(row, true);
+      }
+    };
+
+    const handleContainerAction = async (containerId, action) => {
+      const row = rowIndex.get(containerId);
+
+      let confirmed = false;
+      if (action === 'delete') {
+        const name = row?.dataset.containerName || 'questo container';
+        const confirmFn = window.d2haConfirm || ((msg) => Promise.resolve(confirm(msg)));
+        const ok = await confirmFn(`Eliminare ${name}? L'operazione è irreversibile.`);
+        if (!ok) return;
+        confirmed = true;
+      }
+
+      setRowPending(row, actionPendingLabels[action] || 'In corso...');
+
+      if (debugStreamSupported) {
+        try {
+          await startActionDebugStream(containerId, action, row, confirmed);
+          const success = actionSuccessLabels[action] || action;
+          showToast(`Container ${success}`, { type: 'success' });
+          return;
+        } catch (err) {
+          console.warn('Debug stream non disponibile, fallback', err);
+        }
+      }
+
+      try {
+        const data = await fetchContainerAction(containerId, action, confirmed);
+        applyActionResult(row, data);
+        const success = actionSuccessLabels[action] || action;
+        showToast(`Container ${success}`, { type: 'success' });
+      } catch (err) {
+        console.error(err);
+        clearRowPending(row, true);
+        showToast("Errore nell'eseguire l'azione", { type: 'error' });
+      }
+    };
+
+    const showToast = (message, { type = 'info', actions = [] } = {}) => {
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.innerHTML = `<div class="toast-message">${message}</div>`;
+
+      if (actions.length) {
+        const actionBar = document.createElement('div');
+        actionBar.className = 'toast-actions';
+        actions.forEach(({ label, onClick }) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = label;
+          btn.addEventListener('click', () => {
+            onClick?.();
+            toast.remove();
+          });
+          actionBar.appendChild(btn);
+        });
+        toast.appendChild(actionBar);
+      }
+
+      toastContainer.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('visible'));
+
+      const lifetime = actions.length ? 6500 : 4200;
+      setTimeout(() => {
+        toast.classList.remove('visible');
+        setTimeout(() => toast.remove(), 350);
+      }, lifetime);
+    };
+
+    const updateBulkBar = () => {
+      const count = selectedContainers.size;
+      bulkCount.textContent = count;
+      const visible = count > 0;
+      bulkBar.classList.toggle('visible', visible);
+      bulkBar.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    };
+
+    const toggleSelection = (input) => {
+      const id = input.value;
+      if (!id) return;
+      if (input.checked) {
+        selectedContainers.set(id, input.dataset.containerName || 'Container');
+      } else {
+        selectedContainers.delete(id);
+      }
+      updateBulkBar();
+    };
+
+    selectionInputs.forEach((input) => {
+      input.addEventListener('change', (e) => {
+        toggleSelection(e.target);
+        e.stopPropagation();
+      });
+      input.addEventListener('click', (e) => e.stopPropagation());
+    });
+
+    const performBulkAction = async (action) => {
+      const ids = Array.from(selectedContainers.keys());
+      if (!ids.length) return;
+
+      let confirmed = false;
+      if (action === 'delete') {
+        const confirmFn = window.d2haConfirm || ((msg) => Promise.resolve(confirm(msg)));
+        const ok = await confirmFn(`Eliminare ${ids.length} container selezionati? L'operazione è irreversibile.`);
+        if (!ok) return;
+        confirmed = true;
+      }
+
+      const rows = ids.map((id) => rowIndex.get(id)).filter(Boolean);
+      rows.forEach((row) => setRowPending(row, actionPendingLabels[action] || 'In corso...'));
+
+      const labelMap = {
+        start: 'avvio',
+        stop: 'stop',
+        restart: 'riavvio',
+        delete: 'eliminazione',
+        pause: 'pausa',
+        unpause: 'ripresa',
+      };
+
+      try {
+        if (debugStreamSupported) {
+          for (const id of ids) {
+            const row = rowIndex.get(id);
+            await startActionDebugStream(id, action, row, confirmed);
+          }
+          showToast(`Azione di ${labelMap[action] || action} completata`, { type: 'success' });
+        } else {
+          const results = await Promise.all(ids.map((id) => fetchContainerAction(id, action, confirmed)));
+          results.forEach((data, idx) => applyActionResult(rows[idx], data));
+          showToast(`Azione di ${labelMap[action] || action} completata`, { type: 'success' });
+        }
+      } catch (err) {
+        console.error(err);
+        rows.forEach((row) => clearRowPending(row, true));
+        showToast("Errore nell'eseguire l'azione selezionata", { type: 'error' });
+      }
+
+      selectedContainers.clear();
+      selectionInputs.forEach((input) => {
+        input.checked = false;
+      });
+      updateBulkBar();
+    };
+
+    const formatBytes = (bytes) => {
+      if (bytes === 0) return '0B';
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return `${(bytes / Math.pow(1024, i)).toFixed(1)}${sizes[i]}`;
+    };
+
+    const drawSpark = (canvas, data, color, maxValue = null) => {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+      if (!data.length) return;
+      const maxVal = maxValue || Math.max(...data, 1);
+      const step = w / Math.max(data.length - 1, 1);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      data.forEach((val, idx) => {
+        const x = idx * step;
+        const y = h - (val / maxVal) * (h - 10);
+        if (idx === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    };
+
+    const setPanel = (name) => {
+      tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === name));
+      tabPanels.forEach(panel => panel.classList.toggle('active', panel.dataset.panel === name));
+    };
+
+    const handleTabChange = (name) => {
+      setPanel(name);
+      activeTab = name;
+
+      if (window.d2haSettings?.performanceMode) {
+        stopPolling();
+        if (name === 'stats') {
+          updateStats();
+          statsInterval = setInterval(updateStats, statsIntervalMs);
+        }
+        if (name === 'logs') {
+          updateLogs();
+          if (logAuto.checked) {
+            logsInterval = setInterval(updateLogs, logsIntervalMs);
+          }
+        }
+      }
+    };
+
+    const renderList = (target, items, formatter, emptyText = 'Nessun dato') => {
+      if (!items || !items.length) {
+        target.textContent = emptyText;
+        return;
+      }
+      target.innerHTML = items.map(formatter).join('');
+    };
+
+    const renderTable = (table, items) => {
+      table.innerHTML = '';
+      if (!items || !items.length) {
+        table.innerHTML = '<tr><td class="muted">Nessun dato</td></tr>';
+        return;
+      }
+      items.forEach(item => {
+        const row = document.createElement('tr');
+        const k = document.createElement('td');
+        k.textContent = item.key;
+        const v = document.createElement('td');
+        v.textContent = item.value;
+        row.appendChild(k);
+        row.appendChild(v);
+        table.appendChild(row);
+      });
+    };
+
+    const fetchJSON = async (url, options = {}) => {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error('Request failed');
+      return res.json();
+    };
+
+    const updateDetails = async () => {
+      if (!currentContainerId) return;
+      try {
+        const data = await fetchJSON(`/api/containers/${currentContainerId}/details`);
+        modalSubtitle.textContent = data.id;
+        document.getElementById('info-status').textContent = data.status;
+        document.getElementById('info-uptime').textContent = data.uptime || '-';
+        document.getElementById('info-restart').textContent = data.restart_policy || '-';
+        document.getElementById('info-image').textContent = data.image;
+        document.getElementById('info-short-id').textContent = data.short_id;
+        document.getElementById('info-command').textContent = data.command || '-';
+
+        const networks = document.getElementById('info-networks');
+        renderList(networks, data.networks, (n) => `<div class="chip">${n.name}${n.ip ? ' – ' + n.ip : ''}</div>`);
+
+        const ports = document.getElementById('info-ports');
+        const portVals = data.ports && data.ports.bindings ? data.ports.bindings : [];
+        renderList(ports, portVals, (p) => `<div class="chip">${p}</div>`, 'Nessuna porta esposta');
+
+        const volumes = document.getElementById('info-volumes');
+        renderList(
+          volumes,
+          data.mounts,
+          (m) => `<div class="chip">${m.source || '-'} → ${m.destination || '-'}</div>`,
+          'Nessun volume'
+        );
+
+        renderTable(document.getElementById('info-env'), data.env);
+        renderTable(document.getElementById('info-labels'), data.labels);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const updateStats = async () => {
+      if (!currentContainerId) return;
+      try {
+        const data = await fetchJSON(`/api/containers/${currentContainerId}/stats`);
+        const cpuText = `${data.cpu_percent}%`;
+        const memText = `${formatBytes(data.mem_usage)} / ${formatBytes(data.mem_limit || 1)} (${data.mem_percent}%)`;
+        const netDelta = lastNet
+          ? { rx: Math.max(data.net_rx - lastNet.rx, 0), tx: Math.max(data.net_tx - lastNet.tx, 0) }
+          : { rx: 0, tx: 0 };
+        lastNet = { rx: data.net_rx, tx: data.net_tx };
+        const netText = `↓ ${formatBytes(netDelta.rx)} · ↑ ${formatBytes(netDelta.tx)}`;
+
+        document.getElementById('stat-cpu').textContent = cpuText;
+        document.getElementById('stat-ram').textContent = memText;
+        document.getElementById('stat-net').textContent = netText;
+
+        statsHistory.cpu.push(data.cpu_percent);
+        statsHistory.ram.push(data.mem_percent);
+        statsHistory.net.push(netDelta.rx + netDelta.tx);
+        statsHistory.cpu = statsHistory.cpu.slice(-statsSampleLimit);
+        statsHistory.ram = statsHistory.ram.slice(-statsSampleLimit);
+        statsHistory.net = statsHistory.net.slice(-statsSampleLimit);
+
+        drawSpark(document.getElementById('chart-cpu'), statsHistory.cpu, '#31c4ff', 100);
+        drawSpark(document.getElementById('chart-ram'), statsHistory.ram, '#8ef0c5', 100);
+        drawSpark(document.getElementById('chart-net'), statsHistory.net, '#ffbf69');
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    const escapeHtml = (str) =>
+      str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+    const getLogLevel = (line) => {
+      const upper = line.toUpperCase();
+      if (upper.includes('ERROR') || upper.includes('ERR')) return 'log-error';
+      if (upper.includes('WARN')) return 'log-warn';
+      if (upper.includes('DEBUG')) return 'log-debug';
+      if (upper.includes('INFO')) return 'log-info';
+      return 'log-other';
+    };
+
+    const matchesSeverity = (line, filter) => {
+      if (filter === 'all') return true;
+      const levelMap = {
+        'log-error': 'error',
+        'log-warn': 'warn',
+        'log-info': 'info',
+        'log-debug': 'debug',
+        'log-other': 'other',
+      };
+      const levelClass = getLogLevel(line);
+      return levelMap[levelClass] === filter;
+    };
+
+    const renderLogs = (logs, target = logOutput) => {
+      if (!logs) {
+        target.textContent = 'Nessun log disponibile';
+        return;
+      }
+
+      const lines = logs.split(/\r?\n/);
+      const filteredLines = lines
+        .filter((line) => line !== '')
+        .filter((line) => matchesSeverity(line, logSeverity.value));
+      const html = filteredLines
+        .map((line) => {
+          const levelClass = getLogLevel(line);
+          return `<div class="log-line ${levelClass}"><span class="log-bullet">•</span><span>${escapeHtml(line)}</span></div>`;
+        })
+        .join('');
+
+      target.innerHTML = html || '<div class="muted">Nessun log per la severità selezionata</div>';
+    };
+
+    const updateLogs = async () => {
+      if (!currentContainerId) return;
+      try {
+        const tail = logTail.value;
+        const data = await fetchJSON(`/api/containers/${currentContainerId}/logs?tail=${tail}`);
+        lastLogs = data.logs;
+        renderLogs(lastLogs);
+      } catch (err) {
+        logOutput.textContent = 'Impossibile recuperare i log';
+      }
+    };
+
+    const updateUpdates = async (force = false) => {
+      if (!currentContainerId) return;
+      try {
+        const url = `/api/containers/${currentContainerId}/updates`;
+        const data = await fetchJSON(url, force ? { method: 'POST' } : {});
+        document.getElementById('updates-image').textContent = data.image_ref;
+        document.getElementById('updates-repo').href = data.repo_link || '#';
+        const installedDisplay =
+          data.installed_display_version ||
+          data.installed_version ||
+          data.installed_tag ||
+          data.installed_id_short;
+        document.getElementById('updates-installed').textContent = installedDisplay || '-';
+        const remoteDisplay =
+          data.remote_display_version ||
+          data.remote_version ||
+          data.remote_tag ||
+          data.remote_id_short;
+        document.getElementById('updates-remote').textContent = remoteDisplay || '-';
+        document.getElementById('updates-state').textContent = data.update_state;
+        updatesFrequency.value = data.frequency_minutes?.toString() || '60';
+        updatesFeedback.textContent = '';
+        return data;
+      } catch (err) {
+        updatesFeedback.textContent = 'Impossibile recuperare le informazioni';
+        return null;
+      }
+    };
+
+    const installUpdates = async () => {
+      if (!currentContainerId) return;
+      showToast('Installazione aggiornamento in corso...', { type: 'info' });
+      try {
+        const res = await fetch(`/api/containers/${currentContainerId}/full_update`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        if (!res.ok) throw new Error('fail');
+        const data = await res.json();
+        
+        if (data.container_id && data.container_id !== currentContainerId) {
+            const oldId = currentContainerId;
+            currentContainerId = data.container_id;
+            
+            const row = rowIndex.get(oldId);
+            if (row) {
+                row.dataset.containerId = currentContainerId;
+                row.querySelectorAll('[data-container-id]').forEach(el => el.dataset.containerId = currentContainerId);
+                rowIndex.set(currentContainerId, row);
+                rowIndex.delete(oldId);
+            }
+        }
+        
+        showToast('Aggiornamento completato', { type: 'success' });
+        await updateUpdates(true);
+      } catch (err) {
+        showToast('Impossibile avviare l\'aggiornamento', { type: 'error' });
+      }
+    };
+
+    const startPolling = () => {
+      clearInterval(statsInterval);
+      clearInterval(logsInterval);
+      statsInterval = setInterval(updateStats, statsIntervalMs);
+      if (logAuto.checked) {
+        logsInterval = setInterval(updateLogs, logsIntervalMs);
+      }
+    };
+
+    const stopPolling = () => {
+      clearInterval(statsInterval);
+      clearInterval(logsInterval);
+    };
+
+    const openModal = (id, name, initialTab = 'info') => {
+      currentContainerId = id;
+      modalTitle.textContent = name;
+      statsHistory = { cpu: [], ram: [], net: [] };
+      lastNet = null;
+      modalEl.classList.add('visible');
+      modalEl.setAttribute('aria-hidden', 'false');
+      activeTab = initialTab;
+      setPanel(initialTab);
+      updateDetails();
+      updateUpdates();
+      if (window.d2haSettings?.performanceMode) {
+        if (initialTab === 'stats') {
+          updateStats();
+          statsInterval = setInterval(updateStats, statsIntervalMs);
+        }
+        if (initialTab === 'logs') {
+          updateLogs();
+          if (logAuto.checked) {
+            logsInterval = setInterval(updateLogs, logsIntervalMs);
+          }
+        }
+      } else {
+        updateStats();
+        updateLogs();
+        startPolling();
+      }
+    };
+
+    const closeModal = () => {
+      stopPolling();
+      modalEl.classList.remove('visible');
+      modalEl.setAttribute('aria-hidden', 'true');
+      currentContainerId = null;
+      lastLogs = '';
+    };
+
+    window.registerPerformanceHandler?.((enabled) => {
+      statsIntervalMs = enabled ? pollingPerformance.statsIntervalMs : pollingDefaults.statsIntervalMs;
+      logsIntervalMs = enabled ? pollingPerformance.logsIntervalMs : pollingDefaults.logsIntervalMs;
+      statsSampleLimit = enabled ? pollingPerformance.historyLimit : pollingDefaults.historyLimit;
+      statsHistory.cpu = statsHistory.cpu.slice(-statsSampleLimit);
+      statsHistory.ram = statsHistory.ram.slice(-statsSampleLimit);
+      statsHistory.net = statsHistory.net.slice(-statsSampleLimit);
+
+      if (!modalEl.classList.contains('visible')) {
+        stopPolling();
+        return;
+      }
+
+      if (enabled) {
+        stopPolling();
+        if (activeTab === 'stats') {
+          updateStats();
+          statsInterval = setInterval(updateStats, statsIntervalMs);
+        }
+        if (activeTab === 'logs' && logAuto.checked) {
+          updateLogs();
+          logsInterval = setInterval(updateLogs, logsIntervalMs);
+        }
+      } else {
+        updateStats();
+        updateLogs();
+        startPolling();
+      }
+    });
+
+    document.getElementById('modal-close').addEventListener('click', closeModal);
+    modalEl.addEventListener('click', (e) => {
+      if (e.target === modalEl) closeModal();
+    });
+
+    debugClose?.addEventListener('click', closeDebugOverlay);
+    debugClear?.addEventListener('click', clearDebugOverlay);
+    debugOverlay?.addEventListener('click', (e) => {
+      if (e.target === debugOverlay) closeDebugOverlay();
+    });
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => handleTabChange(btn.dataset.tab));
+    });
+
+    document.querySelectorAll('[data-open-modal]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetTab = btn.dataset.tab || 'info';
+        openModal(btn.dataset.containerId, btn.dataset.containerName, targetTab);
+      });
+    });
+
+    actionButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const row = btn.closest('tr[data-container-id]');
+        const id = row?.dataset.containerId;
+        if (!id) return;
+        handleContainerAction(id, btn.dataset.action);
+      });
+    });
+
+    rowIndex.forEach((row) => syncActionButtons(row));
+
+    bulkButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        performBulkAction(btn.dataset.bulkAction);
+      });
+    });
+
+    logRefreshBtn.addEventListener('click', () => {
+      updateLogs();
+    });
+
+    logSeverity.addEventListener('change', () => renderLogs(lastLogs));
+
+    logAuto.addEventListener('change', () => {
+      if (logAuto.checked) {
+        logsInterval = setInterval(updateLogs, logsIntervalMs);
+      } else {
+        clearInterval(logsInterval);
+      }
+    });
+
+    updatesSave.addEventListener('click', async () => {
+      if (!currentContainerId) return;
+      try {
+        const minutes = parseInt(updatesFrequency.value, 10) || 60;
+        const data = await fetchJSON(`/api/containers/${currentContainerId}/updates/frequency`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ minutes })
+        });
+        updatesFeedback.textContent = `Frequenza salvata (${data.minutes} min)`;
+      } catch (err) {
+        updatesFeedback.textContent = 'Errore nel salvataggio';
+      }
+    });
+
+    updatesCheck.addEventListener('click', async () => {
+      updatesFeedback.textContent = 'Verifica in corso...';
+      const data = await updateUpdates(true);
+      updatesFeedback.textContent = 'Verifica completata';
+      if (!data) return;
+
+      if (data.update_state === 'up_to_date') {
+        showToast('Il container è già aggiornato', { type: 'success' });
+      } else if (data.update_state === 'update_available') {
+        showToast('Aggiornamento disponibile. Vuoi installarlo?', {
+          type: 'warning',
+          actions: [
+            { label: 'Installa', onClick: installUpdates },
+            { label: 'Annulla' },
+          ],
+        });
+      }
+    });
+</script>

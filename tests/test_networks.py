@@ -6,7 +6,9 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[1] / "d2ha"))
 from services.docker import DockerService
-import services.docker as docker_module
+# The docker SDK is imported inside the modular package's base module,
+# so that is where it must be patched.
+import services.docker.base as docker_base_module
 
 
 class DummyNetwork:
@@ -30,7 +32,7 @@ class DockerServiceNetworkTests(unittest.TestCase):
         self.client = mock.MagicMock()
         self.client.networks = mock.MagicMock()
         self.client.containers = mock.MagicMock()
-        patcher = mock.patch.object(docker_module, "docker", autospec=True)
+        patcher = mock.patch.object(docker_base_module, "docker", autospec=True)
         self.addCleanup(patcher.stop)
         self.mock_docker = patcher.start()
         self.mock_docker.from_env.return_value = self.client

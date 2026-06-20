@@ -1,0 +1,188 @@
+/* ====== Mobile App-Like Navigation ====== */
+.mobile-topbar-title {
+    display: none;
+}
+.mobile-bottom-nav {
+    display: none;
+}
+.mobile-more-menu {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    /* Hide old mobile drawer components */
+    .app-sidebar {
+        display: none !important;
+    }
+    .mobile-drawer-tab {
+        display: none !important;
+    }
+    
+    /* Topbar adjustments */
+    .mobile-topbar-title {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin: 0;
+        color: var(--text);
+        letter-spacing: 0.05em;
+    }
+    .app-topbar {
+        padding: 12px 16px;
+        background: var(--bg-card);
+        border-bottom: 1px solid var(--border);
+    }
+    
+    /* Main layout adjustments */
+    .main-wrapper {
+        padding-bottom: 70px;
+    }
+    .layout {
+        grid-template-columns: 1fr !important;
+        padding: 12px !important;
+    }
+    
+    /* Bottom Navigation Bar */
+    .mobile-bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 64px;
+        background: rgba(26, 29, 36, 0.95);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 2000;
+        justify-content: space-around;
+        align-items: center;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        height: 100%;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.2s ease;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .mobile-nav-item.active,
+    .mobile-nav-item:active {
+        color: var(--accent);
+    }
+    
+    .mobile-nav-icon {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 4px;
+    }
+    
+    .mobile-nav-label {
+        font-size: 0.65rem;
+        font-weight: 600;
+    }
+    
+    /* Full-screen More Menu */
+    .mobile-more-menu {
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        inset: 0;
+        background: var(--bg-primary);
+        z-index: 2100;
+        transform: translateY(100%);
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        visibility: hidden;
+    }
+    
+    .mobile-more-menu.active {
+        transform: translateY(0);
+        visibility: visible;
+    }
+    
+    .mobile-more-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-card);
+    }
+    
+    .mobile-more-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+    }
+    
+    .mobile-more-close {
+        background: none;
+        border: none;
+        color: var(--text);
+        font-size: 2rem;
+        line-height: 1;
+        padding: 0 8px;
+        margin: -8px;
+        cursor: pointer;
+    }
+    
+    .mobile-more-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 12px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .mobile-more-link {
+        display: flex;
+        align-items: center;
+        padding: 14px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        color: var(--text);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        gap: 16px;
+    }
+    
+    .mobile-more-link svg {
+        width: 22px;
+        height: 22px;
+        color: var(--muted);
+    }
+    
+    .mobile-more-link.active {
+        background: var(--accent-surface);
+        border-color: var(--accent-border);
+        color: var(--accent);
+    }
+    .mobile-more-link.active svg {
+        color: var(--accent);
+    }
+    
+    .mobile-more-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 8px 0;
+    }
+    
+    .text-danger {
+        color: #ff6b6b !important;
+        background: rgba(255, 60, 60, 0.05);
+    }
+    .text-danger svg {
+        color: #ff6b6b !important;
+    }
+}

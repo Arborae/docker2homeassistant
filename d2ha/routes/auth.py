@@ -14,6 +14,20 @@ auth_bp = Blueprint("auth", __name__)
 
 # -- Decorators --
 
+def _check_session_timeout(config):
+    timeout_minutes = int(config.get("session_timeout_minutes", 0) or 0)
+    last_activity = session.get("last_activity_ts") or session.get("logged_at")
+    now_ts = int(time.time())
+
+    if timeout_minutes > 0 and last_activity:
+        if now_ts - int(last_activity) > timeout_minutes * 60:
+            session.clear()
+            flash(t("flash.session_expired"), "info")
+            return redirect(url_for("auth.login", next=request.url))
+
+    session["last_activity_ts"] = now_ts
+    return None
+
 def login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
@@ -23,17 +37,10 @@ def login_required(view):
             session.clear()
             return redirect(url_for("auth.login", next=request.url))
 
-        timeout_minutes = int(config.get("session_timeout_minutes", 0) or 0)
-        last_activity = session.get("last_activity_ts") or session.get("logged_at")
-        now_ts = int(time.time())
+        timeout_redirect = _check_session_timeout(config)
+        if timeout_redirect:
+            return timeout_redirect
 
-        if timeout_minutes > 0 and last_activity:
-            if now_ts - int(last_activity) > timeout_minutes * 60:
-                session.clear()
-                flash(t("flash.session_expired"), "info")
-                return redirect(url_for("auth.login", next=request.url))
-
-        session["last_activity_ts"] = now_ts
         return view(*args, **kwargs)
 
     return wrapped
@@ -47,6 +54,11 @@ def onboarding_required(view):
         if not current_user or current_user != config.get("username"):
             session.clear()
             return redirect(url_for("auth.login", next=request.url))
+            
+        timeout_redirect = _check_session_timeout(config)
+        if timeout_redirect:
+            return timeout_redirect
+            
         if not is_onboarding_done():
             return redirect(url_for("auth.setup_account"))
         return view(*args, **kwargs)
@@ -60,11 +72,24 @@ def is_onboarding_done():
 # -- Helpers --
 
 def _get_remote_addr():
-    return request.headers.get("X-Forwarded-For", request.remote_addr or "unknown")
+    # Behind Cloudflare / a reverse proxy the real client IP is forwarded.
+    # Use it so the brute-force block is keyed on the actual client, not the
+    # proxy, and cannot be trivially evaded by rotating a spoofed XFF value.
+    cf_ip = request.headers.get("CF-Connecting-IP")
+    if cf_ip:
+        return cf_ip.strip()
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.remote_addr or "unknown"
 
 def _safe_next_url(raw_next):
     """Validate the 'next' redirect target to prevent open-redirect attacks."""
     if not raw_next:
+        return None
+    # Reject backslashes: some browsers normalise "/\evil.com" to a
+    # protocol-relative URL, enabling an open redirect.
+    if "\\" in raw_next:
         return None
     parsed = urlparse(raw_next)
     # Block absolute URLs pointing to external hosts
@@ -169,6 +194,7 @@ def logout():
 
 
 @auth_bp.route("/set-language", methods=["POST"])
+@login_required
 def set_language():
     lang = (request.form.get("lang") or "").strip()
     set_current_lang(lang)
@@ -177,6 +203,7 @@ def set_language():
 
 
 @auth_bp.route("/set-theme", methods=["POST"])
+@login_required
 def set_theme():
     theme = (request.form.get("theme") or "").strip()
     set_current_theme(theme)

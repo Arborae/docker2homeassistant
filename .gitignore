@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+.venv/
 d2ha/auth_config.json
 d2ha/data/
 .env

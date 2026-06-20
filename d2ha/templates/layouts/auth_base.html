@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}D2HA{% endblock %}</title>
+  {% include 'partials/pwa_head.html' %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
 </head>
@@ -42,6 +43,7 @@
         <div id="onboardingMenu" class="onboarding-menu" role="region" aria-label="{{ t('settings.title') }}">
           <h2>{{ t('settings.title') }}</h2>
           <form method="post" action="{{ url_for('auth.set_language') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="next" value="{{ request.path }}">
             <label for="onboarding-lang">{{ t('language.label') }}</label>
             <select id="onboarding-lang" name="lang" onchange="this.form.submit()">
@@ -53,6 +55,7 @@
             </select>
           </form>
           <form method="post" action="{{ url_for('auth.set_theme') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="next" value="{{ request.path }}">
             <label for="onboarding-theme">{{ t('theme.label') }}</label>
             <select id="onboarding-theme" name="theme" onchange="this.form.submit()">
@@ -113,6 +116,7 @@
     initCompactToggle();
   </script>
   {% block auth_scripts %}{% endblock %}
+  {% include 'partials/pwa_register.html' %}
 </body>
 
 </html>

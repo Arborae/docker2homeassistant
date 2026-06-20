@@ -1,39 +1,23 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
+{% extends "layouts/app_base.html" %}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Immagini</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
-  {% include 'partials/notifications_styles.html' %}
-</head>
+{% block title %}D2HA – Immagini{% endblock %}
 
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
-  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
-  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
-  {% include 'partials/app_sidebar.html' %}
-  <div class="main-wrapper">
-    {% include 'partials/app_topbar.html' %}
-
-
-  {% include 'partials/flash_messages.html' %}
-
-  <main>
+{% block content %}
+<main>
     <div class="card">
       <div class="card-header">
         <div class="meta">Totale immagini: {{ images|length }} · Container attivi: {{ summary.running }}</div>
         <div class="actions-row">
           <form id="delete-unused-form" method="post" action="{{ url_for('ui.delete_unused_images') }}"
             data-safe-confirm="Eliminare tutte le immagini non utilizzate?" data-safe-modal="external">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-accent" type="submit" id="delete-unused-btn">Elimina immagini non in uso</button>
           </form>
         </div>
       </div>
     </div>
     <section class="card">
-      <table>
+      <table class="responsive-table">
         <thead>
           <tr>
             <th>Tag</th>
@@ -64,6 +48,7 @@
             <td data-label="Azioni">
               <form method="post" action="{{ url_for('ui.delete_image', image_id=img.id) }}"
                 data-safe-confirm="Eliminare l'immagine {{ img.short_id }}?">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
               </form>
             </td>
@@ -97,8 +82,10 @@
       </div>
     </div>
   </div>
-  {% include 'partials/notifications_script.html' %}
-  <script>
+{% endblock %}
+
+{% block scripts_extra %}
+<script>
     const deleteUnusedForm = document.getElementById('delete-unused-form');
     const deleteUnusedBtn = document.getElementById('delete-unused-btn');
     const debugOverlay = document.getElementById('debug-overlay');
@@ -234,7 +221,4 @@
       if (evt.target === debugOverlay) closeDebugOverlay();
     });
   </script>
-  </div>
-</body>
-
-</html>
+{% endblock %}

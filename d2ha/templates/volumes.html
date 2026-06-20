@@ -1,32 +1,16 @@
-<!DOCTYPE html>
-<html lang="{{ get_current_lang() }}">
+{% extends "layouts/app_base.html" %}
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>D2HA – Volumi</title>
-  {% include 'partials/notifications_styles.html' %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
-</head>
+{% block title %}D2HA – Volumi{% endblock %}
 
-<body class="theme-{{ get_current_theme() }}" data-safe-mode="{{ '1' if safe_mode_enabled else '0' }}"
-  data-performance-mode="{{ '1' if performance_mode_enabled else '0' }}"
-  data-debug-mode="{{ '1' if debug_mode_enabled else '0' }}">
-  {% include 'partials/app_sidebar.html' %}
-  <div class="main-wrapper">
-    {% include 'partials/app_topbar.html' %}
-
-
-  {% include 'partials/flash_messages.html' %}
-
-  <main>
+{% block content %}
+<main>
     <div class="card">
       <div class="card-header">
         <div class="meta">Totale volumi: {{ volumes|length }} · Container attivi: {{ summary.running }}</div>
         <div class="actions-row">
           <form id="delete-unused-volumes" method="post" action="{{ url_for('ui.delete_unused_volumes') }}"
             data-safe-confirm="Eliminare tutti i volumi non utilizzati?" data-safe-modal="external">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-accent" type="submit">Elimina volumi non utilizzati</button>
           </form>
         </div>
@@ -68,6 +52,7 @@
             <td data-label="Azioni">
               <form method="post" action="{{ url_for('ui.delete_volume') }}"
                 data-safe-confirm="Eliminare il volume {{ volume.name }}?" data-safe-modal="external">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="volume_name" value="{{ volume.name }}" />
                 <input type="hidden" name="volume_type" value="{{ volume.type }}" />
                 <button class="btn btn-danger" type="submit" {% if is_used %}disabled{% endif %}>Elimina</button>
@@ -79,11 +64,8 @@
       </table>
     </section>
   </main>
+{% endblock %}
 
-  {% include 'partials/notifications_script.html' %}
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  </div>
-</body>
-
-</html>
+{% block scripts_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}

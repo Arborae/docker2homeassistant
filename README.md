@@ -39,7 +39,8 @@
 - una **dashboard in tempo reale** per CPU, RAM, rete e stato dei container;
 - controlli rapidi per **start / stop / restart / pause / unpause / delete / full update**;
 - una **integrazione completa con Home Assistant** tramite MQTT (discovery automatico, sensori, switch, stato aggiornamenti);
-- una UI curata con **theme switcher dark/light** e **multi‑lingua (IT/EN)**, dalla login page al wizard di onboarding.
+- una UI curata con **theme switcher dark/light** e **multi‑lingua (IT/EN)**, dalla login page al wizard di onboarding;
+- una **Progressive Web App (PWA)** installabile su Android/iOS/desktop, con service worker, manifest e supporto offline di base.
 
 Niente database, niente dipendenze pesanti: solo Docker, Flask e – se vuoi – MQTT.
 
@@ -140,6 +141,13 @@ Popup di dettaglio con:
   - `start`, `stop`, `restart`, `pause`, `unpause`, `full_update`.
 - Stato pubblicato su un base topic configurabile (es. `d2ha_server`).
 
+### App installabile (PWA)
+
+- **Manifest** e **service worker** integrati: D2HA è installabile dal browser come app standalone su Android, iOS e desktop.
+- I requisiti PWA (manifest, service worker registrato, icone 192/512) sono presenti su **tutte le pagine d'ingresso** (login, splash, dashboard), così l'installazione è offerta fin dalla schermata di accesso.
+- Schermata di **splash** durante l'avvio del backend e cache di base degli asset statici per un primo caricamento più rapido.
+- Funziona dietro reverse proxy HTTPS; se usi un gateway di autenticazione davanti all'app (es. **Cloudflare Access**) leggi la nota nella sezione **🛡️ Sicurezza**.
+
 ---
 
 ## 🧱 Architettura
@@ -150,12 +158,14 @@ Popup di dettaglio con:
   - Accesso diretto a **Docker Engine** tramite socket per evitare dipendenze dalla CLI.
 
 - **Frontend**
-  - Single Page Application minimalista, senza build step, ottimizzata per ambienti headless.
+  - Interfaccia server-rendered (Jinja2) minimalista, senza build step, ottimizzata per ambienti headless.
   - Grafici live con **Chart.js** e aggiornamenti via polling leggero.
   - **Theme switcher** (dark/light) e **multi‑lingua** applicati a tutte le pagine (login, onboarding, dashboard).
+  - **PWA**: `manifest.json` + service worker (`sw.js`) per l'installazione come app e la cache di base.
 
 - **Service layer**
-  - Lettura dei container, immagini e stack tramite la libreria Python **docker SDK**.
+  - Logica Docker organizzata in un **package modulare** (`services/docker/`) suddiviso per dominio: container, immagini/aggiornamenti, reti, volumi, sistema, eventi.
+  - Lettura di container, immagini e stack tramite la libreria Python **docker SDK** (accesso diretto al socket).
   - Gestione aggiornamenti confrontando tag locali e remoti e leggendo label OCI.
   - Cache in memoria per ridurre le chiamate ripetute al daemon Docker.
 
@@ -200,12 +210,21 @@ Popup di dettaglio con:
 
 ## 🛡️ Sicurezza
 
-- **Rate limiting login:** dopo troppi tentativi falliti l'endpoint `/login` restituisce HTTP 429 per 15 minuti, rallentando attacchi bruteforce.
+- **Protezione CSRF:** tutte le richieste di modifica via form HTML sono protette da token CSRF per-sessione; le API JSON sono esenti perché la Same-Origin Policy del browser impedisce richieste `application/json` cross-origin senza preflight.
+- **Rate limiting login:** dopo troppi tentativi falliti l'endpoint `/login` restituisce HTTP 429 per 15 minuti, rallentando attacchi bruteforce. Il conteggio è basato sull'**IP reale del client** (header `CF-Connecting-IP` / `X-Forwarded-For` quando sei dietro un proxy), non sull'indirizzo del proxy.
+- **Rate limiting API:** gli endpoint `/api/*` di scrittura sono limitati per IP per attenuare abusi e loop accidentali.
+- **Modalità sicura:** quando attiva, le **azioni distruttive** (eliminazione di container e reti) richiedono una conferma esplicita; senza conferma l'API risponde con HTTP 403. L'interfaccia mostra un dialog di conferma prima di eliminare.
+- **Timeout di sessione:** logout automatico per inattività, configurabile (default 30 minuti) dalla pagina Sicurezza.
 - **Pagina Sicurezza:** da `/settings/security` (anche dalla navbar) puoi cambiare username/password dell'admin e gestire la 2FA.
   - Ogni modifica richiede la password attuale e, se la 2FA è attiva, anche un codice TOTP valido.
   - L'abilitazione 2FA è guidata: viene mostrato il QR/URI da scansionare e viene richiesta una verifica esplicita del codice.
   - La disattivazione della 2FA richiede password + codice corrente.
+- **Redazione log:** i valori sensibili (secret key, password MQTT, hash/segreti) vengono oscurati nei log.
 - **Best practice:** esegui sempre dietro reverse proxy HTTPS (Caddy, Traefik, Nginx) e ricorda che chi accede a D2HA può controllare Docker sull'host.
+
+> **PWA dietro un gateway di autenticazione (Cloudflare Access / Zero Trust, Authelia, ecc.)**
+> Se proteggi l'app con un gateway che intercetta ogni richiesta, l'installazione come PWA **non funziona** finché il manifest e il service worker non sono raggiungibili senza autenticazione: il browser li scarica **senza cookie** e riceverebbe la pagina di login del gateway invece dei file.
+> Configura un **bypass pubblico** per i percorsi PWA — almeno `/sw.js` e `/static/*` (che includono `manifest.json` e le icone) — lasciando protetto il resto dell'app. Su Cloudflare Access: crea un'applicazione dedicata a quei percorsi con criterio **Bypass / Everyone**.
 
 ---
 
@@ -213,12 +232,21 @@ Popup di dettaglio con:
 
 ```text
 d2ha/
-├── app.py              # Entrypoint Flask
-├── mqtt/               # Gestione discovery e stato MQTT
-├── routes/             # Blueprint Flask (UI + API)
-├── services/           # Logica per Docker, aggiornamenti, cache in memoria
-├── static/             # HTML/CSS/JS della dashboard
-└── templates/          # Layout Jinja2
+├── app.py              # Entrypoint Flask, splash gating, logging
+├── auth_store.py       # Lettura/scrittura di auth_config.json
+├── csrf.py             # Protezione CSRF
+├── rate_limiter.py     # Rate limiting API
+├── i18n.py / theme.py  # Multi-lingua (IT/EN) e tema dark/light
+├── version.py          # Versione (da D2HA_VERSION / git tag / SHA)
+├── mqtt/               # Discovery e pubblicazione stato MQTT
+├── routes/             # Blueprint Flask: ui.py, api.py, auth.py
+├── services/
+│   ├── docker/         # Package modulare: containers, images_updates,
+│   │                   #   networks, volumes, system, events, base
+│   ├── preferences.py  # Preferenze autodiscovery MQTT
+│   └── utils.py        # Helper (human_bytes, slug, ecc.)
+├── static/             # CSS/JS, icone, manifest.json, sw.js (PWA)
+└── templates/          # Jinja2: layouts/, partials/, pagine
 ```
 
 ---
@@ -389,22 +417,34 @@ UI:
 - `GET /` – Dashboard principale
 - `GET /containers` – Lista container
 - `GET /images` – Immagini Docker
+- `GET /volumes` – Volumi Docker
+- `GET /networks` – Reti Docker
 - `GET /updates` – Gestione aggiornamenti
 - `GET /events` – Log eventi
 - `GET /autodiscovery` – Gestione entità MQTT esposte
+- `GET /settings/security` – Impostazioni di sicurezza (credenziali, 2FA, timeout)
 
 API JSON (estratto):
 
 - `GET /api/overview` – Panoramica host e stack
 - `GET /api/containers/<id>/details` – Dettaglio container
+- `POST /api/containers/<id>/<action>` – Azione container (`start`/`stop`/`restart`/`pause`/`unpause`/`delete`/`kill`); le azioni distruttive richiedono `?confirm=1` se la modalità sicura è attiva
+- `POST /api/containers/<id>/full_update` – Pull immagine + ricreazione container
 - `GET /api/notifications` – Notifiche (aggiornamenti, eventi critici)
-- `GET /api/networks` – Lista reti Docker
+- `GET|POST /api/networks` – Lista / creazione reti Docker
 - `GET /api/containers/<id>/stats` – Statistiche live
 - `GET|POST /api/containers/<id>/updates` – Stato aggiornamenti / refresh
 - `POST /api/containers/<id>/updates/frequency` – Frequenza scan
 - `GET|POST /api/containers/<id>/compose` – docker-compose per il container
 - `GET|POST /api/compose` – docker-compose principale
 - `GET /api/containers/<id>/logs?tail=<N|all>` – Log container
+
+Sistema / PWA:
+
+- `GET /api/health` – Health check del backend (stato `starting`/`ready`)
+- `GET /splash` – Schermata di avvio mentre il backend si prepara
+- `GET /sw.js` – Service worker
+- `GET /static/manifest.json` – Web app manifest
 
 ---
 

@@ -95,6 +95,14 @@ app.register_blueprint(auth_bp)
 app.register_blueprint(ui_bp)
 app.register_blueprint(api_bp)
 
+# CSRF Protection
+from csrf import init_csrf
+init_csrf(app)
+
+# Rate Limiting
+from rate_limiter import init_rate_limiter
+init_rate_limiter(app)
+
 # Logging Configuration
 class SensitiveDataFilter(logging.Filter):
     def __init__(self, sensitive_values: Optional[list] = None):
@@ -232,8 +240,15 @@ def splash():
 
 @app.before_request
 def check_splash_redirect():
-    # Allow static resources, splash page itself, and health check API
-    if request.path.startswith("/static") or request.path == "/splash" or request.path == "/api/health":
+    # Allow static resources, the service worker, splash page itself, and health check API.
+    # The service worker script must never be served as a redirect, otherwise the
+    # browser rejects its registration and the PWA becomes non-installable.
+    if (
+        request.path.startswith("/static")
+        or request.path == "/sw.js"
+        or request.path == "/splash"
+        or request.path == "/api/health"
+    ):
         return None
     
     # If backend is not ready, force redirect to splash

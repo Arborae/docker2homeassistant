@@ -12,6 +12,7 @@
   </ul>
 
   <form method="post" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div>
       <label for="new_username">{{ t('setup_account.new_username') }}</label>
       <input type="text" id="new_username" name="new_username" placeholder="{{ current_username }}" />
