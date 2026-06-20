@@ -126,14 +126,32 @@
   </main>
 
   <div class="bulk-bar" id="bulk-bar" aria-hidden="true">
-    <div class="bulk-summary"><span id="bulk-count">0</span> container selezionati</div>
+    <div class="bulk-summary"><span class="bulk-badge" id="bulk-count">0</span> <span class="bulk-text">container selezionati</span></div>
     <div class="bulk-actions">
-      <button class="btn-chip" type="button" data-bulk-action="start">Avvia</button>
-      <button class="btn-chip" type="button" data-bulk-action="stop">Ferma</button>
-      <button class="btn-chip" type="button" data-bulk-action="pause">Pausa</button>
-      <button class="btn-chip" type="button" data-bulk-action="unpause">Riprendi</button>
-      <button class="btn-chip" type="button" data-bulk-action="restart">Riavvia</button>
-      <button class="btn-chip" type="button" data-bulk-action="delete">Elimina</button>
+      <button class="btn-chip" type="button" data-bulk-action="start" title="Avvia">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <span class="btn-label">Avvia</span>
+      </button>
+      <button class="btn-chip" type="button" data-bulk-action="stop" title="Ferma">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+        <span class="btn-label">Ferma</span>
+      </button>
+      <button class="btn-chip" type="button" data-bulk-action="pause" title="Pausa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+        <span class="btn-label">Pausa</span>
+      </button>
+      <button class="btn-chip" type="button" data-bulk-action="unpause" title="Riprendi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        <span class="btn-label">Riprendi</span>
+      </button>
+      <button class="btn-chip" type="button" data-bulk-action="restart" title="Riavvia">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+        <span class="btn-label">Riavvia</span>
+      </button>
+      <button class="btn-chip" type="button" data-bulk-action="delete" title="Elimina">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <span class="btn-label">Elimina</span>
+      </button>
     </div>
   </div>
 
