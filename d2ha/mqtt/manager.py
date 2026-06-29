@@ -14,7 +14,7 @@ except ImportError:
 
 from services.docker import DockerService
 from services.preferences import AutodiscoveryPreferences
-from services.utils import build_stable_id, slugify_container
+from services.utils import build_stable_id
 
 class MqttManager:
     def __init__(
@@ -407,8 +407,13 @@ class MqttManager:
     def _publish_discovery_for_container(
         self, c: Dict[str, Any], device_info: Dict[str, Any], preferences: Dict[str, Any]
     ):
-        slug = slugify_container(c["name"], c["short_id"])
         stable_id = build_stable_id(c)
+        # Topic/entity identity is keyed on the STABLE id (stack+name), NOT on the
+        # Docker short_id. Embedding the short_id meant every container recreation or
+        # d2ha restart published the discovery config to a *new* topic while the old
+        # retained config lingered in the broker, both carrying the same stable
+        # unique_id -> Home Assistant logs "unique ID already exists - ignoring".
+        slug = stable_id
         self.container_slug_map[slug] = c["id"]
 
         state_topic = f"{self.base_topic}/{slug}/state"
@@ -498,7 +503,7 @@ class MqttManager:
             if self._is_self_container(c):
                 continue
 
-            slug = slugify_container(c["name"], c["short_id"])
+            slug = build_stable_id(c)
             current_slugs.add(slug)
 
             try:
