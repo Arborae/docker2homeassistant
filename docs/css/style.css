@@ -136,13 +136,23 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -0.02em;
 }
 
+.brand-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+}
+
 .brand .by {
   font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 400;
   color: var(--dim);
   margin-left: 2px;
+  transition: color 0.2s;
 }
+
+.brand .by:hover { color: var(--teal); }
 
 .nav-links { display: flex; gap: 28px; }
 
