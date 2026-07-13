@@ -3,146 +3,263 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>Docker to Home Assistant (D2HA)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
   <meta name="description"
-    content="Control Docker containers and integrate with Home Assistant via MQTT autodiscovery." />
+    content="d2ha — Docker to Home Assistant. Monitor and control Docker containers with a modern web UI and MQTT autodiscovery for Home Assistant." />
+  <title>d2ha — Docker to Home Assistant</title>
 
-  <!-- Fonts -->
+  <!-- Open Graph -->
+  <meta property="og:title" content="d2ha — Docker to Home Assistant" />
+  <meta property="og:description"
+    content="Monitor and control Docker containers with a modern web UI and MQTT autodiscovery for Home Assistant." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://arborae.github.io/docker2homeassistant/" />
+
+  <link rel="icon" href="./assets/logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap"
     rel="stylesheet">
-
-  <!-- Styles -->
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 
-<body class="landing-intro">
-
-  <!-- Background Canvas -->
-  <canvas id="authCanvas" class="canvas-bg"></canvas>
-
-  <!-- Floating Brand Elements -->
-  <div class="brand-title">Docker 2 Home Assistant</div>
-  <img src="./assets/logo.svg" alt="D2HA Logo" class="brand-logo">
-
-  <div class="page-wrapper">
-    <div class="content-container">
-      <div class="glass-card">
-
-        <!-- Hero Section -->
-        <header>
-          <h1 class="hero-title">Docker to Home Assistant</h1>
-          <p class="hero-subtitle">
-            A modern web UI to monitor and control Docker containers, featuring seamless MQTT autodiscovery for Home
-            Assistant.
-          </p>
-
-          <div class="badge-group">
-            <span class="badge primary">Docker Native</span>
-            <span class="badge">MQTT Autodiscovery</span>
-            <span class="badge">Material Design</span>
-          </div>
-
-          <div class="btn-group">
-            <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" class="btn btn-primary">
-              View on GitHub
-            </a>
-            <a href="./install/" class="btn btn-ghost">
-              Installation Guide
-            </a>
-          </div>
-        </header>
-
-        <!-- Main Content Grid -->
-        <div class="features-grid">
-          <!-- Features List -->
-          <div>
-            <h3 style="margin-top:0; color:var(--text);">Key Features</h3>
-            <ul class="feature-list">
-              <li class="feature-item">
-                <div class="feature-icon"></div>
-                <div>
-                  <strong>Live Dashboard</strong>
-                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">Real-time CPU, RAM, and Network
-                    stats.</div>
-                </div>
-              </li>
-              <li class="feature-item">
-                <div class="feature-icon"></div>
-                <div>
-                  <strong>One-Click Controls</strong>
-                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">Start, stop, and restart
-                    containers instantly.</div>
-                </div>
-              </li>
-              <li class="feature-item">
-                <div class="feature-icon"></div>
-                <div>
-                  <strong>Home Assistant Ready</strong>
-                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">Automatic sensor creation via
-                    MQTT.</div>
-                </div>
-              </li>
-              <li class="feature-item">
-                <div class="feature-icon"></div>
-                <div>
-                  <strong>Safe & Secure</strong>
-                  <div style="font-size:0.9em; color:var(--muted); margin-top:0.2rem;">2FA, Secure Mode, and HTTPS
-                    support.</div>
-                </div>
-              </li>
-            </ul>
-
-            <!-- Quick Start -->
-            <div class="quick-start">
-              <h4 style="margin:0;">🚀 Quick Start</h4>
-              <div class="step-card">
-                <code>docker run -d -p 12021:12021 -v /var/run/docker.sock:/var/run/docker.sock:ro ghcr.io/arborae/docker2homeassistant:latest</code>
-              </div>
-              <p style="font-size:0.85rem; color:var(--muted); margin-top:0.5rem;">
-                Open <a href="http://localhost:12021" style="color:var(--accent);">http://localhost:12021</a> to start.
-              </p>
-            </div>
-          </div>
-
-          <!-- Preview Column -->
-          <div>
-            <h3 style="margin-top:0; color:var(--text);">Interface</h3>
-            <div class="preview-window">
-              <img src="./assets/d2ha_home_swipe.gif" alt="D2HA Dashboard Preview">
-            </div>
-            <p style="text-align:center; font-size:0.85rem; color:var(--muted); margin-top:1rem;">
-              Available in both Light and Dark themes.
-            </p>
-          </div>
-        </div>
-
-        <!-- Footer -->
-        <footer>
-          <p>
-            Maintained by <a href="https://github.com/giosci1994" target="_blank">giosci1994</a> & <a
-              href="https://github.com/chopin94" target="_blank">chopin94</a>
-          </p>
-          <p style="font-size:0.8rem; opacity:0.6;">
-            &copy; 2024 Docker to Home Assistant
-          </p>
-        </footer>
-
-      </div>
-    </div>
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
   </div>
 
-  <script src="./js/auth_background.js"></script>
+  <header class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="#top" aria-label="d2ha Home">
+        <img src="./assets/logo.svg" alt="d2ha logo" width="28" height="28" />
+        <span>d2ha</span>
+        <span class="by">by Arborae</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#features">Features</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="#quickstart">Quick start</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small" href="./install/">Install</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank"
+          rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="container">
+    <section class="hero">
+      <div class="hero-left">
+        <div class="kicker">
+          <span class="dot"></span>
+          <span>a project by <a href="https://arborae.github.io/" target="_blank" rel="noreferrer">Arborae</a></span>
+        </div>
+
+        <h1>
+          Docker to <span class="accent-text">Home&nbsp;Assistant</span>.
+        </h1>
+
+        <p class="lead">
+          A modern web UI to monitor and control your Docker containers — with MQTT
+          autodiscovery that turns every container into Home Assistant entities,
+          automatically.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn primary" href="./install/">Get started</a>
+          <a class="btn ghost" href="https://github.com/Arborae/docker2homeassistant" target="_blank"
+            rel="noreferrer">View on GitHub</a>
+        </div>
+
+        <div class="topics" role="list" aria-label="Topics">
+          <span class="pill" role="listitem">docker</span>
+          <span class="pill" role="listitem">home-assistant</span>
+          <span class="pill" role="listitem">mqtt</span>
+          <span class="pill" role="listitem">pwa</span>
+          <span class="pill" role="listitem">2fa</span>
+        </div>
+      </div>
+
+      <div class="hero-right" aria-hidden="true">
+        <div class="window">
+          <div class="win-bar">
+            <span class="win-dot r"></span>
+            <span class="win-dot y"></span>
+            <span class="win-dot g"></span>
+            <span class="win-title">d2ha — dashboard</span>
+          </div>
+          <img src="./assets/d2ha_home_swipe.gif" alt="d2ha dashboard preview" loading="lazy" />
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="section-head reveal">
+        <span class="section-label">// features</span>
+        <h2>Everything your containers need</h2>
+        <p>From live stats to Home Assistant integration — in one clean, self-hosted UI.</p>
+      </div>
+
+      <div class="cards-grid">
+        <article class="card reveal">
+          <span class="card-icon">📊</span>
+          <h3>Live dashboard</h3>
+          <p>Real-time CPU, RAM and network stats for every container, at a glance.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="card-icon">⚡</span>
+          <h3>One-click controls</h3>
+          <p>Start, stop, restart and inspect containers instantly — no terminal needed.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="card-icon">🏠</span>
+          <h3>MQTT autodiscovery</h3>
+          <p>Sensors and switches appear in Home Assistant automatically, with stable IDs.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="card-icon">🔄</span>
+          <h3>Update manager</h3>
+          <p>Check for image updates and apply them with live progress feedback.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="card-icon">🔐</span>
+          <h3>Safe &amp; secure</h3>
+          <p>Two-factor authentication, secure mode and HTTPS support out of the box.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="card-icon">📱</span>
+          <h3>Installable PWA</h3>
+          <p>Add it to your home screen and use it like a native app, on any device.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="screenshots" class="section">
+      <div class="section-head reveal">
+        <span class="section-label">// screenshots</span>
+        <h2>Take a look around</h2>
+        <p>Clean Material-inspired UI, available in light and dark themes.</p>
+      </div>
+
+      <div class="shots-grid">
+        <figure class="shot reveal">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">dashboard</span>
+            </div>
+            <img src="./home.png" alt="d2ha dashboard" loading="lazy" />
+          </div>
+          <figcaption>Dashboard — live stats at a glance</figcaption>
+        </figure>
+
+        <figure class="shot reveal">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">containers</span>
+            </div>
+            <img src="./container.png" alt="d2ha containers view" loading="lazy" />
+          </div>
+          <figcaption>Containers — controls &amp; details</figcaption>
+        </figure>
+
+        <figure class="shot reveal">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">updates</span>
+            </div>
+            <img src="./aggiornamenti.png" alt="d2ha updates view" loading="lazy" />
+          </div>
+          <figcaption>Updates — with live progress</figcaption>
+        </figure>
+
+        <figure class="shot reveal">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">images</span>
+            </div>
+            <img src="./immagini.png" alt="d2ha images view" loading="lazy" />
+          </div>
+          <figcaption>Images — pull, prune, clean up</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="quickstart" class="section">
+      <div class="section-head reveal">
+        <span class="section-label">// quick-start</span>
+        <h2>Up and running in one command</h2>
+        <p>Point it at your Docker socket and open the UI. That’s it.</p>
+      </div>
+
+      <div class="quickstart reveal">
+        <pre><code><span class="code-comment"># run d2ha</span>
+docker run -d -p 12021:12021 \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  ghcr.io/arborae/docker2homeassistant:latest</code></pre>
+        <p class="hint">
+          Then open <a href="http://localhost:12021"><code>http://localhost:12021</code></a> —
+          for Docker Compose, environment variables and first-login credentials, see the
+          <a href="./install/" style="color: var(--brand-soft);">installation guide</a>.
+        </p>
+      </div>
+
+      <div class="cta-box reveal">
+        <div>
+          <h3>Found a bug? Have an idea?</h3>
+          <p>Issues and small, focused PRs are always welcome.</p>
+        </div>
+        <a class="btn primary" href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank"
+          rel="noreferrer">Open an issue</a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="./assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> d2ha · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="https://github.com/giosci1994" target="_blank" rel="noreferrer">giosci1994</a>
+        <a href="https://github.com/chopin94" target="_blank" rel="noreferrer">chopin94</a>
+      </div>
+    </footer>
+  </main>
+
   <script>
-    window.addEventListener('load', () => {
-      setTimeout(() => {
-        document.body.classList.add('landing-ready');
-        document.body.classList.remove('landing-intro');
-      }, 1500);
-    });
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reveals = document.querySelectorAll('.reveal');
+
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+      reveals.forEach(el => el.classList.add('visible'));
+    } else {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      reveals.forEach(el => io.observe(el));
+    }
   </script>
 </body>
 
