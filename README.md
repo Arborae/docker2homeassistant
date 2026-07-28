@@ -473,5 +473,5 @@ Sono benvenute:
 
 ## 📄 Licenza
 
-Questo progetto è distribuito sotto licenza **MIT**.  
+Questo progetto è distribuito sotto licenza **GNU General Public License v3.0 (GPLv3)**.  
 Vedi il file [`LICENSE`](./LICENSE) per tutti i dettagli.
