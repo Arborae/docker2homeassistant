@@ -41,9 +41,11 @@ SAMPLE = [
     ("", "d2ha", "ghcr.io/arborae/docker2homeassistant:latest", "0.4.0", None, "arborae/docker2homeassistant"),
     ("", "homeassistant", "ghcr.io/home-assistant/home-assistant:stable", "2026.11.0", None, "home-assistant/core"),
     ("", "vaultwarden", "vaultwarden/server:latest", "1.37.4", "1.37.5", "dani-garcia/vaultwarden"),
+    ("", "d2ha-docker-proxy", "lscr.io/linuxserver/socket-proxy:latest", "3.4.6", "3.4.7", ""),
     ("", "backup", "backup-tool:local", "", None, ""),
 ]
 STOPPED = {"backup"}
+PROXY = "d2ha-docker-proxy"  # the socket proxy D2HA reaches Docker through: never updated by D2HA
 
 LOG_LINES = [
     ("INF", "Request completed in {ms} ms: GET /api/status 200"),
@@ -82,6 +84,7 @@ class DemoOps:
                 "status": "Exited (0) 2 days ago" if name in STOPPED else f"Up {index % 5 + 2} days",
                 "health": "" if name in STOPPED or index % 3 else "healthy",
                 "created": int(now - 86400 * (index % 5 + 2)), "is_self": name == "d2ha",
+                "is_proxy": name == PROXY,
             })
 
     def _add_image(self, image: str, version: str, repo: str) -> str:
