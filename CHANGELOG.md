@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- The D2HA images carry the standard OCI labels (version, source, revision, build date,
+  licence), which they lacked: D2HA now shows its own version and release notes like for
+  any other container. Nightly images are versioned `nightly-<commit>` instead of the
+  full commit hash.
+
 ## [0.5.0] - 2026-11-06
 
 ### Added

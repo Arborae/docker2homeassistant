@@ -19,6 +19,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Compute version and build date
+        id: meta
+        run: |
+          echo "version=nightly-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
       - name: Set up QEMU (arm64 images)
         uses: docker/setup-qemu-action@v4
 
@@ -43,4 +49,6 @@ jobs:
             ghcr.io/arborae/docker2homeassistant:nightly
             ghcr.io/arborae/docker2homeassistant:nightly-${{ github.sha }}
           build-args: |
-            D2HA_VERSION=${{ github.sha }}
+            D2HA_VERSION=${{ steps.meta.outputs.version }}
+            D2HA_REVISION=${{ github.sha }}
+            D2HA_CREATED=${{ steps.meta.outputs.created }}

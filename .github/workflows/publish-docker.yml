@@ -24,8 +24,11 @@ jobs:
           if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
             TAGS="$TAGS,ghcr.io/arborae/docker2homeassistant:${VERSION}"
           fi
-          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
-          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          {
+            echo "tags=${TAGS}"
+            echo "version=${VERSION}"
+            echo "created=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU (arm64 images)
         uses: docker/setup-qemu-action@v4
@@ -50,3 +53,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             D2HA_VERSION=${{ steps.meta.outputs.version }}
+            D2HA_REVISION=${{ github.sha }}
+            D2HA_CREATED=${{ steps.meta.outputs.created }}
