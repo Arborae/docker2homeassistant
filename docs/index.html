@@ -6,15 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#070b0a" />
   <meta name="description"
-    content="d2ha — Docker to Home Assistant. Monitor and control Docker containers with a modern web UI and MQTT autodiscovery for Home Assistant." />
+    content="d2ha — Docker to Home Assistant. Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant." />
   <title>d2ha — Docker to Home Assistant</title>
 
   <!-- Open Graph -->
   <meta property="og:title" content="d2ha — Docker to Home Assistant" />
   <meta property="og:description"
-    content="Monitor and control Docker containers with a modern web UI and MQTT autodiscovery for Home Assistant." />
+    content="Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://arborae.github.io/docker2homeassistant/" />
+  <meta property="og:image" content="https://arborae.github.io/docker2homeassistant/images/banner.png" />
 
   <link rel="icon" href="./assets/logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -68,9 +69,8 @@
         </h1>
 
         <p class="lead">
-          A modern web UI to monitor and control your Docker containers — with MQTT
-          autodiscovery that turns every container into Home Assistant entities,
-          automatically.
+          Know when your containers have updates, read what changed, update them
+          safely and read their logs — in a small web app and in Home Assistant.
         </p>
 
         <div class="hero-actions">
@@ -82,8 +82,9 @@
         <div class="topics" role="list" aria-label="Topics">
           <span class="pill" role="listitem">docker</span>
           <span class="pill" role="listitem">home-assistant</span>
-          <span class="pill" role="listitem">mqtt</span>
-          <span class="pill" role="listitem">pwa</span>
+          <span class="pill" role="listitem">hacs</span>
+          <span class="pill" role="listitem">updates</span>
+          <span class="pill" role="listitem">logs</span>
           <span class="pill" role="listitem">2fa</span>
         </div>
       </div>
@@ -94,9 +95,9 @@
             <span class="win-dot r"></span>
             <span class="win-dot y"></span>
             <span class="win-dot g"></span>
-            <span class="win-title">d2ha — dashboard</span>
+            <span class="win-title">d2ha — release notes</span>
           </div>
-          <img src="./assets/d2ha_home_swipe.gif" alt="d2ha dashboard preview" loading="lazy" />
+          <img src="./images/release-notes.png" alt="d2ha release notes with breaking changes" loading="lazy" />
         </div>
       </div>
     </section>
@@ -104,45 +105,51 @@
     <section id="features" class="section">
       <div class="section-head reveal">
         <span class="section-label">// features</span>
-        <h2>Everything your containers need</h2>
-        <p>From live stats to Home Assistant integration — in one clean, self-hosted UI.</p>
+        <h2>Updates, without surprises</h2>
+        <p>A small, focused tool that does a few things very well — on the web and in Home Assistant.</p>
       </div>
 
       <div class="cards-grid">
         <article class="card reveal">
-          <span class="card-icon">📊</span>
-          <h3>Live dashboard</h3>
-          <p>Real-time CPU, RAM and network stats for every container, at a glance.</p>
+          <span class="card-icon">🏷️</span>
+          <h3>Real versions</h3>
+          <p>Registry digests are checked with lightweight HEAD requests, so you see
+            <code>13.2.5 → 13.3.0</code> — not just “something changed”.</p>
         </article>
 
         <article class="card reveal">
-          <span class="card-icon">⚡</span>
-          <h3>One-click controls</h3>
-          <p>Start, stop, restart and inspect containers instantly — no terminal needed.</p>
+          <span class="card-icon">📋</span>
+          <h3>Release notes that match</h3>
+          <p>The GitHub release of that exact version, with breaking changes
+            highlighted before you update.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="card-icon">🛡️</span>
+          <h3>Safe updates</h3>
+          <p>The new image is pulled while the container keeps running; it is then
+            recreated with your settings — and rolled back if it does not start.</p>
+        </article>
+
+        <article class="card reveal">
+          <span class="card-icon">📜</span>
+          <h3>Live logs</h3>
+          <p>Tail or follow the logs of any container, with search, coloured levels
+            and download.</p>
         </article>
 
         <article class="card reveal">
           <span class="card-icon">🏠</span>
-          <h3>MQTT autodiscovery</h3>
-          <p>Sensors and switches appear in Home Assistant automatically, with stable IDs.</p>
-        </article>
-
-        <article class="card reveal">
-          <span class="card-icon">🔄</span>
-          <h3>Update manager</h3>
-          <p>Check for image updates and apply them with live progress feedback.</p>
+          <h3>Home Assistant</h3>
+          <p>A HACS integration brings update entities, container states and action
+            buttons to your dashboards.</p>
         </article>
 
         <article class="card reveal">
           <span class="card-icon">🔐</span>
-          <h3>Safe &amp; secure</h3>
-          <p>Two-factor authentication, secure mode and HTTPS support out of the box.</p>
-        </article>
-
-        <article class="card reveal">
-          <span class="card-icon">📱</span>
-          <h3>Installable PWA</h3>
-          <p>Add it to your home screen and use it like a native app, on any device.</p>
+          <h3>Private by design</h3>
+          <p>Sign-in with optional 2FA, no third-party requests from the browser,
+            and a Docker socket proxy in the example setup.</p>
         </article>
       </div>
     </section>
@@ -151,7 +158,7 @@
       <div class="section-head reveal">
         <span class="section-label">// screenshots</span>
         <h2>Take a look around</h2>
-        <p>Clean Material-inspired UI, available in light and dark themes.</p>
+        <p>A clean, focused UI — in light and dark themes, on desktop and phone.</p>
       </div>
 
       <div class="shots-grid">
@@ -159,44 +166,45 @@
           <div class="window">
             <div class="win-bar">
               <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
-              <span class="win-title">dashboard</span>
-            </div>
-            <img src="./home.png" alt="d2ha dashboard" loading="lazy" />
-          </div>
-          <figcaption>Dashboard — live stats at a glance</figcaption>
-        </figure>
-
-        <figure class="shot reveal">
-          <div class="window">
-            <div class="win-bar">
-              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
               <span class="win-title">containers</span>
             </div>
-            <img src="./container.png" alt="d2ha containers view" loading="lazy" />
+            <img src="./images/containers-light.png" alt="d2ha container list with updates available" loading="lazy" />
           </div>
-          <figcaption>Containers — controls &amp; details</figcaption>
+          <figcaption>Containers — updates at a glance, light theme</figcaption>
         </figure>
 
         <figure class="shot reveal">
           <div class="window">
             <div class="win-bar">
               <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
-              <span class="win-title">updates</span>
+              <span class="win-title">release notes</span>
             </div>
-            <img src="./aggiornamenti.png" alt="d2ha updates view" loading="lazy" />
+            <img src="./images/release-notes.png" alt="d2ha release notes of the exact new version" loading="lazy" />
           </div>
-          <figcaption>Updates — with live progress</figcaption>
+          <figcaption>Release notes — breaking changes in red</figcaption>
         </figure>
 
         <figure class="shot reveal">
           <div class="window">
             <div class="win-bar">
               <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
-              <span class="win-title">images</span>
+              <span class="win-title">updating</span>
             </div>
-            <img src="./immagini.png" alt="d2ha images view" loading="lazy" />
+            <img src="./images/update-progress.png" alt="d2ha updating a container with live progress"
+              loading="lazy" />
           </div>
-          <figcaption>Images — pull, prune, clean up</figcaption>
+          <figcaption>Updates — live progress, safe rollback</figcaption>
+        </figure>
+
+        <figure class="shot reveal">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">logs</span>
+            </div>
+            <img src="./images/logs.png" alt="d2ha live container logs" loading="lazy" />
+          </div>
+          <figcaption>Logs — tail, follow, search, download</figcaption>
         </figure>
       </div>
     </section>
@@ -204,18 +212,20 @@
     <section id="quickstart" class="section">
       <div class="section-head reveal">
         <span class="section-label">// quick-start</span>
-        <h2>Up and running in one command</h2>
-        <p>Point it at your Docker socket and open the UI. That’s it.</p>
+        <h2>Up and running in one minute</h2>
+        <p>Copy the example compose file, start it, and sign in with the code from the logs. That’s it.</p>
       </div>
 
       <div class="quickstart reveal">
-        <pre><code><span class="code-comment"># run d2ha</span>
-docker run -d -p 12021:12021 \
-  -v /var/run/docker.sock:/var/run/docker.sock:ro \
-  ghcr.io/arborae/docker2homeassistant:latest</code></pre>
+        <pre><code><span class="code-comment"># get the example compose file and start d2ha</span>
+curl -O https://raw.githubusercontent.com/Arborae/docker2homeassistant/main/compose.example.yaml
+mv compose.example.yaml compose.yaml
+docker compose up -d
+docker logs d2ha   <span class="code-comment"># ← your one-time setup code</span></code></pre>
         <p class="hint">
-          Then open <a href="http://localhost:12021"><code>http://localhost:12021</code></a> —
-          for Docker Compose, environment variables and first-login credentials, see the
+          Then open <a href="http://localhost:12021"><code>http://localhost:12021</code></a>, enter the setup code
+          and create your account — the example includes a Docker socket proxy, so d2ha never touches the
+          socket directly. Details in the
           <a href="./install/" style="color: var(--brand-soft);">installation guide</a>.
         </p>
       </div>
