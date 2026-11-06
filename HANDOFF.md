@@ -21,7 +21,7 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 - Fixed in PR #219: D2HA never offers to update the socket proxy it talks through.
 - After PR #219 is merged and released: enable Telegram on the owner's server (Claude),
   then retire Diun and docker-telegram-notifier after a few days of overlap.
-- For the integration (Kimi): `/api/v1/containers` now also has `is_proxy`; such
+- For the integration (Kimi): with PR #219 `/api/v1/containers` also has `is_proxy`; such
   containers have `can_update: false`, like D2HA itself.
 
 ## Next up
