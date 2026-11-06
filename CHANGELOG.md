@@ -5,11 +5,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- Telegram: the label `d2ha.notify=false` turns off crash and unhealthy alerts for a
+  container. When a container ran out of memory, the crash alert says so.
+
 ### Changed
 - The Home Assistant integration now has its own repository: the HACS instructions in
   Settings and in the README point to `arborae/ha-d2ha`.
 
 ### Fixed
+- Telegram: no crash alert for a container stopped on purpose (`docker stop` past its
+  timeout, `docker kill`, `docker rm -f`), which exits with 137. Other signals, such as the
+  HUP used to reload, still count as crashes if the container dies.
+- Telegram: when an alert cannot be sent, the log says for which container.
 - The D2HA images carry the standard OCI labels (version, source, revision, build date,
   licence), which they lacked: D2HA now shows its own version and release notes like for
   any other container. Nightly images are versioned `nightly-<commit>` instead of the

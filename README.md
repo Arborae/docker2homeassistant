@@ -73,10 +73,12 @@ In **Settings → Home Assistant** you can also choose which containers appear i
 | Message | When |
 | --- | --- |
 | 🆕 Updates available | A check finds a new version of an image you run: once per version, all new updates in one message. |
-| 🚨 Stopped with an error | A container exits with a code other than 0 and 143 (normal stops). |
+| 🚨 Stopped with an error | A container exits with a code other than 0 and 143 (normal stops), unless it was stopped on purpose (`docker stop`, `kill`, `rm -f`). When it ran out of memory, the message says so. |
 | ⚠️ Unhealthy | A container's health check fails. |
 
 The same alert for the same container is sent at most every 15 minutes. Stopped and unhealthy containers come from the Docker events: with the socket proxy, keep `EVENTS: 1`.
+
+A container with the label `d2ha.notify=false` never sends crash or unhealthy alerts (for example a job that is expected to fail).
 
 ## Security
 

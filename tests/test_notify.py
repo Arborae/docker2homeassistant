@@ -2,7 +2,7 @@ import requests
 
 from conftest import FakeTelegram, csrf_of
 from docker_ops import docker_proxy_host, is_proxy_container
-from notify import REPEAT_SECONDS, Notifier, NotifyError, Telegram, split_message
+from notify import REPEAT_SECONDS, STOP_SECONDS, Notifier, NotifyError, Telegram, split_message
 from store import Store
 
 SECRET = "123456:SECRET-TOKEN"
@@ -21,8 +21,8 @@ def make_notifier(tmp_path, telegram=None, clock=None):
     return Notifier(telegram or FakeTelegram(), store, clock or Clock()), store
 
 
-def event(action, name="web", exit_code=None):
-    attrs = {"name": name, "image": "nginx:1.27"}
+def event(action, name="web", exit_code=None, **attributes):
+    attrs = {"name": name, "image": "nginx:1.27", **attributes}
     if exit_code is not None:
         attrs["exitCode"] = exit_code
     return {"Type": "container", "Action": action, "Actor": {"Attributes": attrs}}
@@ -83,6 +83,47 @@ def test_repeated_alerts_are_held_back(tmp_path):
     assert notifier.event_message(event("die", name="db", exit_code="1"))  # another container
     clock.now += REPEAT_SECONDS
     assert notifier.event_message(event("die", exit_code="1"))
+
+
+def test_containers_stopped_on_purpose_are_not_crashes(tmp_path):
+    # Event sequences as Docker sends them (checked on a real host).
+    clock = Clock()
+    notifier, _ = make_notifier(tmp_path, clock=clock)
+    # docker rm -f: kill 9, die 137
+    assert notifier.event_message(event("kill", signal="9")) is None
+    assert notifier.event_message(event("die", exit_code="137")) is None
+    # docker stop past its timeout: kill 15, kill 9, die 137
+    notifier.event_message(event("kill", name="db", signal="15"))
+    notifier.event_message(event("kill", name="db", signal="9"))
+    clock.now += 12
+    assert notifier.event_message(event("die", name="db", exit_code="137")) is None
+    # docker kill -s HUP asks for a reload: dying afterwards is still a crash
+    notifier.event_message(event("kill", name="proxy", signal="1"))
+    assert "<b>137</b>" in notifier.event_message(event("die", name="proxy", exit_code="137"))
+    # a stop signal long ago does not hide a later crash
+    notifier.event_message(event("kill", name="app", signal="15"))
+    clock.now += STOP_SECONDS
+    assert notifier.event_message(event("die", name="app", exit_code="1"))
+    # a crash without any signal
+    assert notifier.event_message(event("die", name="worker", exit_code="3"))
+
+
+def test_out_of_memory_is_named(tmp_path):
+    notifier, _ = make_notifier(tmp_path)
+    assert notifier.event_message(event("oom")) is None
+    message = notifier.event_message(event("die", exit_code="137"))
+    assert "Out of memory" in message and "<b>137</b>" in message
+    notifier.event_message(event("oom", name="db"))
+    notifier.event_message(event("kill", name="db", signal="9"))
+    assert "Out of memory" in notifier.event_message(event("die", name="db", exit_code="137"))
+
+
+def test_a_label_turns_alerts_off(tmp_path):
+    notifier, _ = make_notifier(tmp_path)
+    quiet = {"d2ha.notify": "false"}
+    assert notifier.event_message(event("die", exit_code="1", **quiet)) is None
+    assert notifier.event_message(event("health_status: unhealthy", **quiet)) is None
+    assert notifier.event_message(event("die", exit_code="1", **{"d2ha.notify": "true"}))
 
 
 def test_switches_and_language(tmp_path):
