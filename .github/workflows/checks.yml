@@ -1,0 +1,60 @@
+name: Repository checks
+
+# Mistakes that tests do not catch: Windows line endings, permission changes, OS files,
+# secrets and personal data in a public repository.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Unix line endings
+        run: |
+          bad=$(git ls-files --eol | awk '$1 == "i/crlf" || $1 == "i/mixed" {print $NF}')
+          if [ -n "$bad" ]; then echo "::error::Windows line endings in:"; echo "$bad"; exit 1; fi
+      - name: No executable files
+        run: |
+          bad=$(git ls-files -s | awk '$1 == "100755" {print $4}')
+          if [ -n "$bad" ]; then echo "::error::Executable bit set (permission change?) on:"; echo "$bad"; exit 1; fi
+      - name: No OS files
+        run: |
+          bad=$(git ls-files | grep -iE '(^|/)(thumbs\.db|desktop\.ini|\.ds_store)$' || true)
+          if [ -n "$bad" ]; then echo "::error::Operating system files:"; echo "$bad"; exit 1; fi
+      - name: No private IP addresses or personal e-mail addresses
+        run: |
+          ip='\b(10\.([0-9]{1,3}\.){2}[0-9]{1,3}|172\.(1[6-9]|2[0-9]|3[01])\.[0-9]{1,3}\.[0-9]{1,3}|192\.168\.[0-9]{1,3}\.[0-9]{1,3})\b'
+          mail='[A-Za-z0-9._%+-]+@(gmail|googlemail|outlook|hotmail|live|yahoo|icloud|me|libero|virgilio|tiscali|proton|protonmail)\.[a-z.]+'
+          # Tests use made-up Docker network addresses.
+          ips=$(git ls-files -z -- . ':!tests/' | xargs -0 grep -lIE "$ip" || true)
+          mails=$(git ls-files -z | xargs -0 grep -lIiE "$mail" || true)
+          if [ -n "$ips$mails" ]; then echo "::error::Private addresses or personal e-mails in:"; echo "$ips $mails"; exit 1; fi
+      - name: No details of the owner's setup
+        env:
+          # Extended regular expression kept as a repository secret (it would reveal what it protects).
+          PATTERNS: ${{ secrets.PRIVATE_PATTERNS }}
+        run: |
+          if [ -z "$PATTERNS" ]; then echo "No PRIVATE_PATTERNS secret: skipped"; exit 0; fi
+          # Only file names are printed: the matching text would end up in a public log.
+          bad=$(git ls-files -z | xargs -0 grep -lIiE "$PATTERNS" || true)
+          if [ -n "$bad" ]; then echo "::error::Private details of the owner's setup in:"; echo "$bad"; exit 1; fi
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Secrets in the files
+        run: docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/repo:ro ghcr.io/gitleaks/gitleaks:v8.30.1 dir /repo --no-banner --redact
+      - name: Secrets in the commits of the pull request
+        if: github.event_name == 'pull_request'
+        run: >
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/repo:ro ghcr.io/gitleaks/gitleaks:v8.30.1 git /repo --no-banner --redact
+          --log-opts="--no-merges origin/${{ github.base_ref }}..HEAD"
