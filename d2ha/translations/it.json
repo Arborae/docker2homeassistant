@@ -220,5 +220,6 @@
   "notify.crashed": "si è fermato per un errore",
   "notify.unhealthy": "non è in salute (unhealthy)",
   "notify.image": "Immagine",
+  "notify.oom": "Memoria esaurita: l'ha fermato il kernel.",
   "notify.exit_code": "Codice di uscita"
 }

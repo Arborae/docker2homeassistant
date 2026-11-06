@@ -202,9 +202,9 @@ class DockerOps:
         return data.decode("utf-8", errors="replace")
 
     def events(self, since: Optional[int] = None):
-        """Container events D2HA reports (stopped, health changes), live and from ``since``."""
+        """Container events for the alerts (died, stop signals, out of memory, health), live and from ``since``."""
         return self.api.events(since=since, decode=True,
-                               filters={"type": "container", "event": ["die", "health_status"]})
+                               filters={"type": "container", "event": ["die", "health_status", "kill", "oom"]})
 
     def log_stream(self, container_id: str):
         """A live log stream (call ``close()`` on it to stop following)."""

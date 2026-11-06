@@ -17,6 +17,13 @@ TELEGRAM_API = "https://api.telegram.org"
 MAX_MESSAGE = 4096
 # A normal stop exits with 0, or 143 after SIGTERM: not worth a message.
 NORMAL_EXIT_CODES = {"0", "143"}
+# Signals of docker stop / kill / rm -f (INT, QUIT, KILL, TERM). A container that dies within
+# STOP_SECONDS of one of them was stopped on purpose; other signals (HUP: reload) are not stops.
+STOP_SIGNALS = {"2", "3", "9", "15"}
+STOP_SECONDS = 10 * 60
+OOM_SECONDS = 60
+# A container label that turns off crash and unhealthy alerts for that container.
+OPT_OUT_LABEL = "d2ha.notify"
 # The same alert for the same container at most this often (a crash loop would flood the chat).
 REPEAT_SECONDS = 15 * 60
 KINDS = ("updates", "crashes", "unhealthy")
@@ -87,6 +94,8 @@ class Notifier:
         self.clock = clock
         self.sleep = time.sleep
         self._last: Dict[tuple, float] = {}
+        self._stopping: Dict[str, float] = {}  # container name -> time of a stop signal
+        self._oom: Dict[str, float] = {}  # container name -> time of an out-of-memory kill
 
     @property
     def configured(self) -> bool:
@@ -129,13 +138,26 @@ class Notifier:
         action = str(event.get("Action") or event.get("status") or "")
         if not name or name.endswith(OLD_SUFFIX):
             return None  # the previous container of an update by D2HA, stopped on purpose
+        now = self.clock()
+        if action == "kill":
+            if str(attrs.get("signal", "")) in STOP_SIGNALS:
+                self._stopping[name] = now
+            return None
+        if action == "oom":
+            self._oom[name] = now
+            return None
+        if str(attrs.get(OPT_OUT_LABEL, "")).strip().lower() in ("false", "0", "no", "off"):
+            return None
         if action == "die":
             code = str(attrs.get("exitCode", ""))
-            if code in NORMAL_EXIT_CODES:
+            stopped = now - self._stopping.pop(name, float("-inf")) < STOP_SECONDS
+            oom = now - self._oom.pop(name, float("-inf")) < OOM_SECONDS
+            if code in NORMAL_EXIT_CODES or (stopped and not oom):
                 return None
             kind = "crashes"
             text = (f"🚨 <b>{esc(name)}</b> {esc(self._t('notify.crashed'))}\n"
-                    f"{esc(self._t('notify.image'))}: <code>{esc(image)}</code>\n"
+                    + (f"{esc(self._t('notify.oom'))}\n" if oom else "")
+                    + f"{esc(self._t('notify.image'))}: <code>{esc(image)}</code>\n"
                     f"{esc(self._t('notify.exit_code'))}: <b>{esc(code or '?')}</b>")
         elif action.startswith("health_status") and action.split(":", 1)[-1].strip() == "unhealthy":
             kind = "unhealthy"
@@ -145,7 +167,6 @@ class Notifier:
             return None
         if not self.enabled(kind):
             return None
-        now = self.clock()
         if now - self._last.get((kind, name), 0.0) < REPEAT_SECONDS:
             return None
         self._last[(kind, name)] = now
@@ -155,11 +176,12 @@ class Notifier:
         text = self.event_message(event)
         if not text:
             return
+        name = (event.get("Actor") or {}).get("Attributes", {}).get("name")
         try:
             self.telegram.send(text)
-            log.info("Telegram: sent %s alert for %s", event.get("Action"), (event.get("Actor") or {}).get("Attributes", {}).get("name"))
+            log.info("Telegram: sent %s alert for %s", event.get("Action"), name)
         except NotifyError as exc:
-            log.warning("Telegram: %s", exc)
+            log.warning("Telegram: %s alert for %s not sent: %s", event.get("Action"), name, exc)
 
     # -- Docker events ----------------------------------------------------------------
 
