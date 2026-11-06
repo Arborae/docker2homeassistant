@@ -3,7 +3,23 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [0.4.0] - Unreleased
+## [0.4.1] - 2026-11-06
+
+### Changed
+- The README is rewritten from scratch for 0.4, with screenshots taken from the demo
+  (sample data only).
+- The license changes from MIT to GNU GPL v3.0.
+- The Settings page suggests adding D2HA to HACS as a custom repository (the integration
+  is not in the default HACS list).
+
+### Added
+- `scripts/demo.py`: runs the interface with sample data and no Docker, with real release
+  notes from GitHub.
+
+### Fixed
+- The update progress bar no longer jumps back when the first percentage arrives.
+
+## [0.4.0] - 2026-11-06
 
 A rewrite focused on what D2HA is for: knowing when your containers have updates,
 seeing them in Home Assistant, and reading container logs. Everything else is gone.
