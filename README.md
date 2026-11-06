@@ -39,7 +39,11 @@ docker compose up -d
 docker logs d2ha
 ```
 
-The log shows a **setup code**. Open `http://<server>:12021` from the server itself (or through your reverse proxy), enter the code and create your account.
+The log shows a **setup code**. Open D2HA, enter the code and create your account. The example listens on `127.0.0.1` only, so:
+
+- in a browser on the server itself, open `http://localhost:12021`;
+- from another computer, open an SSH tunnel first (`ssh -L 12021:localhost:12021 <user>@<server>`), then `http://localhost:12021` on that computer;
+- or go through your reverse proxy or tunnel, if you already have one.
 
 The example starts two containers:
 
