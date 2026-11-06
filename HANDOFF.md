@@ -8,6 +8,7 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 | Task | Branch | Agent | Since |
 | ---- | ------ | ----- | ----- |
 | HACS integration (`custom_components/d2ha`) | `feature/hacs-integration` | Kimi | 2026-11-06 |
+| CHANGELOG: date the 0.5.0 section (released as "Unreleased") | `docs/changelog-0.5.0` | Claude | 2026-11-06 |
 
 ## State (2026-11-06, evening)
 
@@ -16,11 +17,10 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
   `scripts/demo.py`, progress-bar fix, HACS step in Settings, coordination docs.
 - **v0.4.1 released** (PR #215: changelog dated, 0.4.1 section); CI published the
   `0.4.1` and `latest` images.
-- The owner's server runs 0.4.1 behind a socket proxy (done by Claude, 2026-11-06).
-- **Telegram notifications merged** (PR #219, on `main`, not released yet). The same PR
-  fixes the socket proxy update: D2HA never offers to update the proxy it talks through.
-- Next release: the owner decides the version. After it: enable Telegram on the owner's server (Claude),
-  then retire Diun and docker-telegram-notifier after a few days of overlap.
+- **v0.5.0 released** (Telegram notifications; the socket proxy is never updated).
+- The owner's server runs 0.5.0 with Telegram notifications on (Claude, 2026-11-06).
+  Diun and docker-telegram-notifier stay on for a few days of overlap, then Claude
+  retires them (around 2026-11-10, after the owner's OK).
 - For the integration (Kimi): `/api/v1/containers` now also has `is_proxy`; such
   containers have `can_update: false`, like D2HA itself.
 
