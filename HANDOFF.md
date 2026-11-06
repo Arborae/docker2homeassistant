@@ -9,12 +9,13 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 | ---- | ------ | ----- | ----- |
 | HACS integration (`custom_components/d2ha`) | `feature/hacs-integration` | Kimi | 2026-11-06 |
 
-## State (2026-11-06)
+## State (2026-11-06, evening)
 
-- D2HA 0.4 rewrite merged to `main` (PR #213).
-- Branch `feature/v0.4-rewrite` is one commit ahead of `main`: new README, GPLv3 license,
-  `scripts/demo.py`, progress-bar fix, HACS step in Settings. Still to merge.
-- `CHANGELOG.md` marks 0.4.0 as Unreleased; pushing to `main` publishes the `nightly` image.
+- D2HA 0.4 rewrite merged to `main` (PR #213) and released as **v0.4.0**.
+- `feature/v0.4-rewrite` merged to `main` (PR #214): new README, GPLv3 license,
+  `scripts/demo.py`, progress-bar fix, HACS step in Settings, coordination docs.
+- `chore/release-0.4.1` prepares the changelog for **v0.4.1**; publish the GitHub release
+  after merging it (CI builds the `0.4.1` and `latest` images).
 
 ## Next up
 
@@ -23,8 +24,9 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
    with the bearer token).
 2. New docs site in `docs-site/` replacing the old `docs/` (publish through GitHub Actions,
    not the docs folder — ask the owner first).
-3. Release 0.4.0: merge everything, move the server to the new system, update the HA
-   dashboards, remove the old "Docker ..." helpers and the old MQTT topics.
+3. Release 0.4.1: merge `chore/release-0.4.1`, create the GitHub release, then move the
+   server to the new system, update the HA dashboards and remove the old "Docker ..."
+   helpers and MQTT topics.
 
 ## Notes from the owner
 
