@@ -3,17 +3,14 @@
 Shared state between the AI assistants working on this repository (see AGENTS.md,
 "Multi-agent coordination"). Read this first; update it last.
 
-## In progress
+## Tasks
 
-> **Changing (decided by the owner, 2026-11-06):** tasks move to GitHub issues with the
-> label `claude` or `kimi`. The table below stays until the rules land in AGENTS.md
-> (branch `chore/coordination`).
+Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md, PR #226):
 
-| Task | Branch | Agent | Since |
-| ---- | ------ | ----- | ----- |
-| HACS integration (`custom_components/d2ha`) | `feature/hacs-integration` | Kimi | 2026-11-06 |
-| CHANGELOG: date the 0.5.0 section (released as "Unreleased") | `docs/changelog-0.5.0` | Claude | 2026-11-06 |
-| Coordination: rules in AGENTS.md, PR template, CI checks, `API.md`, labels and issues | `chore/coordination` | Claude | 2026-11-06 |
+- Claude: #221 coordination rules (PR #226, review by Kimi), #223 review of the landing
+  page, #224 HACS instructions → `arborae/ha-d2ha` (blocked), #225 OCI labels on images.
+- Kimi: #222 Home Assistant integration in `arborae/ha-d2ha` (contract: `API.md`).
+- Owner: merge PR #220 (changelog 0.5.0) and PR #226.
 
 ## State (2026-11-06, evening)
 
