@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#070b0a" />
-  <meta name="description" content="Install d2ha — Docker Compose or docker run, plus configuration tips." />
+  <meta name="description" content="Install d2ha — Docker Compose with a socket proxy, first-run setup code and the Home Assistant integration." />
   <title>Installation — d2ha</title>
 
   <link rel="icon" href="../assets/logo.svg" type="image/svg+xml" />
@@ -52,8 +52,8 @@
       <span class="section-label">// install</span>
       <h1>Installation guide</h1>
       <p class="lead">
-        Choose the method that fits your stack. We recommend Docker Compose for
-        persistent setups.
+        D2HA runs on any amd64 or arm64 machine with Docker Engine 24 or newer.
+        We recommend the Compose setup: it includes a Docker socket proxy with secure defaults.
       </p>
     </div>
 
@@ -64,19 +64,15 @@
             Docker Compose
             <span class="badge green">Recommended</span>
           </div>
-          <p>Best for long-term usage with persistent data.</p>
-          <pre><code>services:
-  d2ha:
-    image: ghcr.io/arborae/docker2homeassistant:latest
-    container_name: d2ha
-    restart: unless-stopped
-    ports:
-      - "12021:12021"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./data:/app/data
-    environment:
-      D2HA_SECRET_KEY: "change-this-secret"</code></pre>
+          <p>Copy <a href="https://github.com/Arborae/docker2homeassistant/blob/main/compose.example.yaml"
+              target="_blank" rel="noreferrer"
+              style="color: var(--brand-soft);">compose.example.yaml</a> to a new folder as
+            <code>compose.yaml</code>, read it, then:</p>
+          <pre><code>docker compose up -d
+docker logs d2ha   # ← your one-time setup code</code></pre>
+          <p style="margin-top: 14px;">The example starts two containers: <code>d2ha</code>, published on
+            <code>127.0.0.1:12021</code> only, and <code>docker-proxy</code>, so D2HA never touches the Docker
+            socket directly and can only make the API calls it needs.</p>
         </article>
 
         <article class="method-card reveal">
@@ -84,34 +80,56 @@
             Docker Run
             <span class="badge grey">Quick test</span>
           </div>
-          <p>Good for testing quickly without a compose file.</p>
+          <p>Good for a quick look, without the socket proxy.</p>
           <pre><code>docker run -d \
   --name d2ha \
-  -p 12021:12021 \
+  -p 127.0.0.1:12021:12021 \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v $(pwd)/data:/app/data \
-  -e D2HA_SECRET_KEY="change-me" \
   ghcr.io/arborae/docker2homeassistant:latest</code></pre>
         </article>
 
         <article class="method-card reveal">
-          <div class="method-title">Configuration tips</div>
-          <p>
-            Use <code>MQTT_BROKER</code>, <code>MQTT_USERNAME</code> and related
-            environment variables to pre-configure the MQTT connection.
-          </p>
-          <p>
-            Prefer living on the edge? The <code>:nightly</code> image tag ships the
-            latest features — potentially unstable.
-          </p>
+          <div class="method-title">First run</div>
+          <p>The container log shows a <strong>one-time setup code</strong>. Open
+            <a href="http://localhost:12021"><code>http://localhost:12021</code></a>, enter the code and create
+            your account — there are no default credentials.</p>
+          <p style="margin-top: 14px;">Two-factor authentication (TOTP) is available in
+            <strong>Settings → Security</strong>, and recommended if D2HA is reachable through a reverse proxy
+            or a tunnel.</p>
         </article>
 
         <article class="method-card reveal">
-          <div class="method-title">First login</div>
-          <p>Open <a href="http://localhost:12021"><code>http://localhost:12021</code></a> and sign in with:</p>
-          <pre><code>Username: admin
-Password: admin</code></pre>
-          <p style="margin-top: 14px;">You will be prompted to change these immediately.</p>
+          <div class="method-title">Home Assistant</div>
+          <p>In HACS, add
+            <code>github.com/Arborae/docker2homeassistant</code> as a custom repository of type
+            <strong>Integration</strong>, download <strong>D2HA</strong> and restart Home Assistant.</p>
+          <p style="margin-top: 14px;">Then create an API token in D2HA under
+            <strong>Settings → Home Assistant</strong> and add the integration in Home Assistant with the
+            address of D2HA and the token.</p>
+        </article>
+
+        <article class="method-card reveal">
+          <div class="method-title">Configuration tips</div>
+          <p>Everything is optional; the full list is in
+            <a href="https://github.com/Arborae/docker2homeassistant/blob/main/.env.example" target="_blank"
+              rel="noreferrer" style="color: var(--brand-soft);">.env.example</a>:</p>
+          <p style="margin-top: 10px;">
+            <code>D2HA_CHECK_INTERVAL_HOURS</code> — hours between update checks (6 by default)<br />
+            <code>D2HA_GITHUB_TOKEN</code> — raises the GitHub rate limit for release notes<br />
+            <code>D2HA_READ_ONLY</code> — notifications and logs only, no updates<br />
+            <code>D2HA_FRAME_ANCESTORS</code> — allow a Home Assistant dashboard to embed D2HA
+          </p>
+          <p style="margin-top: 14px;">Prefer living on the edge? The <code>:nightly</code> image tag ships the
+            latest features — potentially unstable.</p>
+        </article>
+
+        <article class="method-card reveal">
+          <div class="method-title">Keep it private</div>
+          <p>D2HA can update containers, so treat it like an admin panel: keep it off the internet, or put it
+            behind HTTPS and an access layer (a VPN, Cloudflare Access, an authenticating reverse proxy).</p>
+          <p style="margin-top: 14px;">The example compose binds to <code>127.0.0.1</code> on purpose: a reverse
+            proxy or tunnel on the same machine can reach it, the rest of the network cannot.</p>
         </article>
       </div>
 
