@@ -30,10 +30,14 @@ def current() -> str:
     return DEFAULT_LANGUAGE
 
 
-def t(key: str, **params) -> str:
-    lang = current()
+def translate(lang: str, key: str, **params) -> str:
+    """A text in a given language (for messages sent outside a request)."""
     text = _TEXTS.get(lang, {}).get(key) or _TEXTS.get(DEFAULT_LANGUAGE, {}).get(key) or key
     return text.format(**params) if params else text
+
+
+def t(key: str, **params) -> str:
+    return translate(current(), key, **params)
 
 
 CLIENT_PREFIXES = ("js.", "status.", "phase.", "error.", "api.")

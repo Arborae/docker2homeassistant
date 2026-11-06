@@ -1,5 +1,6 @@
 """Docker access: container listing, logs, image pruning and safe container recreation."""
 
+import ipaddress
 import logging
 import os
 import re
@@ -13,6 +14,8 @@ from docker.utils import parse_repository_tag
 log = logging.getLogger(__name__)
 
 ProgressFn = Callable[[Dict[str, Any]], None]
+# During an update the old container is kept under this name until the new one runs.
+OLD_SUFFIX = "-d2ha-old"
 
 VERSION_LABELS = (
     "org.opencontainers.image.version",
@@ -67,6 +70,34 @@ def _self_container_id() -> str:
     return os.environ.get("HOSTNAME", "") if re.fullmatch(r"[0-9a-f]{12}", os.environ.get("HOSTNAME", "")) else ""
 
 
+def docker_proxy_host(docker_host: Optional[str] = None) -> str:
+    """The host name in DOCKER_HOST (e.g. ``docker-proxy``), or "" for a local socket or an IP."""
+    raw = os.environ.get("DOCKER_HOST", "") if docker_host is None else docker_host
+    match = re.match(r"^(?:tcp|https?)://\[?([^\]/:]+)\]?(?::\d+)?/?$", raw.strip())
+    if not match:
+        return ""
+    host = match.group(1).lower()
+    try:
+        ipaddress.ip_address(host)
+        return ""
+    except ValueError:
+        return "" if host == "localhost" else host
+
+
+def is_proxy_container(proxy_host: str, name: str, labels: Optional[Dict[str, str]],
+                       networks: Optional[Dict[str, Any]]) -> bool:
+    """True if this container answers to the DOCKER_HOST name D2HA uses to reach Docker."""
+    if not proxy_host:
+        return False
+    names = {name.lower(), str((labels or {}).get("com.docker.compose.service", "")).lower()}
+    for endpoint in (networks or {}).values():
+        for alias in (endpoint or {}).get("Aliases") or []:
+            names.add(str(alias).lower())
+        for alias in (endpoint or {}).get("DNSNames") or []:
+            names.add(str(alias).lower())
+    return proxy_host in names
+
+
 class UpdateError(RuntimeError):
     """An update failed; ``code`` is an i18n key for the user-facing message."""
 
@@ -81,6 +112,8 @@ class DockerOps:
         self.client = client or docker.from_env(version="auto", timeout=60)
         self.api = self.client.api
         self.self_id = _self_container_id()
+        # D2HA reaches Docker through this container (a socket proxy): it must never update it.
+        self.proxy_host = docker_proxy_host()
         self._image_cache: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
 
@@ -158,6 +191,8 @@ class DockerOps:
                 "health": health,
                 "created": raw.get("Created", 0),
                 "is_self": bool(self.self_id) and raw["Id"].startswith(self.self_id),
+                "is_proxy": is_proxy_container(self.proxy_host, name, labels,
+                                               (raw.get("NetworkSettings") or {}).get("Networks")),
             })
         items.sort(key=lambda c: (c["stack"] == "", c["stack"].lower(), c["name"].lower()))
         return items
@@ -165,6 +200,11 @@ class DockerOps:
     def logs(self, container_id: str, tail: int = 200) -> str:
         data = self.api.logs(container_id, stdout=True, stderr=True, timestamps=True, tail=tail)
         return data.decode("utf-8", errors="replace")
+
+    def events(self, since: Optional[int] = None):
+        """Container events D2HA reports (stopped, health changes), live and from ``since``."""
+        return self.api.events(since=since, decode=True,
+                               filters={"type": "container", "event": ["die", "health_status"]})
 
     def log_stream(self, container_id: str):
         """A live log stream (call ``close()`` on it to stop following)."""
@@ -279,6 +319,9 @@ class DockerOps:
             raise UpdateError("error.no_tag", image_ref)
         if self.self_id and old["Id"].startswith(self.self_id):
             raise UpdateError("error.self_update")
+        if is_proxy_container(self.proxy_host, name, (old.get("Config") or {}).get("Labels"),
+                              (old.get("NetworkSettings") or {}).get("Networks")):
+            raise UpdateError("error.proxy_update")
 
         progress({"phase": "pull", "percent": 0})
         new_image_id = self.pull(image_ref, progress)
@@ -289,7 +332,7 @@ class DockerOps:
         old_image_config = self.api.inspect_image(old["Image"]).get("Config") or {}
         config = self.build_create_config(old, old_image_config, image_ref, new_image_id)
         was_running = bool((old.get("State") or {}).get("Running"))
-        backup_name = f"{name}-d2ha-old"
+        backup_name = f"{name}{OLD_SUFFIX}"
 
         progress({"phase": "stop", "percent": 100})
         self.api.rename(old["Id"], backup_name)

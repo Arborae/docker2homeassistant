@@ -134,6 +134,42 @@
     </div>
   </section>
 
+  <section class="card" id="notifications">
+    <div class="card-head">{{ icon('bell') }}<h2>{{ t('settings.notifications') }}</h2></div>
+    <div class="card-body stack-v">
+      {% if not telegram_ready %}
+        <div class="alert alert-info">{{ icon('alert') }}<span>{{ t('settings.notify_missing') }}</span></div>
+      {% else %}
+        <p>{{ t('settings.notify_ready') }}</p>
+        <form method="post" action="{{ url_for('web.notification_settings') }}" class="stack-v">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div class="toggle-list">
+            {% for kind, label in [('updates', t('settings.notify_updates')), ('crashes', t('settings.notify_crashes')), ('unhealthy', t('settings.notify_unhealthy'))] %}
+            <label class="toggle-item">
+              <span class="name">{{ label }}</span>
+              <span class="switch"><input type="checkbox" name="{{ kind }}" {% if notify[kind] %}checked{% endif %}><span></span></span>
+            </label>
+            {% endfor %}
+          </div>
+          <p class="muted">{{ t('settings.notify_events_help') }}</p>
+          <div class="form-grid">
+            <div class="field">
+              <label for="notify-language">{{ t('settings.notify_language') }}</label>
+              <select class="input" id="notify-language" name="language">
+                {% for lang, name in languages.items() %}<option value="{{ lang }}" {% if lang == notify_language %}selected{% endif %}>{{ name }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="field"><button class="btn" type="submit">{{ t('ui.save') }}</button></div>
+          </div>
+        </form>
+        <form method="post" action="{{ url_for('web.notification_test') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn" type="submit">{{ icon('bell') }}<span>{{ t('settings.notify_test') }}</span></button>
+        </form>
+      {% endif %}
+    </div>
+  </section>
+
   <section class="card" id="about">
     <div class="card-head">{{ icon('box') }}<h2>{{ t('settings.about') }}</h2></div>
     <div class="card-body">

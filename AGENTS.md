@@ -6,7 +6,8 @@ exposes all of it to Home Assistant through a versioned API.
 
 ## Scope
 Keep D2HA focused: update status + release notes, Home Assistant integration, container logs,
-sign-in with 2FA, PWA, light/dark theme, Italian/English. Do not add general Docker management
+Telegram notifications (updates, crashed and unhealthy containers), sign-in with 2FA, PWA,
+light/dark theme, Italian/English. Do not add general Docker management
 (networks, volumes, compose editing, stats dashboards).
 
 ## Layout
@@ -20,6 +21,7 @@ sign-in with 2FA, PWA, light/dark theme, Italian/English. Do not add general Doc
   - `releases.py` – GitHub release notes and breaking changes.
   - `checker.py` – scheduled update check, persisted to `state.json`.
   - `jobs.py` – background jobs with live progress.
+  - `notify.py` – Telegram notifications and the Docker events watcher.
   - `web.py` – HTML pages; `api.py` – `/api/v1` (session + CSRF, or bearer token).
   - `i18n.py` + `translations/{en,it}.json` – every user-visible string.
   - `templates/`, `static/` (`app.css`, `app.js`, `icons.svg`, `sw.js`, `manifest.json`).

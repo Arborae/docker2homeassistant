@@ -14,6 +14,7 @@ D2HA is a container that watches your Docker host. It finds the real new version
 - **Release notes that match.** The GitHub release of that exact version, found through the image `org.opencontainers.image.source` label, with the breaking changes highlighted.
 - **Safe updates.** The new image is downloaded while the container keeps running, then the container is recreated with the settings you gave it: environment, volumes (anonymous ones too), networks and aliases, ports, restart policy. If the new container does not start, the old one is put back. Update one container or all of them, with live progress; closing the page does not stop an update.
 - **Image cleanup.** Remove the images no container uses any more.
+- **Telegram notifications.** A message when a new version is out (once per version, with the release notes and a warning for breaking changes), when a container stops with an error and when it becomes unhealthy.
 - **Logs.** The last lines or the live stream, with search, levels in colour, wrap and download.
 - **Home Assistant.** An integration from HACS: an update entity for each container (install and release notes from Home Assistant), container states, counters, and buttons to check, update all and clean images.
 - **Private by design.** Sign-in with optional two-factor authentication, no third-party requests from the browser, no environment variables or secrets shown, and an example setup where D2HA reaches Docker only through a socket proxy.
@@ -45,7 +46,7 @@ The example starts two containers:
 - `d2ha`, published on `127.0.0.1:12021` only: Home Assistant on the same host, a reverse proxy or a tunnel can reach it, the rest of the network cannot;
 - `docker-proxy` ([linuxserver/socket-proxy](https://github.com/linuxserver/docker-socket-proxy)), so D2HA never touches the Docker socket: it allows only the calls D2HA needs, and no `exec`, volumes or networks.
 
-Options (all optional) are listed in [`.env.example`](.env.example): the hours between checks, a GitHub token for release notes (raises the GitHub limit from 60 to 5,000 requests per hour), a read-only mode, and the Home Assistant address allowed to show D2HA in an iframe.
+Options (all optional) are listed in [`.env.example`](.env.example): the hours between checks, Telegram notifications, a GitHub token for release notes (raises the GitHub limit from 60 to 5,000 requests per hour), a read-only mode, and the Home Assistant address allowed to show D2HA in an iframe.
 
 ### 2. Home Assistant
 
@@ -59,12 +60,26 @@ Options (all optional) are listed in [`.env.example`](.env.example): the hours b
 
 In **Settings → Home Assistant** you can also choose which containers appear in Home Assistant.
 
+### 3. Telegram notifications (optional)
+
+1. Create a bot with [@BotFather](https://t.me/BotFather) and copy its token; send the bot a message, then read your chat id (for example with [@userinfobot](https://t.me/userinfobot)).
+2. Give D2HA `D2HA_TELEGRAM_TOKEN` and `D2HA_TELEGRAM_CHAT_ID` (see `compose.example.yaml`) and restart it.
+3. In **Settings → Telegram notifications** choose what you want to receive and the language, and send a test message.
+
+| Message | When |
+| --- | --- |
+| 🆕 Updates available | A check finds a new version of an image you run: once per version, all new updates in one message. |
+| 🚨 Stopped with an error | A container exits with a code other than 0 and 143 (normal stops). |
+| ⚠️ Unhealthy | A container's health check fails. |
+
+The same alert for the same container is sent at most every 15 minutes. Stopped and unhealthy containers come from the Docker events: with the socket proxy, keep `EVENTS: 1`.
+
 ## Security
 
 D2HA can update containers, so treat it like an admin panel:
 
 - keep it off the internet, or put it behind HTTPS and an access layer (a VPN, Cloudflare Access, an authenticating reverse proxy), and turn on two-factor authentication;
-- use the socket proxy of the example. With updates enabled the proxy must allow creating, starting and stopping containers, so a stolen session could still create a container: if you only want notifications and logs, set `D2HA_READ_ONLY=true` and `POST: 0` on the proxy;
+- use the socket proxy of the example (D2HA recognises it and never updates it: update it yourself). With updates enabled the proxy must allow creating, starting and stopping containers, so a stolen session could still create a container: if you only want notifications and logs, set `D2HA_READ_ONLY=true` and `POST: 0` on the proxy;
 - the API token for Home Assistant is shown once and stored only as a hash; you can revoke it at any time.
 
 Found a security problem? Please open a [private security advisory](https://github.com/arborae/docker2homeassistant/security/advisories/new) instead of a public issue.

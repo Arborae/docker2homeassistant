@@ -25,7 +25,7 @@ def _views() -> List[Dict[str, Any]]:
     views = []
     for container in ctx().ops.list_containers():
         view = ctx().checker.view(container)
-        view["can_update"] = (not read_only and not view["is_self"]
+        view["can_update"] = (not read_only and not view["is_self"] and not view["is_proxy"]
                               and view["update"] not in ("pinned", "local"))
         views.append(view)
     return views
@@ -242,6 +242,8 @@ def update(key: str):
         return error
     if container["is_self"]:
         return jsonify(error="self_update"), 400
+    if container["is_proxy"]:
+        return jsonify(error="proxy_update"), 400
     app_ctx = ctx()
     job = app_ctx.jobs.submit("update", key, container["name"],
                               lambda j: _update_one(app_ctx, key, j))

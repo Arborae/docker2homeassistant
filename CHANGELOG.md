@@ -3,6 +3,22 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Telegram notifications**, to replace tools like Diun and docker-telegram-notifier:
+  a message when a new version of an image is found (once per version, with the release
+  notes link and a warning for breaking changes), when a container stops with an error
+  (exit code other than 0 and 143) and when a container becomes unhealthy. Each kind can be
+  turned off in Settings, with the language of the messages and a test button. The bot token
+  and the chat come from `D2HA_TELEGRAM_TOKEN` and `D2HA_TELEGRAM_CHAT_ID`; they are never
+  stored or shown. The same alert for the same container is sent at most every 15 minutes.
+
+### Fixed
+- D2HA no longer offers to update the socket proxy it reaches Docker through, and "Update
+  all" skips it: recreating it cut D2HA off from Docker halfway and left the proxy stopped.
+  The proxy is recognised from the host name in `DOCKER_HOST`.
+
 ## [0.4.1] - 2026-11-06
 
 ### Changed
