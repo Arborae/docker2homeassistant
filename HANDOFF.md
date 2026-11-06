@@ -5,10 +5,15 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 ## In progress
 
+> **Changing (decided by the owner, 2026-11-06):** tasks move to GitHub issues with the
+> label `claude` or `kimi`. The table below stays until the rules land in AGENTS.md
+> (branch `chore/coordination`).
+
 | Task | Branch | Agent | Since |
 | ---- | ------ | ----- | ----- |
 | HACS integration (`custom_components/d2ha`) | `feature/hacs-integration` | Kimi | 2026-11-06 |
 | CHANGELOG: date the 0.5.0 section (released as "Unreleased") | `docs/changelog-0.5.0` | Claude | 2026-11-06 |
+| Coordination: rules in AGENTS.md, PR template, CI checks, `API.md`, labels and issues | `chore/coordination` | Claude | 2026-11-06 |
 
 ## State (2026-11-06, evening)
 
