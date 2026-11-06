@@ -1,56 +1,99 @@
 # Changelog
 
-Tutte le modifiche rilevanti a questo progetto sono documentate in questo file.
+All notable changes to this project are documented here.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-Il formato si ispira a [Keep a Changelog](https://keepachangelog.com/it/1.0.0/)
-e il progetto adotta un versionamento di tipo [SemVer](https://semver.org/lang/it/).
+## [0.4.0] - Unreleased
+
+A rewrite focused on what D2HA is for: knowing when your containers have updates,
+seeing them in Home Assistant, and reading container logs. Everything else is gone.
+
+### Added
+- **Real versions from the registry.** Update checks read the image digest with a HEAD request
+  (free on Docker Hub) and, only when something changed, the labels of the new image, so the
+  latest version shown is the real one. Private registries fall back to the Docker daemon.
+- **Release notes that match.** Notes come from the GitHub release of the exact new version,
+  found through the image `org.opencontainers.image.source` label; breaking changes are highlighted.
+- **Safer updates.** The new image is pulled while the container keeps running; the container is
+  then recreated with the settings you gave it (the defaults of the old image are not copied over,
+  anonymous volumes are re-attached, networks and aliases kept). If the new container does not
+  start, the previous one is restored.
+- Updates run as background jobs with live progress (phase, download size, percentage):
+  closing the page does not stop them.
+- Versioned API (`/api/v1`) with a bearer token for Home Assistant.
+- First-run setup protected by a one-time code printed in the container logs.
+- Read-only mode (`D2HA_READ_ONLY`) and an example compose file with a Docker socket proxy.
+- Complete Italian and English translations; light, dark and system themes.
+
+### Changed
+- New interface: one page for containers (updates, release notes, logs) and one for settings.
+- Update checks run every 6 hours by default (configurable) instead of continuously.
+- Python 3.13; images for amd64 and arm64.
+- The app uses ~50 MB of RAM and almost no CPU when idle (no per-container statistics polling).
+- Data is kept in one file, `d2ha.json` (mode 600). Accounts and preferences of 0.3 are imported
+  automatically on first start; the old files are left in place.
+
+### Removed
+- MQTT integration, replaced by a native Home Assistant integration installable from HACS.
+- Network, volume, image and compose-file management; events page; CPU/RAM/network charts;
+  container details with environment variables; safe, performance and debug modes; notifications
+  panel; clock settings.
+
+### Security
+- Container environment variables and commands are no longer exposed by the API.
+- Strict Content Security Policy, no third-party requests (Chart.js from a CDN is gone).
+- Actions only through POST with a CSRF token; logout through POST.
+- Sessions are invalidated on password or 2FA change; 2FA codes cannot be reused.
+- The service worker caches static files only, never pages, API responses or logs.
+
+## [0.3.1] - 2026-06-20
+
+### Added
+- Live progress while updating a container: current phase, download progress (bytes and
+  percentage across all layers) and the last log line, streamed over SSE.
+- Optional `D2HA_GITHUB_TOKEN` to raise the GitHub API rate limit for release notes
+  (60 to 5000 requests per hour).
+- `.dockerignore` to keep local data and secrets out of the image.
+
+### Fixed
+- The update runs in a background thread: a client disconnecting halfway through the pull no
+  longer leaves the container removed but not recreated.
+- The image revision label (a commit hash) is no longer shown as a version.
+
+### Removed
+- The old debug overlay of the update flow, replaced by the progress view.
 
 ## [0.3.0] - 2026-06-20
 
 ### Added
-- **PWA installabile**: aggiunti `manifest.json` e service worker (`sw.js`); l'app è ora
-  installabile dal browser come applicazione standalone su Android, iOS e desktop.
-- I requisiti PWA (manifest, registrazione del service worker, icone 192/512) sono ora
-  presenti su **tutte le pagine d'ingresso** (login, splash, dashboard), così
-  l'installazione è offerta già dalla schermata di accesso.
-- Schermata di **splash** con health-check del backend durante l'avvio.
-- Protezione **CSRF** per le richieste form, con esenzione delle API JSON tutelate dalla
-  Same-Origin Policy.
-- **Rate limiting** sugli endpoint `/api/*` di scrittura.
-- **Timeout di sessione** configurabile (logout automatico per inattività).
+- Installable Progressive Web App (`manifest.json`, service worker), offered on every entry
+  page including sign-in.
+- Splash screen with a backend health check during start-up.
+- CSRF protection for form requests.
+- Rate limiting on write endpoints under `/api/*`.
+- Configurable session timeout (automatic logout after inactivity).
 
 ### Changed
-- **Refactor del service layer**: la logica Docker monolitica (`services/docker.py`) è stata
-  riorganizzata in un **package modulare** (`services/docker/`) suddiviso per dominio:
-  container, immagini/aggiornamenti, reti, volumi, sistema, eventi.
-- Il rate limiting del login e delle API ora usa l'**IP reale del client** dietro reverse
-  proxy (`CF-Connecting-IP` / primo hop di `X-Forwarded-For`) invece dell'indirizzo del proxy.
-- I log di debug del flusso di aggiornamento container usano ora il **logger** (rispettando
-  la redazione dei dati sensibili) invece di `print` su stderr.
+- The monolithic Docker service split into a package by domain: containers, images and
+  updates, networks, volumes, system, events.
+- Login and API rate limits use the real client IP behind a reverse proxy
+  (`CF-Connecting-IP` or the first `X-Forwarded-For` hop).
+- Update-flow debug output goes through the logger, with sensitive values redacted.
 
 ### Fixed
-- Le azioni sui container (`start`/`stop`/`restart`/`delete`/…) non riportano più un falso
-  "successo" quando l'operazione Docker fallisce: gli errori vengono propagati e restituiti
-  dall'API.
-- `remove_image` non ignora più silenziosamente gli errori; la rimozione di un'immagine
-  mostra ora un esito chiaro (successo/errore) nell'interfaccia.
-- Corretto un errore di template nello splash (`{ { … } }` invece di `{{ … }}`) che generava
-  JavaScript non valido.
-- Validazione dell'input `minutes` nell'endpoint di frequenza aggiornamenti (niente più
-  HTTP 500 su valori non numerici).
+- Container actions no longer report success when the Docker operation fails.
+- Image removal errors are no longer ignored.
+- A template error in the splash screen that produced invalid JavaScript.
+- Validation of the `minutes` input of the update frequency endpoint (no more HTTP 500).
 
 ### Security
-- **Modalità sicura coerente**: le azioni distruttive sui container (`delete`/`kill`)
-  richiedono ora una conferma esplicita quando la modalità sicura è attiva (HTTP 403 senza
-  conferma), in linea con quanto già previsto per le reti. L'interfaccia mostra un dialog
-  di conferma prima dell'eliminazione (singola e in blocco).
-- Mitigato l'aggiramento del blocco anti-bruteforce del login basato su header
-  `X-Forwarded-For` falsificabile.
-- Chiuso un edge case di open-redirect (`/\host`) nella validazione del parametro `next`.
-- Redazione dei valori sensibili nei log (secret key, password MQTT, hash/segreti).
+- Consistent safe mode: destructive container actions require explicit confirmation.
+- Fixed a bypass of the login brute-force protection through a forged `X-Forwarded-For`.
+- Fixed an open-redirect edge case (`/\host`) in the `next` parameter.
+- Sensitive values are redacted in logs.
 
-## [0.2.3 e precedenti]
+## [0.2.3] and earlier
 
-- Versioni precedenti: dashboard Docker, gestione container/immagini/volumi/reti,
-  aggiornamenti via label OCI, integrazione MQTT/Home Assistant, autenticazione con
-  onboarding e 2FA TOTP, temi dark/light e multi-lingua IT/EN.
+Docker dashboard with container, image, volume and network management, updates from OCI labels,
+MQTT integration with Home Assistant, sign-in with onboarding and TOTP two-factor authentication,
+dark and light themes, Italian and English.

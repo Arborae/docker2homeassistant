@@ -1,269 +1,136 @@
+"""D2HA application factory. Gunicorn entry point: ``app:create_app()``."""
+
 import logging
 import os
 import secrets
-import time
+from datetime import timedelta
 from typing import Optional
-from urllib.parse import urlparse
 
-from flask import Flask, redirect, render_template, request, session, url_for, jsonify
-from dotenv import load_dotenv
+from flask import Flask, g, request, url_for
+from flask.sessions import SecureCookieSessionInterface
+from werkzeug.middleware.proxy_fix import ProxyFix
 
-from auth_store import (
-    AUTH_CONFIG_PATH,
-    ensure_default_auth_config,
-    save_auth_config,
-    get_auth_config,
-)
-from services.docker import DockerService
-from services.preferences import AutodiscoveryPreferences
-from services.utils import human_bytes, read_system_uptime_seconds, format_timedelta
-from mqtt.manager import MqttManager
-from i18n import DEFAULT_LANG, SUPPORTED_LANGS, get_current_lang, t, set_current_lang
-from theme import SUPPORTED_THEMES, get_current_theme
-from version import get_d2ha_version
-from routes.auth import auth_bp
-from routes.ui import ui_bp
-from routes.api import api_bp
+import i18n
+from checker import UpdateChecker
+from config import Config
+from docker_ops import DockerOps
+from jobs import JobRunner
+from registry import RegistryClient
+from releases import ReleaseNotes
+from security import LoginLimiter, RateLimiter, csrf_token
+from store import Store
 
-load_dotenv()
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+THEMES = ("system", "light", "dark")
+log = logging.getLogger("d2ha")
 
-app = Flask(__name__)
-app.config.update(
-    SECRET_KEY=os.environ.get("D2HA_SECRET_KEY") or secrets.token_hex(32),
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=(
-        os.environ.get("D2HA_SESSION_COOKIE_SECURE", "false").lower() == "true"
-    ),
-    SESSION_COOKIE_SAMESITE="Lax",
-)
 
-# Custom Global Functions for Jinja
-app.jinja_env.globals["human_bytes"] = human_bytes
-app.jinja_env.globals["t"] = t
-app.jinja_env.globals["get_current_lang"] = get_current_lang
-app.jinja_env.globals["SUPPORTED_LANGS"] = SUPPORTED_LANGS
-app.jinja_env.globals["get_current_theme"] = get_current_theme
-app.jinja_env.globals["SUPPORTED_THEMES"] = SUPPORTED_THEMES
+class D2HA:
+    """Services shared by the blueprints (``current_app.extensions["d2ha"]``)."""
 
-ensure_default_auth_config()
-
-# Shared Services Initialization
-docker_service = DockerService()
-docker_service.start_overview_refresher()
-
-preferences_path = os.environ.get(
-    "D2HA_AUTODISCOVERY_PREFS_PATH",
-    os.path.join(
-        os.path.dirname(AUTH_CONFIG_PATH) or os.path.dirname(__file__),
-        "autodiscovery_preferences.json",
-    ),
-)
-autodiscovery_preferences = AutodiscoveryPreferences(preferences_path)
-
-MQTT_BROKER = os.getenv("MQTT_BROKER")
-MQTT_PORT = int(os.getenv("MQTT_PORT", "1883"))
-MQTT_USERNAME = os.getenv("MQTT_USERNAME")
-MQTT_PASSWORD = os.getenv("MQTT_PASSWORD")
-MQTT_BASE_TOPIC = os.getenv("MQTT_BASE_TOPIC", "d2ha_server")
-MQTT_DISCOVERY_PREFIX = os.getenv("MQTT_DISCOVERY_PREFIX", "homeassistant")
-MQTT_NODE_ID = os.getenv("MQTT_NODE_ID", "d2ha_server")
-MQTT_STATE_INTERVAL = int(os.getenv("MQTT_STATE_INTERVAL", "5"))
-
-mqtt_manager = MqttManager(
-    docker_service=docker_service,
-    preferences=autodiscovery_preferences,
-    broker=MQTT_BROKER,
-    port=MQTT_PORT,
-    username=MQTT_USERNAME,
-    password=MQTT_PASSWORD,
-    base_topic=MQTT_BASE_TOPIC,
-    discovery_prefix=MQTT_DISCOVERY_PREFIX,
-    node_id=MQTT_NODE_ID,
-    state_interval=MQTT_STATE_INTERVAL,
-    logger=app.logger,
-)
-mqtt_manager.setup()
-mqtt_manager.start_periodic_publisher()
-
-# Attach services to app for easy access in blueprints
-app.docker_service = docker_service
-app.mqtt_manager = mqtt_manager
-app.autodiscovery_preferences = autodiscovery_preferences
-
-# Register Blueprints
-app.register_blueprint(auth_bp)
-app.register_blueprint(ui_bp)
-app.register_blueprint(api_bp)
-
-# CSRF Protection
-from csrf import init_csrf
-init_csrf(app)
-
-# Rate Limiting
-from rate_limiter import init_rate_limiter
-init_rate_limiter(app)
-
-# Logging Configuration
-class SensitiveDataFilter(logging.Filter):
-    def __init__(self, sensitive_values: Optional[list] = None):
-        super().__init__()
-        self.sensitive_values = [str(v) for v in (sensitive_values or []) if v]
-
-    def filter(self, record: logging.LogRecord) -> bool:
-        try:
-            message = record.getMessage()
-        except Exception:
-            return True
-
-        sanitized = message
-        for secret in self.sensitive_values:
-            sanitized = sanitized.replace(secret, "<redacted>")
-
-        if sanitized != message:
-            record.msg = sanitized
-            record.args = ()
-        return True
-
-def _attach_filter(logger: logging.Logger, log_filter: logging.Filter) -> None:
-    if not any(isinstance(existing, type(log_filter)) for existing in logger.filters):
-        logger.addFilter(log_filter)
-
-def _ensure_handlers(logger: logging.Logger, source: logging.Logger) -> None:
-    if logger is source:
-        return
-    if not logger.handlers:
-        for handler in source.handlers:
-            logger.addHandler(handler)
-
-def configure_logging(debug_mode_enabled: bool) -> None:
-    level = logging.DEBUG if debug_mode_enabled else logging.INFO
-    sensitive_values = [
-        app.config.get("SECRET_KEY"),
-        os.environ.get("D2HA_SECRET_KEY"),
-        MQTT_PASSWORD,
-    ]
-    try:
-        auth_config = get_auth_config()
-        sensitive_values.extend(
-            auth_config.get(key)
-            for key in ("password_hash", "totp_secret")
-            if auth_config.get(key)
+    def __init__(self, config: Config, ops: DockerOps, registry: RegistryClient,
+                 releases: ReleaseNotes, store: Store):
+        self.config = config
+        self.ops = ops
+        self.store = store
+        self.checker = UpdateChecker(ops, registry, releases, store, config.state_path)
+        self.jobs = JobRunner()
+        self.login_limiter = LoginLimiter()
+        self.write_limiter = RateLimiter(limit=30, window=60)
+        self.setup_code = "" if store.configured else "-".join(
+            secrets.token_hex(2).upper() for _ in range(3)
         )
-    except Exception:
-        pass
 
-    redaction_filter = SensitiveDataFilter(sensitive_values)
-    logging.getLogger().setLevel(logging.WARNING)
-    logging.getLogger("werkzeug").setLevel(logging.WARNING)
-
-    app_logger = app.logger
-    app_logger.setLevel(level)
-    app_logger.propagate = False
-    _attach_filter(app_logger, redaction_filter)
-
-    docker_logger = logging.getLogger("docker_service")
-    docker_logger.setLevel(level)
-    docker_logger.propagate = False
-    _ensure_handlers(docker_logger, app_logger)
-    _attach_filter(docker_logger, redaction_filter)
-
-    # Re-attach logger to services if needed, though they user logging.getLogger(__name__) usually
-    # MqttManager relies on passed logger
-
-app.config["AUTH_CONFIG"] = get_auth_config # helper for some routes
-app.config["SAVE_AUTH_CONFIG"] = save_auth_config
-
-# Initialize Logging
-configure_logging(bool(get_auth_config().get("debug_mode_enabled", False)))
-
-# App Helpers for Context and Splash
-def _is_backend_ready() -> bool:
-    try:
-        docker_ready = docker_service.is_engine_running()
-    except Exception:
-        docker_ready = False
-
-    overview_ready = False
-    try:
-        overview_ready = bool(docker_service.overview_cache_ts)
-    except Exception:
-        overview_ready = False
-
-    return docker_ready and overview_ready
-
-def _get_system_info():
-    host_info = docker_service.get_host_info()
-    uptime_seconds = read_system_uptime_seconds()
-    return {
-        "os": host_info.get("OperatingSystem") or "-",
-        "docker_version": host_info.get("ServerVersion") or host_info.get("Version") or "-",
-        "d2ha_version": get_d2ha_version(),
-        "uptime": format_timedelta(uptime_seconds) if uptime_seconds >= 0 else "-",
-    }
-
-def _default_redirect_after_ready() -> str:
-    config = get_auth_config()
-    current_user = session.get("user")
-    if current_user and current_user == config.get("username"):
-        if not config.get("onboarding_done"):
-            return url_for("auth.setup_account")
-        return url_for("ui.index")
-    return url_for("auth.login")
-
-def _sanitize_next_param(raw_next: str) -> str:
-    if not raw_next:
-        return _default_redirect_after_ready()
-    parsed = urlparse(raw_next)
-    if parsed.netloc and parsed.netloc != request.host:
-        return _default_redirect_after_ready()
-    return raw_next
-
-@app.context_processor
-def inject_common_context():
-    system_info = _get_system_info()
-    config = get_auth_config()
-    return {
-        "safe_mode_enabled": bool(config.get("safe_mode_enabled", True)),
-        "performance_mode_enabled": bool(config.get("performance_mode_enabled", False)),
-        "debug_mode_enabled": bool(config.get("debug_mode_enabled", False)),
-        "system_info": system_info,
-        "d2ha_version": system_info.get("d2ha_version", ""),
-    }
-
-@app.route("/splash", methods=["GET"])
-def splash():
-    if _is_backend_ready():
-        return redirect(_default_redirect_after_ready())
-
-    requested_next = _sanitize_next_param(request.args.get("next") or "")
-    return render_template("splash.html", target_url=requested_next)
-
-@app.before_request
-def check_splash_redirect():
-    # Allow static resources, the service worker, splash page itself, and health check API.
-    # The service worker script must never be served as a redirect, otherwise the
-    # browser rejects its registration and the PWA becomes non-installable.
-    if (
-        request.path.startswith("/static")
-        or request.path == "/sw.js"
-        or request.path == "/splash"
-        or request.path == "/api/health"
-    ):
+    def find_container(self, key: str):
+        for container in self.ops.list_containers():
+            if container["key"] == key:
+                return container
         return None
-    
-    # If backend is not ready, force redirect to splash
-    if not _is_backend_ready():
-        return redirect(url_for("splash", next=request.path))
 
-_app_started_ts = time.time()
 
-@app.route("/api/health", methods=["GET"])
-def health_check_override():
-    ready = _is_backend_ready()
-    uptime_seconds = max(time.time() - _app_started_ts, 0)
-    status = "ready" if ready else "starting"
-    return jsonify({"status": status, "ready": ready, "uptime_seconds": int(uptime_seconds)})
+class AutoSecureSessionInterface(SecureCookieSessionInterface):
+    """Mark the session cookie Secure whenever the request arrived over HTTPS."""
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=12021)
+    def get_cookie_secure(self, app):
+        return bool(app.config.get("SESSION_COOKIE_SECURE")) or request.is_secure
 
+
+def _configure_logging(level: str) -> None:
+    logging.basicConfig(level=getattr(logging, level, logging.INFO),
+                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    for noisy in ("urllib3", "docker", "werkzeug"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+def create_app(config: Optional[Config] = None, ops: Optional[DockerOps] = None,
+               registry: Optional[RegistryClient] = None,
+               releases: Optional[ReleaseNotes] = None) -> Flask:
+    config = config or Config()
+    _configure_logging(config.log_level)
+    store = Store(config.store_path, config.default_check_hours)
+    if store.migrated_from_v03:
+        log.info("Imported account and preferences from D2HA 0.3")
+
+    app = Flask(__name__)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
+    app.session_interface = AutoSecureSessionInterface()
+    app.config.update(
+        SECRET_KEY=config.secret_key or store.get("secret_key"),
+        SESSION_COOKIE_NAME="d2ha_session",
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+        MAX_CONTENT_LENGTH=64 * 1024,
+    )
+    app.json.sort_keys = False
+
+    ctx = D2HA(config, ops or DockerOps(), registry or RegistryClient(),
+               releases or ReleaseNotes(config.github_token), store)
+    app.extensions["d2ha"] = ctx
+    i18n.load(os.path.join(BASE_DIR, "translations"))
+
+    @app.before_request
+    def _language_and_theme():
+        g.lang = i18n.pick_language()
+        theme = request.cookies.get("d2ha_theme", "system")
+        g.theme = theme if theme in THEMES else "system"
+
+    @app.after_request
+    def _security_headers(response):
+        ancestors = " ".join(["'self'", config.frame_ancestors]).strip()
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
+            "connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; "
+            f"base-uri 'none'; form-action 'self'; frame-ancestors {ancestors}"
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["Referrer-Policy"] = "same-origin"
+        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+        if not request.path.startswith("/static/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
+    def asset(path: str) -> str:
+        return url_for("static", filename=path, v=config.version)
+
+    app.jinja_env.globals.update(
+        t=i18n.t,
+        csrf_token=csrf_token,
+        asset=asset,
+        client_texts=i18n.client_texts,
+        version=config.version,
+        read_only=config.read_only,
+    )
+
+    from api import api_bp
+    from web import web_bp
+
+    app.register_blueprint(web_bp)
+    app.register_blueprint(api_bp)
+
+    if config.start_background:
+        ctx.jobs.start()
+        ctx.checker.start()
+        if ctx.setup_code:
+            log.warning("No account yet. Open D2HA and use this setup code: %s", ctx.setup_code)
+    return app

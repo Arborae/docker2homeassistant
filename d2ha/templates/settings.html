@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon with context %}
+{% block title %}{{ t('nav.settings') }} · D2HA{% endblock %}
+{% block content %}
+<h1>{{ t('nav.settings') }}</h1>
+<div class="settings-grid">
+
+  <section class="card" id="account">
+    <div class="card-head">{{ icon('shield') }}<h2>{{ t('settings.account') }}</h2></div>
+    <div class="card-body stack-v">
+      <dl class="kv"><dt>{{ t('field.username') }}</dt><dd>{{ username }}</dd></dl>
+
+      <form method="post" action="{{ url_for('web.change_password') }}" class="stack-v">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <h3>{{ t('settings.change_password') }}</h3>
+        <div class="form-grid">
+          <div class="field"><label for="pw-current">{{ t('field.current_password') }}</label><input class="input" id="pw-current" name="current" type="password" autocomplete="current-password" required></div>
+          <div class="field"><label for="pw-new">{{ t('field.new_password') }}</label><input class="input" id="pw-new" name="password" type="password" autocomplete="new-password" minlength="10" required></div>
+          <div class="field"><label for="pw-confirm">{{ t('field.confirm_password') }}</label><input class="input" id="pw-confirm" name="confirm" type="password" autocomplete="new-password" minlength="10" required></div>
+          <div class="field"><button class="btn" type="submit">{{ t('settings.change_password') }}</button></div>
+        </div>
+        <span class="help muted">{{ t('help.password') }}</span>
+      </form>
+
+      <div class="stack-v">
+        <h3>{{ t('settings.totp') }}</h3>
+        {% if totp_enabled %}
+          <div class="alert alert-success">{{ icon('check') }}<span>{{ t('settings.totp_on') }}</span></div>
+          <form method="post" action="{{ url_for('web.totp_disable') }}" class="form-grid">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field"><label for="td-current">{{ t('field.current_password') }}</label><input class="input" id="td-current" name="current" type="password" autocomplete="current-password" required></div>
+            <div class="field"><label for="td-code">{{ t('field.totp_code') }}</label><input class="input" id="td-code" name="code" inputmode="numeric" autocomplete="one-time-code" required></div>
+            <div class="field"><button class="btn btn-danger" type="submit">{{ t('settings.totp_disable') }}</button></div>
+          </form>
+        {% elif totp_pending %}
+          <p>{{ t('settings.totp_scan') }}</p>
+          <div class="row">
+            <img class="qr" src="{{ totp_qr }}" alt="{{ t('settings.totp_qr_alt') }}" width="180" height="180">
+            <div class="stack-v">
+              <span class="muted">{{ t('settings.totp_manual') }}</span>
+              <span class="secret">{{ totp_pending }}</span>
+            </div>
+          </div>
+          <form method="post" action="{{ url_for('web.totp_confirm') }}" class="form-grid">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field"><label for="tc-code">{{ t('field.totp_code') }}</label><input class="input" id="tc-code" name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus></div>
+            <div class="field"><button class="btn btn-primary" type="submit">{{ t('settings.totp_confirm') }}</button></div>
+          </form>
+          <form method="post" action="{{ url_for('web.totp_cancel') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-ghost btn-sm" type="submit">{{ t('ui.cancel') }}</button>
+          </form>
+        {% else %}
+          <div class="alert alert-warning">{{ icon('alert') }}<span>{{ t('settings.totp_off') }}</span></div>
+          <form method="post" action="{{ url_for('web.totp_start') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-primary" type="submit">{{ icon('shield') }}<span>{{ t('settings.totp_enable') }}</span></button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="homeassistant">
+    <div class="card-head">{{ icon('home') }}<h2>{{ t('settings.ha') }}</h2></div>
+    <div class="card-body stack-v">
+      <ol class="steps-list">
+        <li>{{ t('settings.ha_step1') }}</li>
+        <li>{{ t('settings.ha_step2') }}</li>
+        <li>{{ t('settings.ha_step3') }}</li>
+      </ol>
+
+      {% if new_token %}
+        <div class="alert alert-warning">{{ icon('alert') }}<span>{{ t('settings.token_once') }}</span></div>
+        <div class="token-box">
+          <code id="new-token">{{ new_token }}</code>
+          <button class="btn btn-sm" type="button" data-copy="#new-token">{{ icon('copy') }}<span>{{ t('ui.copy') }}</span></button>
+        </div>
+      {% elif has_token %}
+        <div class="alert alert-success">{{ icon('key') }}<span>{{ t('settings.token_active') }}</span></div>
+      {% else %}
+        <div class="alert alert-info">{{ icon('key') }}<span>{{ t('settings.token_none') }}</span></div>
+      {% endif %}
+      <div class="row">
+        <form method="post" action="{{ url_for('web.create_token') }}" data-confirm="{{ t('settings.token_regenerate_confirm') if has_token else '' }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-primary" type="submit">{{ icon('key') }}<span>{{ t('settings.token_regenerate') if has_token else t('settings.token_create') }}</span></button>
+        </form>
+        {% if has_token %}
+        <form method="post" action="{{ url_for('web.revoke_token') }}" data-confirm="{{ t('settings.token_revoke_confirm') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-danger" type="submit">{{ t('settings.token_revoke') }}</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <details class="collapsible">
+        <summary><h3>{{ t('settings.ha_visible') }}</h3><span class="muted">{{ in_ha.values()|select|list|length }}/{{ containers|length }}</span>{{ icon('chevron', 'chev') }}</summary>
+        <p class="muted">{{ t('settings.ha_visible_help') }}</p>
+        <div class="toggle-list">
+          {% for stack, items in containers|groupby('stack') %}
+            <div class="toggle-group">{{ stack or t('containers.no_stack') }}</div>
+            {% for c in items %}
+            <label class="toggle-item">
+              <span class="name">{{ c.name }}</span>
+              <span class="switch"><input type="checkbox" data-ha-key="{{ c.key }}" {% if in_ha[c.key] %}checked{% endif %} aria-label="{{ t('settings.ha_show', name=c.name) }}"><span></span></span>
+            </label>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section class="card" id="updates">
+    <div class="card-head">{{ icon('refresh') }}<h2>{{ t('settings.general') }}</h2></div>
+    <div class="card-body">
+      <form method="post" action="{{ url_for('web.general_settings') }}" class="form-grid">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+          <label for="check-hours">{{ t('settings.check_every') }}</label>
+          <select class="input" id="check-hours" name="check_hours">
+            {% for h in check_intervals %}<option value="{{ h }}" {% if h == check_hours %}selected{% endif %}>{{ t('unit.hours', n=h) }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label for="session-minutes">{{ t('settings.session_timeout') }}</label>
+          <select class="input" id="session-minutes" name="session_minutes">
+            {% for m in session_timeouts %}<option value="{{ m }}" {% if m == session_minutes %}selected{% endif %}>{{ t('unit.minutes', n=m) if m < 60 else t('unit.hours', n=m // 60) }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="field"><button class="btn" type="submit">{{ t('ui.save') }}</button></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="card" id="about">
+    <div class="card-head">{{ icon('box') }}<h2>{{ t('settings.about') }}</h2></div>
+    <div class="card-body">
+      <dl class="kv">
+        <dt>D2HA</dt><dd>{{ version }}</dd>
+        <dt>Docker</dt><dd>{{ docker_version or '—' }}</dd>
+        <dt>{{ t('settings.mode') }}</dt><dd>{{ t('settings.read_only') if read_only else t('settings.read_write') }}</dd>
+        <dt>{{ t('settings.project') }}</dt><dd><a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noopener noreferrer">github.com/Arborae/docker2homeassistant</a></dd>
+      </dl>
+    </div>
+  </section>
+</div>
+{% endblock %}

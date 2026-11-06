@@ -1,22 +1,20 @@
-#!/bin/bash
+#!/bin/sh
 set -e
 
-# Se il socket docker è montato, trova il suo GID
+# With the Docker socket mounted directly, let the d2ha user use it.
+# (Not needed when DOCKER_HOST points to a socket proxy.)
 if [ -S /var/run/docker.sock ]; then
-    DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
-    
-    # Crea un gruppo docker con quel GID se non esiste
-    if ! getent group "$DOCKER_GID" >/dev/null 2>&1; then
-        groupadd -g "$DOCKER_GID" docker_host
+    gid=$(stat -c %g /var/run/docker.sock)
+    group=$(getent group "$gid" | cut -d: -f1)
+    if [ -z "$group" ]; then
+        group=docker-host
+        groupadd -g "$gid" "$group"
     fi
-    
-    # Aggiungi l'utente d2ha al gruppo
-    usermod -aG "$DOCKER_GID" d2ha
+    usermod -aG "$group" d2ha
 fi
 
-# Assicurati che /app/data esista e sia accessibile a d2ha
 mkdir -p /app/data
-chown -R d2ha:d2ha /app
+chown -R d2ha:d2ha /app/data
+chmod 700 /app/data
 
-# Drop privileges ed esegui il comando
 exec gosu d2ha "$@"

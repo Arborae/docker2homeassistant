@@ -1,0 +1,23 @@
+{% from "_macros.html" import icon, flashes, prefs_buttons with context %}
+<!doctype html>
+<html lang="{{ g.lang }}" data-theme="{{ g.theme }}">
+<head>
+  {% include "_head.html" %}
+  <title>{% block title %}D2HA{% endblock %}</title>
+</head>
+<body data-page="auth">
+  <div class="auth-corner">{{ prefs_buttons() }}</div>
+  <main class="auth">
+    <div class="card auth-card">
+      <div class="auth-logo">
+        <img src="{{ asset('img/mark.png') }}" alt="" width="64" height="64">
+        <h1>{% block heading %}D2HA{% endblock %}</h1>
+        <p class="muted">{% block subheading %}{% endblock %}</p>
+      </div>
+      {{ flashes() }}
+      {% if error %}<div class="alert alert-error" role="alert">{{ icon('alert') }}<span>{{ t(error) }}</span></div>{% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</body>
+</html>

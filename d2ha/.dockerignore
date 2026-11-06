@@ -2,7 +2,10 @@
 __pycache__/
 *.pyc
 .venv/
+data/
+*.json.bak
+.env
+d2ha.json
+state.json
 auth_config.json
 autodiscovery_preferences.json
-data/
-.env
