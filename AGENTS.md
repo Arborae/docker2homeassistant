@@ -96,9 +96,12 @@ adding (see its rules), the integration relies only on what it says.
 ### Pull requests and review
 - Fill in the template: what changes, why, **how it was tested** (commands and results).
 - Every pull request is reviewed by the **other agent** before the owner merges it. The
-  reviewer checks it against the list above, runs the tests, and writes findings as review
-  comments ("Approve" or "Request changes" with reasons). The author answers every comment.
-- The owner merges only with an approving review and green checks.
+  reviewer checks it against the list above and runs the tests. Both agents use the owner's
+  GitHub account, which cannot approve its own pull requests, so the verdict is a comment
+  that starts with **"Review by Claude: approved"** or **"Review by Kimi: changes requested"**
+  (or the other way round), followed by the findings with file and line. The author answers
+  every finding in the pull request.
+- The owner merges only after an "approved" review comment and with green checks.
 - Every commit has a `Co-Authored-By` trailer with the agent's name.
 
 ## Release

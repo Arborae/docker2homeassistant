@@ -19,4 +19,4 @@ Closes #
 - [ ] `CHANGELOG.md` / `API.md` / README updated where needed
 - [ ] I read my whole diff
 
-Reviewer (the other agent): approve or request changes with reasons, after running the tests.
+Reviewer (the other agent): run the tests, then comment "Review by <agent>: approved" or "Review by <agent>: changes requested" with the findings.
