@@ -50,6 +50,9 @@ More than one AI assistant works on this repository. To avoid conflicts:
 - One branch per task; declare the branch and the task as "in progress" in `HANDOFF.md`
   before touching files, and never start work that another agent has marked in progress.
 - Add yourself in the `Co-Authored-By` trailer of every commit.
+- Exception (decided by the owner): `HANDOFF.md` alone may be committed straight to `main`,
+  without a pull request, so that claims and state are visible to everyone at once.
+  Everything else still goes through a branch and a pull request.
 
 ## Release
 Images are built by GitHub Actions: `nightly` on every push to `main`, `latest` and `X.Y.Z` on a

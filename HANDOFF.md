@@ -8,6 +8,8 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 | Task | Branch | Agent | Since |
 | ---- | ------ | ----- | ----- |
 | HACS integration (`custom_components/d2ha`) | `feature/hacs-integration` | Kimi | 2026-11-06 |
+| Telegram notifications in D2HA (updates, crashed and unhealthy containers) | `feature/telegram-notifications` | Claude | 2026-11-06 |
+| Server: D2HA pinned to 0.4.1, no LAN port, no MQTT variables, socket proxy | (server, no branch) | Claude | 2026-11-06 |
 
 ## State (2026-11-06, evening)
 
@@ -22,15 +24,14 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 1. Home Assistant integration in `custom_components/d2ha`, installable through HACS as a
    custom repository: update entities, container states, update buttons (uses `/api/v1`
    with the bearer token). In progress, see the table above.
-2. **Landing page / docs site**: the current `docs/` site is completely out of sync with
-   0.4 (it shows pages and features that no longer exist). The owner wants it redone.
-   Claude's plan: new site in `docs-site/` published through GitHub Actions instead of
-   the `docs/` folder.
-3. Telegram notifications for available updates: the owner wants to retire Diun and
-   docker-telegram-notifier. Proposed direction: **not** in D2HA core (notifications were
-   removed in 0.4 by design) but as Home Assistant automations on the HACS integration
-   entities (update available → notify.telegram). Decide with the owner before building
-   anything.
+2. Landing page: rewritten for 0.4 (PR #217) and deployed by its own workflow (PR #218);
+   Pages source is "GitHub Actions". A full docs site is **not** wanted for now: the owner
+   will decide after the integration.
+3. Telegram notifications: **decided with the owner, inside D2HA** (not Home Assistant
+   automations, which cannot report Home Assistant itself crashing). They replace Diun
+   (update found) and docker-telegram-notifier (container stopped with an error, exit code
+   other than 0 and 143, or unhealthy). Bot token and chat from the environment. No
+   commands from Telegram. In progress, see the table above.
 4. Move the server to 0.4, update the HA dashboards and remove the old "Docker ..."
    helpers and MQTT topics.
 
@@ -44,3 +45,9 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
   (see "Next up" 3 for the proposed approach).
 - The landing page is out of sync with 0.4 and the owner wants it redone (see "Next up" 2).
 - Local branch `feature/update-progress` can be deleted.
+- The local working copy on the server belongs to Claude; Kimi works only through the
+  GitHub API on its own branches (Kimi's Windows share left CRLF and root-owned files,
+  fixed on 2026-11-06).
+- The HACS integration will live in a new repository, `arborae/ha-d2ha` (Kimi). When it
+  exists, the README and the "Home Assistant" step in Settings (`settings.ha_step1`) must
+  point to it instead of this repository.
