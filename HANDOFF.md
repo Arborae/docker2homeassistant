@@ -9,7 +9,6 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 | ---- | ------ | ----- | ----- |
 | HACS integration (`custom_components/d2ha`) | `feature/hacs-integration` | Kimi | 2026-11-06 |
 | Telegram notifications in D2HA (updates, crashed and unhealthy containers) | `feature/telegram-notifications` | Claude | 2026-11-06 |
-| Server: D2HA pinned to 0.4.1, no LAN port, no MQTT variables, socket proxy | (server, no branch) | Claude | 2026-11-06 |
 
 ## State (2026-11-06, evening)
 
@@ -18,6 +17,9 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
   `scripts/demo.py`, progress-bar fix, HACS step in Settings, coordination docs.
 - **v0.4.1 released** (PR #215: changelog dated, 0.4.1 section); CI published the
   `0.4.1` and `latest` images.
+- The owner's server runs 0.4.1 behind a socket proxy (done by Claude, 2026-11-06).
+- To fix: D2HA must never offer to update the socket proxy it talks through. Being done
+  on `feature/telegram-notifications`.
 
 ## Next up
 
