@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.5.1] - 2026-11-06
 
 ### Added
 - Telegram: the label `d2ha.notify=false` turns off crash and unhealthy alerts for a
