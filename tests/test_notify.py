@@ -165,3 +165,25 @@ def test_notification_settings_and_test_message(app, client):
     d2ha.notifier.telegram = FakeTelegram(error=NotifyError("Telegram error 400 Bad Request: chat not found"))
     client.post("/settings/notifications/test", data=form)
     assert "chat not found" in client.get("/settings").data.decode()
+
+
+def test_the_events_watcher_resumes_without_losing_events(tmp_path, monkeypatch):
+    telegram = FakeTelegram()
+    notifier, _ = make_notifier(tmp_path, telegram=telegram)
+    sleeps, calls = [], []
+    notifier.sleep = sleeps.append
+    times = iter([0, 600, 600, 600, 601, 601, 700, 700])  # opened, closed (idle), ...
+    monkeypatch.setattr("notify.time.time", lambda: next(times))
+
+    def source(since):
+        calls.append(since)
+        if len(calls) == 1:
+            return iter([event("die", exit_code="1")])  # then the proxy closes the idle stream
+        if len(calls) == 2:
+            raise ConnectionError("proxy restarting")
+        return iter([event("die", name="db", exit_code="2")])
+
+    notifier.watch(source, rounds=3)
+    assert calls == [None, 599, 600]  # resumed from just before each cut
+    assert sleeps == [5]  # waited only after the error
+    assert len(telegram.sent) == 2

@@ -85,6 +85,7 @@ class Notifier:
         self.telegram = telegram
         self.store = store
         self.clock = clock
+        self.sleep = time.sleep
         self._last: Dict[tuple, float] = {}
 
     @property
@@ -117,6 +118,7 @@ class Notifier:
             if item.get("url"):
                 lines.append(f"  <a href=\"{esc(item['url'])}\">{esc(self._t('notify.release_notes'))}</a>")
         self.telegram.send("\n".join(lines))
+        log.info("Telegram: sent %d new updates", len(items))
         return True
 
     def event_message(self, event: Dict[str, Any]) -> Optional[str]:
@@ -155,23 +157,34 @@ class Notifier:
             return
         try:
             self.telegram.send(text)
+            log.info("Telegram: sent %s alert for %s", event.get("Action"), (event.get("Actor") or {}).get("Attributes", {}).get("name"))
         except NotifyError as exc:
             log.warning("Telegram: %s", exc)
 
     # -- Docker events ----------------------------------------------------------------
 
-    def start(self, events_source: Callable[[], Iterable[Dict[str, Any]]]) -> None:
-        threading.Thread(target=self._watch, args=(events_source,), name="docker-events", daemon=True).start()
+    def start(self, events_source: Callable[[Optional[int]], Iterable[Dict[str, Any]]]) -> None:
+        threading.Thread(target=self.watch, args=(events_source,), name="docker-events", daemon=True).start()
 
-    def _watch(self, events_source) -> None:
-        delay = 5
-        while True:
+    def watch(self, events_source, rounds: Optional[int] = None) -> None:
+        """Follow Docker events forever (``rounds`` limits the reconnections, for tests)."""
+        delay, since = 5, None
+        while rounds is None or rounds > 0:
+            rounds = None if rounds is None else rounds - 1
+            opened = time.time()
             try:
-                for event in events_source():
-                    delay = 5
+                for event in events_source(since):
                     self.handle_event(event)
-                log.warning("Docker events stream ended, reconnecting")
+                ok = time.time() - opened >= 5
+                # Proxies close idle streams (HAProxy after 10 minutes): resume where it stopped.
+                log.debug("Docker events stream closed")
             except Exception as exc:  # noqa: BLE001 - the watcher must survive Docker restarts
+                ok = False
                 log.warning("Docker events unavailable (%s), retrying in %d s", type(exc).__name__, delay)
-            time.sleep(delay)
+            # Ask again from one second before the cut: what happened meanwhile is not lost.
+            since = int(time.time()) - 1
+            if ok:
+                delay = 5
+                continue
+            self.sleep(delay)
             delay = min(delay * 2, 300)

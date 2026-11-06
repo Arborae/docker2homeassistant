@@ -59,7 +59,7 @@ class FakeOps:
     def logs(self, container_id, tail=200):
         return "2026-01-01T00:00:00.000Z hello\n2026-01-01T00:00:01.000Z ERROR boom\n"
 
-    def events(self):
+    def events(self, since=None):
         return iter(())
 
     def prune_images(self):
