@@ -24,6 +24,7 @@ sign-in with 2FA, PWA, light/dark theme, Italian/English. Do not add general Doc
   - `i18n.py` + `translations/{en,it}.json` – every user-visible string.
   - `templates/`, `static/` (`app.css`, `app.js`, `icons.svg`, `sw.js`, `manifest.json`).
 - `tests/` – pytest, with fakes for Docker, registry and GitHub (`tests/conftest.py`).
+- `scripts/demo.py` – the interface with sample data and no Docker, used for the screenshots.
 
 ## Rules
 - English for code and comments; user-facing text only through translation keys, in both languages

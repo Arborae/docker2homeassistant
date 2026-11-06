@@ -201,7 +201,9 @@ dialog.wide { width: min(1100px, calc(100vw - 24px)); height: calc(100dvh - 32px
 
 .progress { height: 10px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
 .progress > div { height: 100%; width: 0; background: var(--accent); border-radius: inherit; transition: width .3s ease; }
-.progress.indeterminate > div { width: 35%; animation: slide 1.2s ease-in-out infinite; }
+/* The moving stripe is separate from the bar, so the first real percentage does not shrink it. */
+.progress.indeterminate > div { display: none; }
+.progress.indeterminate::after { content: ""; display: block; height: 100%; width: 35%; background: var(--accent); border-radius: inherit; animation: slide 1.2s ease-in-out infinite; }
 .progress-meta { display: flex; justify-content: space-between; gap: 10px; font-size: .84rem; color: var(--muted); }
 .phase { display: flex; align-items: center; gap: 10px; font-weight: 600; }
 .phase .spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid var(--surface-3); border-top-color: var(--accent); animation: spin .8s linear infinite; }
