@@ -1,54 +1,29 @@
-// Basic Service Worker for PWA installability
-const CACHE_NAME = 'd2ha-cache-v2';
-const urlsToCache = [
-  '/static/css/main.css',
-  '/static/img/favicon.png'
-];
+// D2HA service worker: makes the app installable and caches static assets only.
+// Pages and API responses (container data, logs) are never stored on the device.
+const CACHE = "d2ha-static-v1";
 
-self.addEventListener('install', event => {
-  // Activate this worker as soon as it finishes installing.
-  self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      // Cache best-effort: a single failing asset must not abort the install,
-      // otherwise the worker never activates and the app stays non-installable.
-      return Promise.allSettled(
-        urlsToCache.map(url => cache.add(url))
-      );
-    })
-  );
-});
+self.addEventListener("install", () => self.skipWaiting());
 
-self.addEventListener('activate', event => {
-  // Take control of open clients immediately and drop old caches.
+self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(
-        keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
-      ))
+      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });
 
-self.addEventListener('fetch', event => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
-
+self.addEventListener("fetch", (event) => {
+  const url = new URL(event.request.url);
+  if (event.request.method !== "GET" || url.origin !== self.location.origin || !url.pathname.startsWith("/static/")) {
+    return; // network only
+  }
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // If the response is valid, clone it and cache it
-        if (response && response.status === 200 && response.type === 'basic') {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // On network failure, serve from cache
-        return caches.match(event.request);
-      })
+    caches.open(CACHE).then(async (cache) => {
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      const response = await fetch(event.request);
+      if (response.ok) cache.put(event.request, response.clone());
+      return response;
+    })
   );
 });

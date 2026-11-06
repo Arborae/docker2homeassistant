@@ -1,0 +1,30 @@
+{% extends "auth.html" %}
+{% block title %}{{ t('setup.title') }} · D2HA{% endblock %}
+{% block heading %}{{ t('setup.heading') }}{% endblock %}
+{% block subheading %}{{ t('setup.subheading') }}{% endblock %}
+{% block content %}
+<div class="alert alert-info">
+  <span>{{ t('setup.code_help') }} <span class="code-box">docker logs d2ha_server</span></span>
+</div>
+<form method="post" class="stack-v">
+  <div class="field">
+    <label for="code">{{ t('field.setup_code') }}</label>
+    <input class="input mono" id="code" name="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX" required autofocus>
+  </div>
+  <div class="field">
+    <label for="username">{{ t('field.username') }}</label>
+    <input class="input" id="username" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" pattern="[A-Za-z0-9._\-]{3,32}" required>
+    <span class="help">{{ t('setup.username_help') }}</span>
+  </div>
+  <div class="field">
+    <label for="password">{{ t('field.new_password') }}</label>
+    <input class="input" id="password" name="password" type="password" autocomplete="new-password" minlength="10" required>
+    <span class="help">{{ t('help.password') }}</span>
+  </div>
+  <div class="field">
+    <label for="confirm">{{ t('field.confirm_password') }}</label>
+    <input class="input" id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="10" required>
+  </div>
+  <button class="btn btn-primary" type="submit">{{ t('setup.submit') }}</button>
+</form>
+{% endblock %}

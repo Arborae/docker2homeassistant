@@ -1,77 +1,45 @@
 # D2HA – Agent Guide
 
-Short guide for AI/code assistants working on Docker to Home Assistant (Flask-based web dashboard with optional MQTT/Home Assistant integration).
+Guide for AI/code assistants working on D2HA (Docker to Home Assistant): a small Flask app that
+checks container image updates, shows release notes and logs, updates containers safely, and
+exposes all of it to Home Assistant through a versioned API.
 
-## Standard Development Workflow
-1.  **Plan**: Understand the goal. If refactoring or adding complex features, outline a plan first.
-2.  **Implement**: Make changes following the modular structure (see below).
-3.  **Update Tests**: Ensure `tests/` reflect your changes. Use unit tests to verify logic.
-4.  **Verify**: Run `python -m unittest discover tests` and perform manual checks (start app with `python d2ha/app.py`).
+## Scope
+Keep D2HA focused: update status + release notes, Home Assistant integration, container logs,
+sign-in with 2FA, PWA, light/dark theme, Italian/English. Do not add general Docker management
+(networks, volumes, compose editing, stats dashboards).
 
-## Project Structure (Modular)
-- `d2ha/` – Core application.
-    - `app.py`: Application entry point, service initialization, blueprint registration.
-    - `services/`: Core logic and business rules.
-        - `docker.py`: `DockerService` for all Docker interactions.
-        - `preferences.py`: `AutodiscoveryPreferences` for HA config.
-        - `utils.py`: Shared utilities.
-    - `mqtt/`: All MQTT-related logic (`manager.py`).
-    - `routes/`: Flask Blueprints:
-        - `ui.py`: Frontend routes and view logic.
-        - `api.py`: JSON API endpoints (`/api/overview`, `/api/networks`, `/api/notifications`, etc.).
-        - `auth.py`: Authentication and onboarding flows.
-    - `templates/`, `static/`: Frontend assets.
-- `docs/` – Static marketing/docs assets.
-- `tests/` – Python unit tests.
-- `.github/workflows/` – CI pipelines.
+## Layout
+- `d2ha/` – the container app (build context).
+  - `app.py` – `create_app()` factory, security headers, shared services (`D2HA`).
+  - `config.py` – settings from environment variables.
+  - `store.py` – `d2ha.json` (account, token hash, settings, per-container preferences); imports 0.3 data.
+  - `security.py` – passwords, TOTP, API token, CSRF, sessions, rate limits, auth decorators.
+  - `docker_ops.py` – Docker access: list, logs, prune, safe recreate (`build_create_config`).
+  - `registry.py` – registry v2 client (HEAD digest, labels of the new image).
+  - `releases.py` – GitHub release notes and breaking changes.
+  - `checker.py` – scheduled update check, persisted to `state.json`.
+  - `jobs.py` – background jobs with live progress.
+  - `web.py` – HTML pages; `api.py` – `/api/v1` (session + CSRF, or bearer token).
+  - `i18n.py` + `translations/{en,it}.json` – every user-visible string.
+  - `templates/`, `static/` (`app.css`, `app.js`, `icons.svg`, `sw.js`, `manifest.json`).
+- `tests/` – pytest, with fakes for Docker, registry and GitHub (`tests/conftest.py`).
 
-## Local Development
-1. Create a virtualenv and install deps:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # Windows: .venv\Scripts\activate
-   pip install -r d2ha/requirements.txt
-   ```
-2. Run the Flask app:
-   ```bash
-   python d2ha/app.py
-   ```
-   App listens on `http://localhost:12021`. Ensure your user can access the Docker socket.
+## Rules
+- English for code and comments; user-facing text only through translation keys, in both languages
+  (`tests/test_i18n.py` checks parity).
+- No inline scripts or styles, no external requests from the browser (strict CSP).
+- Writes to Docker only through POST endpoints with CSRF or the API token.
+- Never expose container environment variables, commands or secrets.
+- New dependencies only when really needed.
 
-## Running Tests & Quality Checks
-- Unit tests (from repo root):
-  ```bash
-  python -m unittest discover tests
-  ```
-- No dedicated linters/formatters are configured in this repo; follow existing style.
+## Commands
+```bash
+python -m venv .venv && .venv/bin/pip install -r d2ha/requirements.txt pytest pyflakes
+.venv/bin/pyflakes d2ha tests && .venv/bin/pytest -q
+docker build -t d2ha:local -f d2ha/Dockerfile d2ha
+```
 
-## Build & Deployment
-- Docker image (local):
-  ```bash
-  docker build -t d2ha:local -f d2ha/Dockerfile d2ha
-  ```
-- Docker Compose (local dev):
-  ```bash
-  D2HA_VERSION=dev docker compose -f d2ha/docker-compose.yml up -d
-  ```
-- Published images:
-  - Stable/Release: `ghcr.io/arborae/docker2homeassistant:latest` or `:X.Y.Z`
-  - Nightly: `ghcr.io/arborae/docker2homeassistant:nightly`
-- CI builds/pushes images via GitHub Actions.
-
-## Configuration & Secrets
-- Environment variables: `D2HA_SECRET_KEY`, `MQTT_*`, `D2HA_AUTH_CONFIG_PATH`.
-- Docker socket is required (`/var/run/docker.sock`).
-- Never commit secrets/tokens.
-
-## Style & Conventions
-- **Modular Code**: Logic goes in `services/`, routes in `routes/`, MQTT in `mqtt/`. **Do not add logic to `app.py` directly.**
-- **Documentation**: If adding new API endpoints, **always update the README.md** to include them.
-- Language: English for code/comments.
-- Follow existing Flask/Jinja structure.
-- Avoid new dependencies unless necessary.
-
-## Pull Requests
-- Keep diffs focused.
-- Update docs if behavior changes.
-- **Always update tests** when altering logic.
+## Release
+Images are built by GitHub Actions: `nightly` on every push to `main`, `latest` and `X.Y.Z` on a
+GitHub release (amd64 + arm64). Update `CHANGELOG.md` with every user-visible change.

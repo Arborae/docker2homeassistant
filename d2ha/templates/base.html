@@ -1,0 +1,33 @@
+{% from "_macros.html" import icon, flashes, prefs_buttons with context %}
+<!doctype html>
+<html lang="{{ g.lang }}" data-theme="{{ g.theme }}">
+<head>
+  {% include "_head.html" %}
+  <title>{% block title %}D2HA{% endblock %}</title>
+</head>
+<body data-page="{{ page }}" data-csrf="{{ csrf_token() }}" data-read-only="{{ '1' if read_only else '0' }}">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('web.containers') }}">
+        <img src="{{ asset('img/mark.png') }}" alt="" width="30" height="30"><span>D2HA</span>
+      </a>
+      <nav class="nav" aria-label="{{ t('ui.navigation') }}">
+        <a href="{{ url_for('web.containers') }}" {% if page == 'containers' %}aria-current="page"{% endif %}>{{ icon('box') }}<span>{{ t('nav.containers') }}</span></a>
+        <a href="{{ url_for('web.settings') }}" {% if page == 'settings' %}aria-current="page"{% endif %}>{{ icon('settings') }}<span>{{ t('nav.settings') }}</span></a>
+      </nav>
+      <div class="topbar-actions">
+        {{ prefs_buttons() }}
+        <form method="post" action="{{ url_for('web.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-ghost btn-icon" type="submit" title="{{ t('nav.logout') }}" aria-label="{{ t('nav.logout') }}">{{ icon('logout') }}</button>
+        </form>
+      </div>
+    </div>
+  </header>
+  <main class="page">
+    {{ flashes() }}
+    {% block content %}{% endblock %}
+  </main>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>

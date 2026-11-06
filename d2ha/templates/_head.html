@@ -1,0 +1,15 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#141920">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="D2HA">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="referrer" content="same-origin">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+<link rel="icon" href="{{ asset('img/mark.png') }}" type="image/png">
+<link rel="apple-touch-icon" href="{{ asset('img/icon-192.png') }}">
+<link rel="stylesheet" href="{{ asset('app.css') }}">
+<script src="{{ asset('app.js') }}" defer></script>
+<script type="application/json" id="i18n">{{ client_texts()|tojson }}</script>

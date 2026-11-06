@@ -1,0 +1,20 @@
+{% macro icon(name, cls="") -%}
+<svg class="icon {{ cls }}" aria-hidden="true"><use href="{{ asset('icons.svg') }}#i-{{ name }}"></use></svg>
+{%- endmacro %}
+
+{% macro flashes() -%}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, key in messages %}
+<div class="alert alert-{{ category }}" role="status">{{ icon('check' if category == 'success' else 'alert') }}<span>{{ t(key) }}</span></div>
+{% endfor %}
+{% endwith %}
+{%- endmacro %}
+
+{% macro prefs_buttons() -%}
+<button class="btn btn-ghost btn-icon" type="button" data-action="theme" title="{{ t('ui.theme') }}" aria-label="{{ t('ui.theme') }}">
+  {{ icon('system' if g.theme == 'system' else ('sun' if g.theme == 'light' else 'moon')) }}
+</button>
+<button class="btn btn-ghost btn-sm" type="button" data-action="language" title="{{ t('ui.language') }}" aria-label="{{ t('ui.language') }}">
+  {{ icon('globe') }}<span>{{ 'EN' if g.lang == 'it' else 'IT' }}</span>
+</button>
+{%- endmacro %}

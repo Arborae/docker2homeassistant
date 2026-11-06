@@ -1,0 +1,53 @@
+# D2HA with secure defaults. Copy to compose.yaml, adjust, then: docker compose up -d
+# The setup code for the first sign-in is printed by: docker logs d2ha
+services:
+  d2ha:
+    image: ghcr.io/arborae/docker2homeassistant:latest
+    container_name: d2ha
+    restart: unless-stopped
+    depends_on: [docker-proxy]
+    environment:
+      # Docker is reached through the proxy below, never through the raw socket.
+      DOCKER_HOST: tcp://docker-proxy:2375
+      # Optional: a GitHub token (no scopes needed) raises the rate limit for release notes.
+      # D2HA_GITHUB_TOKEN: ""
+      # Optional: allow a Home Assistant dashboard to show D2HA in an iframe.
+      # D2HA_FRAME_ANCESTORS: "https://homeassistant.example.com"
+      # Optional: notifications and logs only, no updates from D2HA (then set POST: 0 below).
+      # D2HA_READ_ONLY: "true"
+    volumes:
+      - ./data:/app/data
+    ports:
+      # Reachable from this machine only: Home Assistant (host network), a reverse proxy
+      # or a tunnel. Do not publish it on the LAN or the internet without HTTPS in front.
+      - "127.0.0.1:12021:12021"
+    security_opt:
+      - no-new-privileges:true
+    networks: [default, docker-api]
+
+  docker-proxy:
+    image: lscr.io/linuxserver/socket-proxy:latest
+    container_name: d2ha-docker-proxy
+    restart: unless-stopped
+    environment:
+      # Only the Docker API calls D2HA needs.
+      CONTAINERS: 1
+      IMAGES: 1
+      DISTRIBUTION: 1
+      VERSION: 1
+      POST: 1          # updates and image cleanup; 0 with D2HA_READ_ONLY
+      ALLOW_START: 1
+      ALLOW_STOP: 1
+      ALLOW_RESTARTS: 0
+      EXEC: 0
+      VOLUMES: 0
+      NETWORKS: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    read_only: true
+    tmpfs: [/run]
+    networks: [docker-api]
+
+networks:
+  docker-api:
+    internal: true   # the proxy has no access to the outside world
