@@ -171,18 +171,18 @@ class Notifier:
         delay, since = 5, None
         while rounds is None or rounds > 0:
             rounds = None if rounds is None else rounds - 1
-            opened = time.time()
+            opened = self.clock()
             try:
                 for event in events_source(since):
                     self.handle_event(event)
-                ok = time.time() - opened >= 5
+                ok = self.clock() - opened >= 5
                 # Proxies close idle streams (HAProxy after 10 minutes): resume where it stopped.
                 log.debug("Docker events stream closed")
             except Exception as exc:  # noqa: BLE001 - the watcher must survive Docker restarts
                 ok = False
                 log.warning("Docker events unavailable (%s), retrying in %d s", type(exc).__name__, delay)
             # Ask again from one second before the cut: what happened meanwhile is not lost.
-            since = int(time.time()) - 1
+            since = int(self.clock()) - 1
             if ok:
                 delay = 5
                 continue

@@ -167,23 +167,29 @@ def test_notification_settings_and_test_message(app, client):
     assert "chat not found" in client.get("/settings").data.decode()
 
 
-def test_the_events_watcher_resumes_without_losing_events(tmp_path, monkeypatch):
-    telegram = FakeTelegram()
-    notifier, _ = make_notifier(tmp_path, telegram=telegram)
+def test_the_events_watcher_resumes_without_losing_events(tmp_path):
+    telegram, clock = FakeTelegram(), Clock()
+    notifier, _ = make_notifier(tmp_path, telegram=telegram, clock=clock)
     sleeps, calls = [], []
-    notifier.sleep = sleeps.append
-    times = iter([0, 600, 600, 600, 601, 601, 700, 700])  # opened, closed (idle), ...
-    monkeypatch.setattr("notify.time.time", lambda: next(times))
+
+    def sleep(seconds):
+        sleeps.append(seconds)
+        clock.now += seconds
+
+    notifier.sleep = sleep
 
     def source(since):
         calls.append(since)
         if len(calls) == 1:
-            return iter([event("die", exit_code="1")])  # then the proxy closes the idle stream
+            clock.now += 600  # the proxy closes the idle stream after 10 minutes
+            return iter([event("die", exit_code="1")])
         if len(calls) == 2:
+            clock.now += 1
             raise ConnectionError("proxy restarting")
+        clock.now += 100
         return iter([event("die", name="db", exit_code="2")])
 
     notifier.watch(source, rounds=3)
-    assert calls == [None, 599, 600]  # resumed from just before each cut
+    assert calls == [None, 1599, 1600]  # resumed from just before each cut
     assert sleeps == [5]  # waited only after the error
     assert len(telegram.sent) == 2

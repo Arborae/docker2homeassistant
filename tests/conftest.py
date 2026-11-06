@@ -7,7 +7,8 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "d2ha"))
 
-from app import create_app  # noqa: E402
+import i18n  # noqa: E402
+from app import BASE_DIR, create_app  # noqa: E402
 from config import Config  # noqa: E402
 from docker_ops import container_key  # noqa: E402
 from security import hash_password  # noqa: E402
@@ -101,6 +102,12 @@ class FakeReleases:
     def find(self, owner, repo, version):
         return {"version": version, "title": version, "url": f"https://github.com/{owner}/{repo}",
                 "published": "2026-01-01", "body": "## Changes\n- fixed", "breaking": ""}
+
+
+@pytest.fixture(autouse=True, scope="session")
+def translations():
+    """create_app loads the texts: tests that build no app need them too, in any order."""
+    i18n.load(os.path.join(BASE_DIR, "translations"))
 
 
 @pytest.fixture
