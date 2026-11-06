@@ -13,6 +13,9 @@ services:
       # D2HA_GITHUB_TOKEN: ""
       # Optional: allow a Home Assistant dashboard to show D2HA in an iframe.
       # D2HA_FRAME_ANCESTORS: "https://homeassistant.example.com"
+      # Optional: Telegram notifications (new updates, crashed and unhealthy containers).
+      # D2HA_TELEGRAM_TOKEN: ""
+      # D2HA_TELEGRAM_CHAT_ID: ""
       # Optional: notifications and logs only, no updates from D2HA (then set POST: 0 below).
       # D2HA_READ_ONLY: "true"
     volumes:
@@ -25,6 +28,8 @@ services:
       - no-new-privileges:true
     networks: [default, docker-api]
 
+  # D2HA recognises this container from DOCKER_HOST and never updates it (it would lose Docker
+  # halfway): update it yourself with docker compose pull.
   docker-proxy:
     image: lscr.io/linuxserver/socket-proxy:latest
     container_name: d2ha-docker-proxy
@@ -35,6 +40,7 @@ services:
       IMAGES: 1
       DISTRIBUTION: 1
       VERSION: 1
+      EVENTS: 1        # crashed and unhealthy containers for Telegram notifications
       POST: 1          # updates and image cleanup; 0 with D2HA_READ_ONLY
       ALLOW_START: 1
       ALLOW_STOP: 1

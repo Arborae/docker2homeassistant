@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 import docker
 
 from docker_ops import VERSION_LABELS, DockerOps, label_value, split_ref
+from notify import Notifier, NotifyError
 from registry import RegistryClient, RegistryError
 from releases import ReleaseNotes, github_repo
 from store import Store, read_json, write_json_atomic
@@ -29,15 +30,18 @@ def describe(version: str, tag: Optional[str], digest: str) -> str:
 
 class UpdateChecker:
     def __init__(self, ops: DockerOps, registry: RegistryClient, releases: ReleaseNotes,
-                 store: Store, state_path: str):
+                 store: Store, state_path: str, notifier: Optional[Notifier] = None):
         self.ops = ops
         self.registry = registry
         self.releases = releases
         self.store = store
         self.state_path = state_path
+        self.notifier = notifier
         state = read_json(state_path) or {}
         self.remote: Dict[str, Dict[str, Any]] = state.get("remote") or {}
         self.checked_at: float = float(state.get("checked_at") or 0)
+        # image ref -> digest already announced on Telegram (one message per new version).
+        self.notified: Dict[str, str] = state.get("notified") or {}
         self.running = False
         self._lock = threading.Lock()
         self._wake = threading.Event()
@@ -95,8 +99,11 @@ class UpdateChecker:
                 self.remote[ref] = self._check_ref(ref, [c for c in containers if c["image"] == ref])
             if not only_ref:
                 self.remote = {r: v for r, v in self.remote.items() if r in refs}
+                self.notified = {r: d for r, d in self.notified.items() if r in refs}
                 self.checked_at = time.time()
-            write_json_atomic(self.state_path, {"checked_at": self.checked_at, "remote": self.remote})
+            self._notify_new(containers)
+            write_json_atomic(self.state_path, {"checked_at": self.checked_at, "remote": self.remote,
+                                                "notified": self.notified})
             log.info("Update check done: %d images", len(refs))
         except Exception:  # noqa: BLE001 - the checker thread must survive any failure
             log.exception("Update check failed")
@@ -141,6 +148,37 @@ class UpdateChecker:
         if source:
             result["source"] = f"https://github.com/{source[0]}/{source[1]}"
         return result
+
+    def _notify_new(self, containers: List[Dict[str, Any]]) -> None:
+        """Announce updates whose new digest was not announced yet (once per version)."""
+        if not self.notifier:
+            return
+        items, announced = [], {}
+        for ref, remote in self.remote.items():
+            digest = remote.get("digest", "")
+            if not digest or self.notified.get(ref) == digest:
+                continue
+            outdated = [v for v in (self.view(c) for c in containers if c["image"] == ref)
+                        if v["update"] == "available"]
+            if not outdated:
+                continue
+            first = outdated[0]
+            items.append({
+                "names": [v["name"] for v in outdated],
+                "stack": first["stack"],
+                "installed": first["installed_version"],
+                "latest": first["latest_version"],
+                "url": first["release_url"],
+                "breaking": first["breaking"],
+            })
+            announced[ref] = digest
+        if not items:
+            return
+        try:
+            if self.notifier.updates(items):
+                self.notified.update(announced)
+        except NotifyError as exc:
+            log.warning("Telegram: %s", exc)  # tried again at the next check
 
     def _daemon_digest(self, ref: str) -> str:
         """Fallback for private registries: the daemon has the credentials."""

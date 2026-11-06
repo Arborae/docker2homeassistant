@@ -42,7 +42,7 @@ class FakeOps:
     def _container(name, image, image_id, stack="", state="running"):
         return {"key": container_key(stack, name), "id": f"id-{name}", "name": name, "stack": stack,
                 "image": image, "image_id": image_id, "state": state, "status": "", "health": "",
-                "created": 0, "is_self": False}
+                "created": 0, "is_self": False, "is_proxy": False}
 
     def list_containers(self):
         return [dict(c) for c in self.containers]
@@ -59,6 +59,9 @@ class FakeOps:
     def logs(self, container_id, tail=200):
         return "2026-01-01T00:00:00.000Z hello\n2026-01-01T00:00:01.000Z ERROR boom\n"
 
+    def events(self):
+        return iter(())
+
     def prune_images(self):
         return {"removed": 1, "reclaimed": 1024}
 
@@ -66,6 +69,20 @@ class FakeOps:
         self.recreated.append(container_id)
         progress({"phase": "pull", "percent": 50})
         return {"changed": True, "id": container_id, "name": container_id}
+
+
+class FakeTelegram:
+    """Collects messages instead of sending them."""
+
+    def __init__(self, configured=True, error=None):
+        self.configured = configured
+        self.error = error
+        self.sent: List[str] = []
+
+    def send(self, text):
+        if self.error:
+            raise self.error
+        self.sent.append(text)
 
 
 class FakeRegistry:

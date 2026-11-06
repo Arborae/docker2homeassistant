@@ -15,6 +15,7 @@ from checker import UpdateChecker
 from config import Config
 from docker_ops import DockerOps
 from jobs import JobRunner
+from notify import Notifier, Telegram
 from registry import RegistryClient
 from releases import ReleaseNotes
 from security import LoginLimiter, RateLimiter, csrf_token
@@ -33,7 +34,8 @@ class D2HA:
         self.config = config
         self.ops = ops
         self.store = store
-        self.checker = UpdateChecker(ops, registry, releases, store, config.state_path)
+        self.notifier = Notifier(Telegram(config.telegram_token, config.telegram_chat_ids), store)
+        self.checker = UpdateChecker(ops, registry, releases, store, config.state_path, self.notifier)
         self.jobs = JobRunner()
         self.login_limiter = LoginLimiter()
         self.write_limiter = RateLimiter(limit=30, window=60)
@@ -131,6 +133,8 @@ def create_app(config: Optional[Config] = None, ops: Optional[DockerOps] = None,
     if config.start_background:
         ctx.jobs.start()
         ctx.checker.start()
+        if ctx.notifier.configured:
+            ctx.notifier.start(ctx.ops.events)
         if ctx.setup_code:
             log.warning("No account yet. Open D2HA and use this setup code: %s", ctx.setup_code)
     return app

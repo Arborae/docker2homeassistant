@@ -6,6 +6,8 @@ import re
 from flask import (Blueprint, current_app, flash, jsonify, redirect, render_template, request,
                    send_from_directory, session, url_for)
 
+import i18n
+from notify import KINDS, NotifyError
 from security import (client_ip, hash_password, login_session, logout_session,
                       new_api_token, new_totp_secret, page_login_required, password_problem,
                       qr_data_uri, safe_next, session_user, totp_uri, verify_password, verify_totp)
@@ -15,6 +17,7 @@ web_bp = Blueprint("web", __name__)
 USERNAME_RE = re.compile(r"^[A-Za-z0-9._-]{3,32}$")
 CHECK_INTERVALS = (1, 3, 6, 12, 24)
 SESSION_TIMEOUTS = (15, 30, 60, 240, 1440)
+LANGUAGE_NAMES = {"en": "English", "it": "Italiano"}
 
 
 def ctx():
@@ -136,6 +139,10 @@ def settings(new_token: str = ""):
         containers=containers,
         in_ha={c["key"]: store.container_in_ha(c["key"]) for c in containers},
         docker_version=ctx().ops.engine_info().get("version", ""),
+        telegram_ready=ctx().notifier.configured,
+        notify=store.get("notifications"),
+        notify_language=store.get("notifications", "language") or i18n.current(),
+        languages=LANGUAGE_NAMES,
     )
 
 
@@ -236,3 +243,34 @@ def general_settings():
                                                           session_timeout_minutes=minutes))
         flash("flash.saved", "success")
     return redirect(url_for("web.settings") + "#updates")
+
+
+@web_bp.route("/settings/notifications", methods=["POST"])
+@page_login_required
+def notification_settings():
+    language = request.form.get("language", "")
+    if language not in i18n.LANGUAGES:
+        flash("error.generic", "error")
+    else:
+        chosen = {kind: request.form.get(kind) == "on" for kind in KINDS}
+        ctx().store.update(lambda d: d["notifications"].update(language=language, **chosen))
+        flash("flash.saved", "success")
+    return redirect(url_for("web.settings") + "#notifications")
+
+
+@web_bp.route("/settings/notifications/test", methods=["POST"])
+@page_login_required
+def notification_test():
+    notifier = ctx().notifier
+    if not notifier.configured:
+        flash("error.telegram_missing", "error")
+    elif not ctx().write_limiter.allow(client_ip()):
+        flash("error.rate_limited", "error")
+    else:
+        try:
+            notifier.test()
+            flash("flash.test_sent", "success")
+        except NotifyError as exc:
+            # Flashed already translated: the detail comes from Telegram.
+            flash(i18n.t("error.telegram", detail=str(exc)), "error")
+    return redirect(url_for("web.settings") + "#notifications")

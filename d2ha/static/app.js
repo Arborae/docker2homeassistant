@@ -245,6 +245,7 @@
       if (!readOnly && c.update === "available") {
         if (c.can_update) actions.push(`<button class="btn btn-sm btn-primary" type="button" data-update="${esc(c.key)}">${icon("update")}<span>${esc(T("js.action.update"))}</span></button>`);
         else if (c.is_self) actions.push(`<span class="badge" title="${esc(T("js.self"))}">${esc(T("js.self_short"))}</span>`);
+        else if (c.is_proxy) actions.push(`<span class="badge" title="${esc(T("js.proxy"))}">${esc(T("js.proxy_short"))}</span>`);
       }
       return `<div class="ctr">
         <span class="dot ${dot}" title="${esc(stateText(c))}"></span>

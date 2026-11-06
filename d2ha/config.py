@@ -30,6 +30,10 @@ class Config:
     # Extra origins allowed to embed D2HA in an iframe (e.g. a Home Assistant dashboard).
     frame_ancestors: str = field(default_factory=lambda: os.environ.get("D2HA_FRAME_ANCESTORS", "").strip())
     default_check_hours: int = field(default_factory=lambda: _int("D2HA_CHECK_INTERVAL_HOURS", 6))
+    # Telegram notifications: bot token and one or more chat ids (comma separated).
+    telegram_token: str = field(default_factory=lambda: os.environ.get("D2HA_TELEGRAM_TOKEN", "").strip())
+    telegram_chat_ids: tuple = field(default_factory=lambda: tuple(
+        c.strip() for c in os.environ.get("D2HA_TELEGRAM_CHAT_ID", "").split(",") if c.strip()))
     # Background threads (checker, jobs) are off in tests.
     start_background: bool = True
 

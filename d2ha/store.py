@@ -29,6 +29,13 @@ DEFAULTS: Dict[str, Any] = {
         "check_interval_hours": 6,
         "session_timeout_minutes": 30,
     },
+    # Telegram messages (the bot token and chats come from the environment, never stored).
+    "notifications": {
+        "updates": True,
+        "crashes": True,
+        "unhealthy": True,
+        "language": "",
+    },
     # key -> {"ha": bool}; missing keys default to visible in Home Assistant.
     "containers": {},
 }

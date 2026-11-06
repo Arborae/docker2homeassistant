@@ -86,6 +86,15 @@
   "settings.read_only": "Read only (no updates from D2HA)",
   "settings.read_write": "Updates enabled",
   "settings.project": "Project",
+  "settings.notifications": "Telegram notifications",
+  "settings.notify_missing": "Not configured. Set D2HA_TELEGRAM_TOKEN (the token of your bot, from @BotFather) and D2HA_TELEGRAM_CHAT_ID (the chat that receives the messages) in the environment of D2HA, then restart it.",
+  "settings.notify_ready": "Telegram is configured. Choose what deserves a message:",
+  "settings.notify_updates": "New updates (one message per new version)",
+  "settings.notify_crashes": "Containers stopped with an error",
+  "settings.notify_unhealthy": "Containers that become unhealthy",
+  "settings.notify_language": "Language of the messages",
+  "settings.notify_test": "Send a test message",
+  "settings.notify_events_help": "Stopped and unhealthy containers come from the Docker events: with a socket proxy, allow EVENTS.",
   "unit.hours": "{n} h",
   "unit.minutes": "{n} min",
 
@@ -95,6 +104,7 @@
   "flash.totp_disabled": "Two-factor authentication is off.",
   "flash.token_revoked": "Token revoked.",
   "flash.saved": "Saved.",
+  "flash.test_sent": "Test message sent.",
 
   "error.login": "Wrong username, password or code.",
   "error.too_many_attempts": "Too many attempts. Try again in a few minutes.",
@@ -113,6 +123,10 @@
   "error.pull_failed": "Download of the image failed.",
   "error.recreate_failed": "The new container did not start: the previous one has been restored.",
   "error.update_all_failed": "No container could be updated.",
+  "error.proxy_update": "D2HA reaches Docker through this container, so it cannot update it: use docker compose pull and docker compose up -d.",
+  "error.rate_limited": "Too many requests: wait a moment.",
+  "error.telegram_missing": "Telegram is not configured.",
+  "error.telegram": "Telegram did not take the message: {detail}",
 
   "status.available": "Update available",
   "status.current": "Up to date",
@@ -132,6 +146,7 @@
   "api.read_only": "D2HA is in read-only mode.",
   "api.rate_limited": "Too many requests: wait a moment.",
   "api.self_update": "D2HA cannot update itself.",
+  "api.proxy_update": "D2HA cannot update the proxy it uses to reach Docker.",
   "api.not_found": "Container not found.",
   "api.nothing_to_update": "Nothing to update.",
 
@@ -146,6 +161,8 @@
   "js.breaking": "Breaking changes",
   "js.self": "This is D2HA: update it with docker compose pull.",
   "js.self_short": "D2HA",
+  "js.proxy": "D2HA reaches Docker through this container: update it with docker compose pull.",
+  "js.proxy_short": "Proxy",
   "js.stack_updates": "{n} to update",
   "js.update_all": "Update all ({n})",
   "js.prune": "Clean images ({n})",
@@ -194,5 +211,14 @@
   "js.toast.failed": "The operation failed",
   "js.toast.load_failed": "Could not load the containers",
   "js.toast.copied": "Copied",
-  "js.toast.saved": "Saved"
+  "js.toast.saved": "Saved",
+
+  "notify.test": "D2HA: Telegram notifications work.",
+  "notify.updates_title": "Updates available: {n}",
+  "notify.breaking": "Breaking changes: read the notes before updating",
+  "notify.release_notes": "Release notes",
+  "notify.crashed": "stopped with an error",
+  "notify.unhealthy": "is unhealthy",
+  "notify.image": "Image",
+  "notify.exit_code": "Exit code"
 }
