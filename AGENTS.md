@@ -24,6 +24,7 @@ sign-in with 2FA, PWA, light/dark theme, Italian/English. Do not add general Doc
   - `i18n.py` + `translations/{en,it}.json` – every user-visible string.
   - `templates/`, `static/` (`app.css`, `app.js`, `icons.svg`, `sw.js`, `manifest.json`).
 - `tests/` – pytest, with fakes for Docker, registry and GitHub (`tests/conftest.py`).
+- `scripts/demo.py` – the interface with sample data and no Docker, used for the screenshots.
 
 ## Rules
 - English for code and comments; user-facing text only through translation keys, in both languages
@@ -39,6 +40,16 @@ python -m venv .venv && .venv/bin/pip install -r d2ha/requirements.txt pytest py
 .venv/bin/pyflakes d2ha tests && .venv/bin/pytest -q
 docker build -t d2ha:local -f d2ha/Dockerfile d2ha
 ```
+
+## Multi-agent coordination
+More than one AI assistant works on this repository. To avoid conflicts:
+- Read `HANDOFF.md` before starting any work and update it before finishing: what you did,
+  what is in progress, what comes next.
+- Start every session with `git pull`, end it with a commit and a push. Never leave
+  uncommitted work behind.
+- One branch per task; declare the branch and the task as "in progress" in `HANDOFF.md`
+  before touching files, and never start work that another agent has marked in progress.
+- Add yourself in the `Co-Authored-By` trailer of every commit.
 
 ## Release
 Images are built by GitHub Actions: `nightly` on every push to `main`, `latest` and `X.Y.Z` on a

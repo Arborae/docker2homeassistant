@@ -23,10 +23,12 @@ seeing them in Home Assistant, and reading container logs. Everything else is go
 - Versioned API (`/api/v1`) with a bearer token for Home Assistant.
 - First-run setup protected by a one-time code printed in the container logs.
 - Read-only mode (`D2HA_READ_ONLY`) and an example compose file with a Docker socket proxy.
+- `scripts/demo.py`: the interface with sample data, no Docker needed.
 - Complete Italian and English translations; light, dark and system themes.
 
 ### Changed
 - New interface: one page for containers (updates, release notes, logs) and one for settings.
+- License: GNU GPL v3.0 (was MIT).
 - Update checks run every 6 hours by default (configurable) instead of continuously.
 - Python 3.13; images for amd64 and arm64.
 - The app uses ~50 MB of RAM and almost no CPU when idle (no per-container statistics polling).

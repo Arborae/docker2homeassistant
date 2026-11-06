@@ -64,7 +64,7 @@
   "settings.totp_confirm": "Conferma",
   "settings.totp_disable": "Disattiva",
   "settings.ha": "Home Assistant",
-  "settings.ha_step1": "Installa l'integrazione D2HA da HACS (HACS → cerca “D2HA”).",
+  "settings.ha_step1": "Installa l'integrazione D2HA da HACS: aggiungi github.com/arborae/docker2homeassistant come repository personalizzato (tipo Integrazione), poi scarica D2HA e riavvia Home Assistant.",
   "settings.ha_step2": "Crea qui sotto un token di accesso e copialo.",
   "settings.ha_step3": "In Home Assistant aggiungi l'integrazione D2HA con l'indirizzo di D2HA (http://127.0.0.1:12021 se gira sullo stesso server) e il token.",
   "settings.token_once": "Copia il token adesso: viene mostrato una volta sola.",
