@@ -47,7 +47,6 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 ## Notes from the owner
 
-- The tunnel target of `d2ha.casadm.uk` now points to `http://d2ha_server:12021`.
 - Do not change the MQTT password for now.
 - Portainer, Diun and docker-telegram-notifier are in use. The owner's goal: D2HA +
   the HACS integration should cover update checks, Telegram notifications and updating
