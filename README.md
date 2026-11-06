@@ -54,9 +54,9 @@ Options (all optional) are listed in [`.env.example`](.env.example): the hours b
 
 ### 2. Home Assistant
 
-[![Open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=arborae&repository=docker2homeassistant&category=integration)
+[![Open this repository in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=arborae&repository=ha-d2ha&category=integration)
 
-1. In HACS, add `https://github.com/arborae/docker2homeassistant` as a custom repository of type **Integration** (or open the link above), download **D2HA** and restart Home Assistant.
+1. In HACS, add `https://github.com/arborae/ha-d2ha` as a custom repository of type **Integration** (or open the link above), download **D2HA** and restart Home Assistant.
 2. In D2HA, open **Settings → Home Assistant** and create a token.
 3. In Home Assistant, **Settings → Devices & services → Add integration → D2HA**: enter the address of D2HA (`http://127.0.0.1:12021` when Home Assistant runs on the same host with `network_mode: host`) and the token.
 
