@@ -5,6 +5,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- The Home Assistant integration now has its own repository: the HACS instructions in
+  Settings and in the README point to `arborae/ha-d2ha`.
+
 ### Fixed
 - The D2HA images carry the standard OCI labels (version, source, revision, build date,
   licence), which they lacked: D2HA now shows its own version and release notes like for
