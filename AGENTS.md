@@ -104,6 +104,70 @@ adding (see its rules), the integration relies only on what it says.
 - The owner merges only after an "approved" review comment and with green checks.
 - Every commit has a `Co-Authored-By` trailer with the agent's name.
 
+### Code of conduct (both agents)
+Every action has a **level**, like a permission system. From level 2 up the owner's explicit
+OK is needed; level 3 is forbidden. When in doubt, the higher level applies. A rule that
+gets in the way is not worked around: stop and ask.
+
+**Level 0 – free (read only).** Read files, code, logs and configuration (never print
+secrets). `git status/log/diff/fetch`, `gh ... view/list`, CI logs. Docker in read mode
+(`ps`, `logs`, `inspect`, `images`, `system df`, `events`). Databases opened read-only.
+
+**Level 1 – allowed in your own area, with care.** Local, reversible actions in your own
+area (see "Areas") and your own working folder:
+- edit files in your clone, on your branch for the issue; commit with the noreply address
+  and `Co-Authored-By`; plain (never forced) push to your branch; issues, pull requests and
+  comments in the agreed format;
+- tests in throwaway containers on a network of their own, named so that D2HA's alerts
+  ignore them (suffix `-d2ha-old` or label `d2ha.notify=false`); stop them with
+  `docker stop`, then remove them with their networks, volumes and images;
+- temporary files in a folder of your own, deleted at the end.
+
+Before acting: check the facts at the source, read a whole file before changing it, re-read a
+shared file (`HANDOFF.md`, `AGENTS.md`, shared notes) right before writing it, and check that
+the remote branch has not moved before a push.
+
+**Level 2 – the owner's explicit OK, one action at a time.** Say what you will do, why, what
+happens if it goes wrong and how to undo it, then wait for a yes. The OK covers that action
+only, not similar ones or later ones. If the situation changes meanwhile (e.g. new commits),
+check again before acting.
+- Destructive or public git: force push (`--force-with-lease` too), rewriting published
+  commits, deleting branches or tags, pushing to `main` (except `HANDOFF.md`).
+- Merging, auto-merge, tags, releases, version numbers.
+- Anything on the production server: `docker compose up/down/restart/pull/rm` of real
+  services, compose files, environment files, pinned versions, configuration, stopping
+  services, cron jobs and system services.
+- Deleting what you did not create in the current task (files, volumes, images, caches,
+  branches, issues), bulk clean-ups (`prune`, mass deletions), changes to Home Assistant's
+  configuration or storage. Look at the target first; back up if needed.
+- Opening ports, changing tunnels or proxies, exposing anything to the outside.
+- Creating or changing secrets and tokens, repository or account settings, the global git
+  configuration.
+- Messages to people or outside services beyond what was asked (test notifications,
+  e-mails, comments in other people's repositories).
+- Installing system software, changing permissions or owners outside your own folder.
+
+**Level 3 – forbidden.**
+- Working around a block or a missing permission by another route (another credential, a
+  script, editing a configuration file). Stop and tell the owner what is needed.
+- Printing, copying or storing secrets (tokens, passwords, keys, TOTP codes) in chat, logs,
+  files, commits, issues, pull requests or screenshots. Use them through variables only.
+- Personal e-mail addresses, IP addresses, domains, host names, ports, accounts or the layout
+  of the owner's setup in anything public: code, docs, issues, pull requests, commits,
+  landing page, screenshots (screenshots come from the demo).
+- Working in the other agent's area, branches or working copy without being asked in
+  writing: open an issue with its label instead.
+- Turning off CI checks, skipping or deleting tests, loosening rules to get green.
+- `sudo`, raising privileges, touching SSH keys or user accounts.
+- Destructive actions on the owner's personal data without an explicit OK and a backup.
+
+**Always.** Report what really happened: a failed test, a skipped step, a check that did not
+work. Never claim "done" or "verified" without checking. After a mistake (for example a
+personal e-mail published, or an alert sent by accident): stop, tell the owner at once,
+propose the fix and wait for the OK if the fix is level 2. Before any action ask: is it in
+my area, can it be undone, is it public, does it touch production or the owner's data, does
+it use a secret? If one answer is the risky one, it is level 2.
+
 ## Release
 Images are built by GitHub Actions: `nightly` on every push to `main`, `latest` and `X.Y.Z` on a
 GitHub release (amd64 + arm64). Update `CHANGELOG.md` with every user-visible change.
