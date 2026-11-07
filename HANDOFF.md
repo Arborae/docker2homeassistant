@@ -8,8 +8,12 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
 - Kimi: #230, landing page fixes (phone overflow on the install page, HACS instructions →
-  `arborae/ha-d2ha`, Telegram notifications, small things).
+  `arborae/ha-d2ha`, Telegram notifications, small things); #240, optional follow-ups in
+  `arborae/ha-d2ha` (refresh after an install, `"error": null` in jobs, brand icon sizes).
 - Claude: no open issue. Next steps on the owner's side are in "Next up" 2 and 3.
+
+Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
+from free (read only) to forbidden, and the levels in between need the owner's explicit OK.
 
 ## State (2026-11-06, night)
 
