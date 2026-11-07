@@ -6,11 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#070b0a" />
   <meta name="description"
-    content="d2ha — Docker to Home Assistant. Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant." />
-  <title>d2ha — Docker to Home Assistant</title>
+    content="D2HA — Docker to Home Assistant. Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant." />
+  <title>D2HA — Docker to Home Assistant</title>
 
   <!-- Open Graph -->
-  <meta property="og:title" content="d2ha — Docker to Home Assistant" />
+  <meta property="og:title" content="D2HA — Docker to Home Assistant" />
   <meta property="og:description"
     content="Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant." />
   <meta property="og:type" content="website" />
@@ -34,12 +34,12 @@
   <header class="nav">
     <div class="container nav-inner">
       <div class="brand">
-        <a class="brand-main" href="#top" aria-label="d2ha Home">
-          <img src="./assets/logo.svg" alt="d2ha logo" width="28" height="28" />
-          <span>d2ha</span>
+        <a class="brand-main" href="#top" aria-label="D2HA Home">
+          <img src="./assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
         </a>
         <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
-          aria-label="Arborae — sito principale">by Arborae ↗</a>
+          aria-label="Arborae — main site">by Arborae ↗</a>
       </div>
 
       <nav class="nav-links" aria-label="Primary">
@@ -95,9 +95,9 @@
             <span class="win-dot r"></span>
             <span class="win-dot y"></span>
             <span class="win-dot g"></span>
-            <span class="win-title">d2ha — release notes</span>
+            <span class="win-title">D2HA — release notes</span>
           </div>
-          <img src="./images/release-notes.png" alt="d2ha release notes with breaking changes" loading="lazy" />
+          <img src="./images/release-notes.png" alt="D2HA release notes with breaking changes" loading="lazy" />
         </div>
       </div>
     </section>
@@ -146,6 +146,15 @@
         </article>
 
         <article class="card reveal">
+          <span class="card-icon">🔔</span>
+          <h3>Telegram notifications</h3>
+          <p>A message when an update appears — once per version, with the release-notes
+            link and breaking-change warnings — when a container stops with an error or
+            turns unhealthy, and never for a stop you asked for. Each kind can be turned
+            off, and a label excludes a container.</p>
+        </article>
+
+        <article class="card reveal">
           <span class="card-icon">🔐</span>
           <h3>Private by design</h3>
           <p>Sign-in with optional 2FA, no third-party requests from the browser,
@@ -168,7 +177,7 @@
               <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
               <span class="win-title">containers</span>
             </div>
-            <img src="./images/containers-light.png" alt="d2ha container list with updates available" loading="lazy" />
+            <img src="./images/containers-light.png" alt="D2HA container list with updates available" loading="lazy" />
           </div>
           <figcaption>Containers — updates at a glance, light theme</figcaption>
         </figure>
@@ -179,7 +188,7 @@
               <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
               <span class="win-title">release notes</span>
             </div>
-            <img src="./images/release-notes.png" alt="d2ha release notes of the exact new version" loading="lazy" />
+            <img src="./images/release-notes.png" alt="D2HA release notes of the exact new version" loading="lazy" />
           </div>
           <figcaption>Release notes — breaking changes in red</figcaption>
         </figure>
@@ -190,7 +199,7 @@
               <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
               <span class="win-title">updating</span>
             </div>
-            <img src="./images/update-progress.png" alt="d2ha updating a container with live progress"
+            <img src="./images/update-progress.png" alt="D2HA updating a container with live progress"
               loading="lazy" />
           </div>
           <figcaption>Updates — live progress, safe rollback</figcaption>
@@ -202,9 +211,26 @@
               <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
               <span class="win-title">logs</span>
             </div>
-            <img src="./images/logs.png" alt="d2ha live container logs" loading="lazy" />
+            <img src="./images/logs.png" alt="D2HA live container logs" loading="lazy" />
           </div>
           <figcaption>Logs — tail, follow, search, download</figcaption>
+        </figure>
+
+        <figure class="shot phone reveal">
+          <img src="./images/phone.png" alt="D2HA on a phone: container list with updates" loading="lazy" />
+          <figcaption>Phone — the same UI, in your pocket</figcaption>
+        </figure>
+
+        <figure class="shot reveal">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">settings</span>
+            </div>
+            <img src="./images/settings-home-assistant.png" alt="D2HA settings for Home Assistant"
+              loading="lazy" />
+          </div>
+          <figcaption>Settings — the Home Assistant link</figcaption>
         </figure>
       </div>
     </section>
@@ -224,8 +250,10 @@ docker compose up -d
 docker logs d2ha   <span class="code-comment"># ← your one-time setup code</span></code></pre>
         <p class="hint">
           Then open <a href="http://localhost:12021"><code>http://localhost:12021</code></a>, enter the setup code
-          and create your account — the example includes a Docker socket proxy, so d2ha never touches the
-          socket directly. Details in the
+          and create your account — the example includes a Docker socket proxy, so D2HA never touches the
+          socket directly. On a server without a browser, open an SSH tunnel first
+          (<code>ssh -L 12021:localhost:12021 &lt;user&gt;@&lt;server&gt;</code>), then that address works on
+          your computer. Details in the
           <a href="./install/" style="color: var(--brand-soft);">installation guide</a>.
         </p>
       </div>
@@ -243,7 +271,7 @@ docker logs d2ha   <span class="code-comment"># ← your one-time setup code</sp
     <footer class="footer">
       <div class="footer-left">
         <img src="./assets/logo.svg" alt="" width="20" height="20" />
-        <span>© <span id="year">2026</span> d2ha · a project by <a href="https://arborae.github.io/" target="_blank"
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
             rel="noreferrer">Arborae</a></span>
       </div>
       <div class="footer-right">
