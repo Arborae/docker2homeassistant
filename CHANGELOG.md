@@ -9,6 +9,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Home Assistant 2026.11 ships HACS as its built-in **Marketplace**: the install
   instructions in Settings and in the README now start from **Settings → Marketplace →
   Add from link**, and keep HACS for earlier versions.
+- From version 0.2.0 the integration needs Home Assistant 2026.8 or later: Settings and
+  the README say so, with HACS for 2026.8 to 2026.10.
 
 ## [0.5.1] - 2026-11-06
 
