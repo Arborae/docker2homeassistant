@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- Home Assistant 2026.11 ships HACS as its built-in **Marketplace**: the install
+  instructions in Settings and in the README now start from **Settings → Marketplace →
+  Add from link**, and keep HACS for earlier versions.
+
 ## [0.5.1] - 2026-11-06
 
 ### Added
