@@ -16,7 +16,7 @@ D2HA is a container that watches your Docker host. It finds the real new version
 - **Image cleanup.** Remove the images no container uses any more.
 - **Telegram notifications.** A message when a new version is out (once per version, with the release notes and a warning for breaking changes), when a container stops with an error and when it becomes unhealthy.
 - **Logs.** The last lines or the live stream, with search, levels in colour, wrap and download.
-- **Home Assistant.** An integration from the Marketplace (HACS before Home Assistant 2026.11): an update entity for each container (install and release notes from Home Assistant), container states, counters, and buttons to check, update all and clean images.
+- **Home Assistant.** An integration for Home Assistant 2026.8 or later, from the Marketplace (HACS before 2026.11): an update entity for each container (install and release notes from Home Assistant), container states, counters, and buttons to check, update all and clean images.
 - **Private by design.** Sign-in with optional two-factor authentication, no third-party requests from the browser, no environment variables or secrets shown, and an example setup where D2HA reaches Docker only through a socket proxy.
 - **Everywhere.** Light and dark theme, English and Italian, installable as an app on phones and computers.
 
@@ -56,9 +56,9 @@ Options (all optional) are listed in [`.env.example`](.env.example): the hours b
 
 [![Open this repository in the Marketplace](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=arborae&repository=ha-d2ha&category=integration)
 
-1. Install the integration. The link above opens it in the Marketplace (or in HACS) and offers to add it.
+1. Install the integration (it needs Home Assistant 2026.8 or later). The link above opens it in the Marketplace (or in HACS) and offers to add it.
    - **Home Assistant 2026.11 or later:** open **Settings → Marketplace → Add from link**, enter `https://github.com/arborae/ha-d2ha` with type **Integration** (the first time, the Marketplace asks you to connect GitHub), then **Install** and **Restart Home Assistant**.
-   - **Earlier versions:** in HACS, add `https://github.com/arborae/ha-d2ha` as a custom repository of type **Integration**, download **D2HA** and restart Home Assistant.
+   - **Home Assistant 2026.8 to 2026.10:** in HACS, add `https://github.com/arborae/ha-d2ha` as a custom repository of type **Integration**, download **D2HA** and restart Home Assistant.
 2. In D2HA, open **Settings → Home Assistant** and create a token.
 3. In Home Assistant, **Settings → Devices & services → Add integration → D2HA**: enter the address of D2HA (`http://127.0.0.1:12021` when Home Assistant runs on the same host with `network_mode: host`) and the token.
 
