@@ -51,7 +51,6 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 - Claude and Kimi each work in their own clones; neither works in the other's.
 - Commits use the GitHub noreply address: check `git config user.email` in every fresh
   clone before the first commit.
-- Both repositories delete a pull request's branch automatically after the merge. The old
-  `feature/hacs-integration` (fully contained in `main`) goes only with the owner's OK.
+- Both repositories delete a pull request's branch automatically after the merge.
 - Do not merge one pull request's branch into another: GitHub then sees two merge bases
   and reports a conflict. Wait for the first merge, then merge `main` into the second.
