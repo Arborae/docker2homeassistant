@@ -103,9 +103,17 @@ docker logs d2ha   # ← your one-time setup code</code></pre>
 
         <article class="method-card reveal">
           <div class="method-title">Home Assistant</div>
-          <p>In HACS, add
-            <code>github.com/arborae/ha-d2ha</code> as a custom repository of type
-            <strong>Integration</strong>, download <strong>D2HA</strong> and restart Home Assistant.</p>
+          <p>From <strong>Home Assistant 2026.11</strong>: open
+            <strong>Settings → Marketplace → Add from link</strong>, enter
+            <code>github.com/arborae/ha-d2ha</code> with type <strong>Integration</strong>
+            (the first time, the Marketplace asks you to connect GitHub), then
+            <strong>Install</strong> and <strong>Restart Home Assistant</strong>. On earlier
+            versions, add the same address in HACS as a custom repository of type
+            <strong>Integration</strong>, download <strong>D2HA</strong> and restart.
+            <a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=arborae&repository=ha-d2ha&category=integration"
+              target="_blank" rel="noreferrer"
+              style="color: var(--brand-soft);">This link</a> opens the repository page
+            for you, in the Marketplace or in HACS.</p>
           <p style="margin-top: 14px;">Then create an API token in D2HA under
             <strong>Settings → Home Assistant</strong> and add the integration in Home Assistant with the
             address of D2HA and the token.</p>
