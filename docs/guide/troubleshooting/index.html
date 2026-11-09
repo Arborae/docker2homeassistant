@@ -148,7 +148,7 @@
 
         <h3 id="cannot-connect">“Cannot reach D2HA at this address”</h3>
 
-        <p>The address is the one Home Assistant sees. <code>127.0.0.1</code> works only when Home Assistant runs on the same host with the host network; see <a href="../../guide/home-assistant/#address">The address</a>. Check that D2HA runs: <code>docker ps</code>.</p>
+        <p>The address is the one Home Assistant sees. <code>127.0.0.1</code> works only when Home Assistant runs on the same host with the host network; see <a href="../../guide/home-assistant/#address">The address</a>. Check that D2HA runs: <code>docker ps</code>. If D2HA moved (a new host, a reverse proxy, a different port), change the address with <strong>Reconfigure</strong>: see <a href="../../guide/home-assistant/#reconfigure">Change the address</a>.</p>
 
         <h3 id="invalid-auth">“The token is wrong or was revoked”</h3>
 
@@ -157,6 +157,10 @@
         <h3 id="unavailable">Entities are unavailable</h3>
 
         <p>All of them: D2HA is down or unreachable. Only some: those containers were hidden in D2HA or removed; delete their devices (<a href="../../guide/home-assistant/#choose">Choose the containers</a>).</p>
+
+        <h3 id="diagnostics">A bug report for the integration</h3>
+
+        <p>Attach the diagnostics: <strong>Settings → Devices &amp; services → D2HA → ⋮ → Download diagnostics</strong>. The address and the token are blacked out in the file (see <a href="../../guide/home-assistant/#diagnostics">Diagnostics</a>).</p>
 
         <h2 id="telegram">Telegram</h2>
 
