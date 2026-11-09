@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="How D2HA stays private: access, the socket proxy, read-only mode, sign-in and the API token." />
+  <title>Security — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/" aria-current="page">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Reference</div>
+        <h1>Security</h1>
+        <p class="lead">D2HA can update containers, so treat it like an admin panel. The example setup is private by default; these are the parts that keep it so.</p>
+
+        <h2 id="access">Who can reach it</h2>
+
+        <ul>
+          <li>The example publishes D2HA on <code>127.0.0.1</code>: Home Assistant on the same host, a reverse proxy or a tunnel can reach it, the rest of the network cannot.</li>
+          <li>From outside, put it behind HTTPS and an access layer: a VPN, Cloudflare Access, an authenticating reverse proxy.</li>
+          <li>Turn on two-factor authentication in <strong>Settings → Account and security</strong>.</li>
+        </ul>
+
+        <div class="callout warning">
+          <span class="callout-title">Keep the port closed</span>
+          <p>D2HA reads the visitor address from the <code>CF-Connecting-IP</code> header when there is one, for the sign-in limits. Keep port 12021 reachable only from the machine itself or your proxy, so nobody can send that header directly.</p>
+        </div>
+
+        <h2 id="socket-proxy">The socket proxy</h2>
+
+        <p>With the example, D2HA reaches Docker through <a href="https://github.com/linuxserver/docker-socket-proxy" target="_blank" rel="noreferrer">linuxserver/socket-proxy</a> on an internal network with no way out, and the proxy mounts the socket read-only. It allows only what D2HA needs:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>CONTAINERS</code></td><td>1</td><td>List and inspect containers, read logs</td></tr>
+              <tr><td><code>IMAGES</code></td><td>1</td><td>Read image labels and digests, clean images</td></tr>
+              <tr><td><code>DISTRIBUTION</code></td><td>1</td><td>Ask the registry through Docker, for private registries</td></tr>
+              <tr><td><code>VERSION</code></td><td>1</td><td>The Docker version and architecture</td></tr>
+              <tr><td><code>EVENTS</code></td><td>1</td><td>Crash and unhealthy alerts</td></tr>
+              <tr><td><code>POST</code></td><td>1</td><td>Every write: download images, create and remove containers. <code>0</code> in read-only mode</td></tr>
+              <tr><td><code>ALLOW_START</code>, <code>ALLOW_STOP</code></td><td>1</td><td>Start and stop containers during an update</td></tr>
+              <tr><td><code>ALLOW_RESTARTS</code></td><td>0</td><td>Not needed</td></tr>
+              <tr><td><code>EXEC</code>, <code>VOLUMES</code>, <code>NETWORKS</code></td><td>0</td><td>Never: no commands inside containers, no volumes or networks</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>D2HA recognises the proxy from <code>DOCKER_HOST</code> and never updates it: update it yourself with <code>docker compose pull</code>.</p>
+
+        <h2 id="read-only">Read-only mode</h2>
+
+        <p>With updates enabled the proxy must allow creating containers, so a stolen session could still create one. If you only want notifications and logs, set both:</p>
+
+        <pre><code>D2HA_READ_ONLY: "true"   # on d2ha
+POST: 0                 # on docker-proxy</code></pre>
+
+        <p>Then D2HA shows no update or cleanup buttons, the API refuses them with <code>read_only</code>, and Home Assistant has no <strong>Install</strong>, <strong>Update all</strong> or <strong>Clean images</strong>.</p>
+
+        <h2 id="sign-in">Sign-in and sessions</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Protection</th><th>How</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Passwords</td><td>At least 10 characters; passwords that are too easy to guess are refused; stored as a hash</td></tr>
+              <tr><td>Two-factor authentication</td><td>TOTP codes from an authenticator app</td></tr>
+              <tr><td>Too many attempts</td><td>5 wrong attempts from one address in 15 minutes, or 30 from anywhere, block sign-in for a while</td></tr>
+              <tr><td>Sessions</td><td>End after inactivity (30 minutes by default); the cookie is HttpOnly and SameSite=Lax, and Secure over HTTPS</td></tr>
+              <tr><td>Password or two-factor change</td><td>Signs out every other device</td></tr>
+              <tr><td>Actions</td><td>Checks, updates and cleanup: at most 30 per minute per address. Every change from the web interface needs a CSRF token</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="token">The API token</h2>
+
+        <p>The token for Home Assistant is shown once and stored only as a hash. It can read containers and start checks, updates and cleanup, but it cannot read logs. Replace it with <strong>New token</strong> or turn it off with <strong>Revoke</strong> at any time.</p>
+
+        <h2 id="browser">In the browser</h2>
+
+        <ul>
+          <li>No requests to other sites: no CDN, fonts or trackers. A strict Content Security Policy enforces it.</li>
+          <li>Environment variables, commands and secrets of your containers are never shown.</li>
+          <li>Release notes from GitHub are shown with a safe subset of Markdown: any HTML in them is removed.</li>
+        </ul>
+
+        <h2 id="report">Reporting a problem</h2>
+
+        <p>Found a security problem? Please open a <a href="https://github.com/arborae/docker2homeassistant/security/advisories/new" target="_blank" rel="noreferrer">private security advisory</a> instead of a public issue.</p>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/configuration/"><small>Previous</small><strong>Configuration</strong></a>
+          <a class="next" href="../../guide/api/"><small>Next</small><strong>API v1</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

@@ -5,16 +5,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#070b0a" />
-  <meta name="description" content="Install D2HA — Docker Compose with a socket proxy, first-run setup code and the Home Assistant integration." />
+  <meta name="description" content="Install D2HA with Docker Compose and a socket proxy, sign in with the setup code, and keep it updated." />
   <title>Installation — D2HA</title>
 
   <link rel="icon" href="../assets/logo.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/docs.css" />
+  <script src="../js/docs.js" defer></script>
 </head>
 
 <body>
@@ -34,127 +34,164 @@
       </div>
 
       <nav class="nav-links" aria-label="Primary">
+        <a href="../guide/">Docs</a>
+        <a href="../install/" aria-current="page">Install</a>
         <a href="../#features">Features</a>
-        <a href="../#screenshots">Screenshots</a>
-        <a href="../#quickstart">Quick start</a>
       </nav>
 
       <div class="nav-cta">
-        <a class="btn ghost small" href="../">← Home</a>
-        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank"
-          rel="noreferrer">GitHub</a>
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
       </div>
     </div>
   </header>
 
   <main class="container">
-    <div class="page-head">
-      <span class="section-label">// install</span>
-      <h1>Installation guide</h1>
-      <p class="lead">
-        D2HA runs on any amd64 or arm64 machine with Docker Engine 24 or newer.
-        We recommend the Compose setup: it includes a Docker socket proxy with secure defaults.
-      </p>
-    </div>
-
-    <section class="section" style="padding-top: 32px;">
-      <div class="method-grid">
-        <article class="method-card reveal">
-          <div class="method-title">
-            Docker Compose
-            <span class="badge green">Recommended</span>
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../guide/">Introduction</a></li>
+              <li><a href="../install/" aria-current="page">Installation</a></li>
+            </ul>
           </div>
-          <p>Copy <a href="https://github.com/Arborae/docker2homeassistant/blob/main/compose.example.yaml"
-              target="_blank" rel="noreferrer"
-              style="color: var(--brand-soft);">compose.example.yaml</a> to a new folder as
-            <code>compose.yaml</code>, read it, then:</p>
-          <pre><code>docker compose up -d
-docker logs d2ha   # ← your one-time setup code</code></pre>
-          <p style="margin-top: 14px;">The example starts two containers: <code>d2ha</code>, published on
-            <code>127.0.0.1:12021</code> only, and <code>docker-proxy</code>, so D2HA never touches the Docker
-            socket directly and can only make the API calls it needs.</p>
-        </article>
-
-        <article class="method-card reveal">
-          <div class="method-title">
-            Docker Run
-            <span class="badge grey">Quick test</span>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../guide/web-interface/">Web interface</a></li>
+              <li><a href="../guide/updates/">Containers and updates</a></li>
+              <li><a href="../guide/logs/">Logs</a></li>
+              <li><a href="../guide/settings/">Settings</a></li>
+            </ul>
           </div>
-          <p>Good for a quick look, without the socket proxy.</p>
-          <pre><code>docker run -d \
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../guide/home-assistant/">Integration</a></li>
+              <li><a href="../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../guide/configuration/">Configuration</a></li>
+              <li><a href="../guide/security/">Security</a></li>
+              <li><a href="../guide/api/">API v1</a></li>
+              <li><a href="../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../guide/">Docs</a> / Get started</div>
+        <h1>Installation</h1>
+        <p class="lead">D2HA runs on any amd64 or arm64 machine with Docker Engine 24 or newer. The recommended setup uses Docker Compose and includes a Docker socket proxy with secure defaults.</p>
+
+        <h2 id="compose">Docker Compose</h2>
+
+        <ol class="steps">
+          <li>Create a folder and download the example compose file:
+        <pre><code>mkdir d2ha &amp;&amp; cd d2ha
+curl -o compose.yaml https://raw.githubusercontent.com/Arborae/docker2homeassistant/main/compose.example.yaml</code></pre></li>
+          <li>Read <code>compose.yaml</code>. Every option is optional and explained in the file: see <a href="../guide/configuration/">Configuration</a> for the full list.</li>
+          <li>Start it and read the setup code from the log:
+        <pre><code>docker compose up -d
+docker logs d2ha</code></pre></li>
+        </ol>
+
+        <p>The example starts two containers:</p>
+
+        <ul>
+          <li><strong><code>d2ha</code></strong>, published on <code>127.0.0.1:12021</code> only: Home Assistant on the same host, a reverse proxy or a tunnel can reach it, the rest of the network cannot;</li>
+          <li><strong><code>docker-proxy</code></strong> (<a href="https://github.com/linuxserver/docker-socket-proxy" target="_blank" rel="noreferrer">linuxserver/socket-proxy</a>), so D2HA never touches the Docker socket: it allows only the calls D2HA needs, and no <code>exec</code>, volumes or networks. The <a href="../guide/security/#socket-proxy">Security</a> page explains every permission.</li>
+        </ul>
+
+        <h2 id="docker-run">Docker run, for a quick look</h2>
+
+        <pre><code>docker run -d \
   --name d2ha \
   -p 127.0.0.1:12021:12021 \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
   -v $(pwd)/data:/app/data \
   ghcr.io/arborae/docker2homeassistant:latest</code></pre>
-        </article>
 
-        <article class="method-card reveal">
-          <div class="method-title">First run</div>
-          <p>The container log shows a <strong>one-time setup code</strong>. Open
-            <a href="http://localhost:12021"><code>http://localhost:12021</code></a>, enter the code and create
-            your account — there are no default credentials. On a server without a browser, open an SSH
-            tunnel first (<code>ssh -L 12021:localhost:12021 &lt;user&gt;@&lt;server&gt;</code>), then that
-            address works on your computer.</p>
-          <p style="margin-top: 14px;">Two-factor authentication (TOTP) is available in
-            <strong>Settings → Account and security</strong>, and recommended if D2HA is reachable through a reverse proxy
-            or a tunnel.</p>
-        </article>
-
-        <article class="method-card reveal">
-          <div class="method-title">Home Assistant</div>
-          <p>From <strong>Home Assistant 2026.11</strong>: open
-            <strong>Settings → Marketplace → Add from link</strong>, enter
-            <code>github.com/arborae/ha-d2ha</code> with type <strong>Integration</strong>
-            (the first time, the Marketplace asks you to connect GitHub), then
-            <strong>Install</strong> and <strong>Restart Home Assistant</strong>. On
-            <strong>Home Assistant 2026.8 to 2026.10</strong>, add the same address in HACS
-            as a custom repository of type <strong>Integration</strong>, download
-            <strong>D2HA</strong> and restart. The integration requires Home Assistant
-            2026.8 or later.
-            <a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=arborae&repository=ha-d2ha&category=integration"
-              target="_blank" rel="noreferrer"
-              style="color: var(--brand-soft);">This link</a> opens the repository page
-            for you, in the Marketplace or in HACS.</p>
-          <p style="margin-top: 14px;">Then create an API token in D2HA under
-            <strong>Settings → Home Assistant</strong> and add the integration in Home Assistant with the
-            address of D2HA and the token.</p>
-        </article>
-
-        <article class="method-card reveal">
-          <div class="method-title">Configuration tips</div>
-          <p>Everything is optional; the full list is in
-            <a href="https://github.com/Arborae/docker2homeassistant/blob/main/.env.example" target="_blank"
-              rel="noreferrer" style="color: var(--brand-soft);">.env.example</a>:</p>
-          <p style="margin-top: 10px;">
-            <code>D2HA_CHECK_INTERVAL_HOURS</code> — hours between update checks (6 by default)<br />
-            <code>D2HA_GITHUB_TOKEN</code> — raises the GitHub rate limit for release notes<br />
-            <code>D2HA_TELEGRAM_TOKEN</code> + <code>D2HA_TELEGRAM_CHAT_ID</code> — Telegram notifications<br />
-            <code>D2HA_READ_ONLY</code> — notifications and logs only, no updates<br />
-            <code>D2HA_FRAME_ANCESTORS</code> — allow a Home Assistant dashboard to embed D2HA
-          </p>
-          <p style="margin-top: 14px;">Prefer living on the edge? The <code>:nightly</code> image tag ships the
-            latest features — potentially unstable.</p>
-        </article>
-
-        <article class="method-card reveal">
-          <div class="method-title">Keep it private</div>
-          <p>D2HA can update containers, so treat it like an admin panel: keep it off the internet, or put it
-            behind HTTPS and an access layer (a VPN, Cloudflare Access, an authenticating reverse proxy).</p>
-          <p style="margin-top: 14px;">The example compose binds to <code>127.0.0.1</code> on purpose: a reverse
-            proxy or tunnel on the same machine can reach it, the rest of the network cannot.</p>
-        </article>
-      </div>
-
-      <div class="cta-box reveal">
-        <div>
-          <h3>Stuck on something?</h3>
-          <p>Open an issue on GitHub — clear reports get fixed fast.</p>
+        <div class="callout warning">
+          <span class="callout-title">Warning</span>
+          <p>This mounts the Docker socket directly, with no proxy in between: whoever controls D2HA controls Docker. Use the Compose setup for everyday use.</p>
         </div>
-        <a class="btn primary" href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank"
-          rel="noreferrer">Get help</a>
-      </div>
-    </section>
+
+        <h2 id="first-sign-in">First sign-in</h2>
+
+        <ol class="steps">
+          <li>Open D2HA. The example listens on <code>127.0.0.1</code> only, so:
+        <ul>
+            <li>in a browser on the server itself, open <code>http://localhost:12021</code>;</li>
+            <li>from another computer, open an SSH tunnel first (<code>ssh -L 12021:localhost:12021 &lt;user&gt;@&lt;server&gt;</code>), then <code>http://localhost:12021</code> on that computer;</li>
+            <li>or go through your reverse proxy or tunnel, if you already have one.</li>
+          </ul></li>
+          <li>Enter the <strong>setup code</strong> from <code>docker logs d2ha</code>: three groups of four characters, such as <code>A1B2-C3D4-E5F6</code>. It proves that you own the server.</li>
+          <li>Choose a username (3 to 32 letters, numbers, dots, dashes or underscores) and a password of at least 10 characters. A passphrase is easy to remember and hard to guess.</li>
+          <li>D2HA opens <strong>Settings</strong>. Turn on two-factor authentication, then <a href="../guide/home-assistant/">connect Home Assistant</a>.</li>
+        </ol>
+
+        <div class="callout">
+          <span class="callout-title">Good to know</span>
+          <p>D2HA has one account and no default credentials. Until you create it, every start of the container prints a new setup code.</p>
+        </div>
+
+        <h2 id="tags">Image tags</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Tag</th><th>What it is</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>latest</code></td><td>The latest release. Recommended.</td></tr>
+              <tr><td><code>0.5.2</code>, <code>0.5.1</code>…</td><td>An exact release, for those who pin versions and update by hand.</td></tr>
+              <tr><td><code>nightly</code></td><td>Built from every change on the main branch: the newest features, possibly unstable.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Images are published on <code>ghcr.io/arborae/docker2homeassistant</code> for amd64 and arm64.</p>
+
+        <h2 id="updating">Updating D2HA</h2>
+
+        <p>D2HA cannot update itself, because it would stop halfway. In the folder of <code>compose.yaml</code>:</p>
+
+        <pre><code>docker compose pull
+docker compose up -d</code></pre>
+
+        <p>This updates the socket proxy too, which D2HA never updates either. The account, the settings and the Home Assistant token live in the <code>data</code> folder and stay as they are.</p>
+
+        <h2 id="next">Next steps</h2>
+
+        <ul>
+          <li><a href="../guide/home-assistant/">Connect Home Assistant</a>, then add the <a href="../guide/dashboard/">dashboard</a>.</li>
+          <li><a href="../guide/telegram/">Set up Telegram notifications</a>.</li>
+          <li>Keep it private: read <a href="../guide/security/">Security</a>.</li>
+        </ul>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../guide/"><small>Previous</small><strong>Introduction</strong></a>
+          <a class="next" href="../guide/web-interface/"><small>Next</small><strong>Web interface</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
 
     <footer class="footer">
       <div class="footer-left">
@@ -168,27 +205,6 @@ docker logs d2ha   # ← your one-time setup code</code></pre>
       </div>
     </footer>
   </main>
-
-  <script>
-    document.getElementById('year').textContent = new Date().getFullYear();
-
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const reveals = document.querySelectorAll('.reveal');
-
-    if (reduceMotion || !('IntersectionObserver' in window)) {
-      reveals.forEach(el => el.classList.add('visible'));
-    } else {
-      const io = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            io.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.12 });
-      reveals.forEach(el => io.observe(el));
-    }
-  </script>
 </body>
 
 </html>

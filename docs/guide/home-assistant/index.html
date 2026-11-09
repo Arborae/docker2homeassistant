@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Install the D2HA integration for Home Assistant, connect it and use its entities." />
+  <title>Home Assistant integration — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/" aria-current="page">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Home Assistant</div>
+        <h1>Home Assistant integration</h1>
+        <p class="lead">The D2HA integration brings your containers to Home Assistant: an update entity and a state sensor for each container, counters and maintenance buttons, and a <a href="../../guide/dashboard/">dashboard</a> that builds itself.</p>
+
+        <h2 id="requirements">Requirements</h2>
+
+        <ul>
+          <li>Home Assistant 2026.8 or later.</li>
+          <li>D2HA reachable from Home Assistant (see <a href="#address">the address</a>).</li>
+          <li>An API token, from D2HA <strong>Settings → Home Assistant</strong>.</li>
+        </ul>
+
+        <h2 id="install">Install the integration</h2>
+
+        <p><a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=arborae&amp;repository=ha-d2ha&amp;category=integration" target="_blank" rel="noreferrer">This link</a> opens the integration in your Home Assistant, in the Marketplace or in HACS, and offers to add it. By hand:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Home Assistant</th><th>How</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>2026.11 or later</td><td><strong>Settings → Marketplace → Add from link</strong>, enter <code>https://github.com/arborae/ha-d2ha</code> with type <strong>Integration</strong> (the first time, the Marketplace asks you to connect GitHub), then <strong>Install</strong> and <strong>Restart Home Assistant</strong>.</td></tr>
+              <tr><td>2026.8 to 2026.10</td><td>In HACS, add <code>https://github.com/arborae/ha-d2ha</code> as a custom repository of type <strong>Integration</strong>, download <strong>D2HA</strong> and restart Home Assistant.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="connect">Connect it to D2HA</h2>
+
+        <ol class="steps">
+          <li>In D2HA, open <strong>Settings → Home Assistant</strong>, press <strong>Create token</strong> and copy it.</li>
+          <li>In Home Assistant, open <strong>Settings → Devices &amp; services → Add integration → D2HA</strong>.</li>
+          <li>Enter the address of D2HA and the token.</li>
+        </ol>
+
+        <h3 id="address">The address</h3>
+
+        <p>It is the address of D2HA as Home Assistant sees it:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Home Assistant runs</th><th>Address</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>On the same host, with <code>network_mode: host</code> (the usual setup)</td><td><code>http://127.0.0.1:12021</code></td></tr>
+              <tr><td>In a container on the same Docker network as D2HA</td><td><code>http://d2ha:12021</code> (the container name)</td></tr>
+              <tr><td>On another machine</td><td>The HTTPS address of your reverse proxy or tunnel</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warning">
+          <span class="callout-title">Note</span>
+          <p>The example compose publishes D2HA on <code>127.0.0.1</code> only. Do not open the port to the network without HTTPS in front: see <a href="../../guide/security/">Security</a>.</p>
+        </div>
+
+        <h2 id="entities">What you get</h2>
+
+        <p>A device called <strong>D2HA</strong> for the server, and under it one device per container, named after the container.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Entity</th><th>Device</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Update</strong></td><td>Each container</td><td>Installed and latest version, release notes of the exact new version, progress during an update, and <strong>Install</strong> when D2HA can update it. Attributes: <code>image</code>, <code>stack</code>, <code>update_status</code>, <code>breaking_changes</code>, <code>can_update</code>.</td></tr>
+              <tr><td><strong>State</strong></td><td>Each container</td><td><code>running</code>, <code>exited</code>, <code>paused</code>… Attributes: <code>image</code>, <code>stack</code>, <code>status</code>, <code>health</code>, <code>update_status</code>.</td></tr>
+              <tr><td><strong>Updates available</strong></td><td>D2HA</td><td>How many containers have an update; the <code>containers</code> attribute lists their names.</td></tr>
+              <tr><td><strong>Containers running</strong></td><td>D2HA</td><td>How many run; the <code>containers</code> attribute is the total.</td></tr>
+              <tr><td><strong>Unused images</strong></td><td>D2HA</td><td>Images that <strong>Clean images</strong> would delete.</td></tr>
+              <tr><td><strong>Check for updates</strong></td><td>D2HA</td><td>Starts a check now.</td></tr>
+              <tr><td><strong>Update all</strong></td><td>D2HA</td><td>Updates every container with an update, one at a time. Not there in read-only mode.</td></tr>
+              <tr><td><strong>Clean images</strong></td><td>D2HA</td><td>Deletes the unused images. Not there in read-only mode.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>The containers also appear in <strong>Settings → Updates</strong>, with the image name, the release notes and <strong>Install</strong>. Updates started from the D2HA web interface show their progress there too. Give the container devices an area (the device page, pencil icon) and that list is grouped by it.</p>
+
+        <div class="callout">
+          <span class="callout-title">Counters</span>
+          <p><strong>Updates available</strong> counts every container of D2HA, while Home Assistant only has entities for the containers you show it.</p>
+        </div>
+
+        <h2 id="choose">Choose the containers</h2>
+
+        <p>Every container appears in Home Assistant unless you hide it in D2HA, <strong>Settings → Home Assistant → Containers shown in Home Assistant</strong>. New containers appear on their own. D2HA itself never does.</p>
+
+        <p>When you hide or remove a container, its entities become unavailable. To delete its device, open it in Home Assistant and choose <strong>Delete</strong>: Home Assistant allows it once D2HA no longer lists the container.</p>
+
+        <h2 id="polling">How often it updates</h2>
+
+        <p>The integration asks D2HA every 60 seconds, and every 5 seconds while an update runs. D2HA itself looks for new versions every few hours: the <strong>Check for updates</strong> button does it now.</p>
+
+        <h2 id="automation">An automation</h2>
+
+        <p>A message on your phone when updates appear:</p>
+
+        <pre><code>triggers:
+  - trigger: numeric_state
+    entity_id: sensor.d2ha_updates_available
+    above: 0
+actions:
+  - action: notify.notify
+    data:
+      title: Container updates
+      message: &gt;-
+        {{ state_attr('sensor.d2ha_updates_available', 'containers') | join(', ') }}</code></pre>
+
+        <p>The entity id depends on the language of your Home Assistant: find yours in <strong>Settings → Devices &amp; services → D2HA</strong>.</p>
+
+        <h2 id="reauth">A new token</h2>
+
+        <p>If you press <strong>New token</strong> or <strong>Revoke</strong> in D2HA, Home Assistant shows <strong>Renew the D2HA token</strong> in <strong>Settings</strong>: paste a new token there.</p>
+
+        <h2 id="iframe">D2HA inside a dashboard</h2>
+
+        <p>To open the D2HA web interface inside Home Assistant (a <strong>Webpage</strong> card or panel), allow the address of Home Assistant in D2HA:</p>
+
+        <pre><code>D2HA_FRAME_ANCESTORS: "https://homeassistant.example.com"</code></pre>
+
+        <div class="callout">
+          <span class="callout-title">Same site</span>
+          <p>Use addresses on the same site, such as <code>homeassistant.example.com</code> and <code>d2ha.example.com</code>: browsers do not send the D2HA sign-in to a page embedded in another site.</p>
+        </div>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/settings/"><small>Previous</small><strong>Settings</strong></a>
+          <a class="next" href="../../guide/dashboard/"><small>Next</small><strong>Dashboard</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

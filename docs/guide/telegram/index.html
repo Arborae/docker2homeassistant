@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Telegram messages from D2HA for new versions, crashed and unhealthy containers." />
+  <title>Telegram notifications — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/" aria-current="page">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Notifications</div>
+        <h1>Telegram notifications</h1>
+        <p class="lead">D2HA can send a Telegram message when a new version is out, when a container stops with an error and when it becomes unhealthy.</p>
+
+        <h2 id="setup">Set it up</h2>
+
+        <ol class="steps">
+          <li>Create a bot with <a href="https://t.me/BotFather" target="_blank" rel="noreferrer">@BotFather</a> and copy its token.</li>
+          <li>Send your bot a message, then read your chat id, for example with <a href="https://t.me/userinfobot" target="_blank" rel="noreferrer">@userinfobot</a>. For a group, add the bot to it and use the id of the group.</li>
+          <li>Give both to D2HA and restart it:
+        <pre><code>environment:
+  D2HA_TELEGRAM_TOKEN: "123456:ABC..."
+  D2HA_TELEGRAM_CHAT_ID: "123456789"</code></pre></li>
+          <li>In <strong>Settings → Telegram notifications</strong>, choose what you want to receive and the language, then press <strong>Send a test message</strong>.</li>
+        </ol>
+
+        <p>For several chats, separate the ids with commas. Keep the token in an <code>.env</code> file rather than in the compose file.</p>
+
+        <h2 id="messages">The messages</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Message</th><th>When</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>🆕 <strong>Updates available</strong></td><td>A check finds a new version of an image you run. Once per version, with all the new updates of that check in one message, the release-notes link and a warning for breaking changes.</td></tr>
+              <tr><td>🚨 <strong>Stopped with an error</strong></td><td>A container exits with a code other than 0 and 143 (the normal stops). When it ran out of memory, the message says so.</td></tr>
+              <tr><td>⚠️ <strong>Unhealthy</strong></td><td>The health check of a container fails.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>What does not send a message:</p>
+
+        <ul>
+          <li>a stop you asked for: <code>docker stop</code>, <code>docker kill</code>, <code>docker rm -f</code>, <code>docker compose down</code>;</li>
+          <li>the old container during an update by D2HA;</li>
+          <li>the same alert for the same container within 15 minutes, so a crash loop does not flood the chat.</li>
+        </ul>
+
+        <p>If Telegram cannot be reached, the update message is sent again at the next check.</p>
+
+        <h2 id="opt-out">Leave a container out</h2>
+
+        <p>A container with the label <code>d2ha.notify=false</code> never sends crash or unhealthy alerts: for example a job that is expected to fail. Its updates are still announced.</p>
+
+        <pre><code>services:
+  nightly-job:
+    image: example/job:latest
+    labels:
+      d2ha.notify: "false"</code></pre>
+
+        <h2 id="events">Crash and health alerts need Docker events</h2>
+
+        <p>D2HA learns about stopped and unhealthy containers from the Docker events. With the socket proxy, keep <code>EVENTS: 1</code>, as in the example compose. If the stream drops, D2HA reconnects and asks for what happened meanwhile.</p>
+
+        <h2 id="language">Language</h2>
+
+        <p>Messages are in English or Italian: <strong>Settings → Telegram notifications → Language of the messages</strong>. Without a choice they are in English.</p>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/dashboard/"><small>Previous</small><strong>Dashboard</strong></a>
+          <a class="next" href="../../guide/configuration/"><small>Next</small><strong>Configuration</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

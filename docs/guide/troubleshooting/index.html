@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Solutions to the usual D2HA problems: sign-in, updates, Home Assistant and Telegram." />
+  <title>Troubleshooting — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/" aria-current="page">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Reference</div>
+        <h1>Troubleshooting</h1>
+        <p class="lead">The usual problems and how to solve them. Missing yours? <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+
+        <h2 id="signing-in">Signing in</h2>
+
+        <h3 id="setup-code">I lost the setup code</h3>
+
+        <p>Run <code>docker logs d2ha</code>. Until the account exists, every start prints a new code: if the log is gone, restart the container and read the new one.</p>
+
+        <h3 id="password">I forgot the password</h3>
+
+        <p>There is no reset link. To start again, stop D2HA, delete <code>data/d2ha.json</code> and start it: it prints a new setup code. This also deletes the API token, the settings, the Telegram choices and which containers Home Assistant sees, so create a new token for Home Assistant afterwards.</p>
+
+        <h3 id="totp">The two-factor code is refused</h3>
+
+        <p>The codes depend on the time: check that the clock of your phone is right. The same applies to the server.</p>
+
+        <h3 id="too-many">Too many attempts</h3>
+
+        <p>After 5 wrong attempts from one address in 15 minutes (or 30 from anywhere), sign-in is blocked. Wait a few minutes.</p>
+
+        <h2 id="updates">Updates</h2>
+
+        <h3 id="check-failed">A container shows “Check failed”</h3>
+
+        <p>The registry did not answer or refused; hover the badge for the reason. For a private registry, run <code>docker login</code> on the host: D2HA then asks through Docker, which needs <code>DISTRIBUTION: 1</code> on the socket proxy. The next check tries again.</p>
+
+        <h3 id="exact-tag">I use an exact version and D2HA never finds updates</h3>
+
+        <p>D2HA follows the tag you run. For <code>1.2.3</code> it only notices a rebuild of <code>1.2.3</code>; change the tag yourself to move on, or run a tag that moves, such as <code>latest</code> or <code>1</code>.</p>
+
+        <h3 id="no-notes">No release notes</h3>
+
+        <p>The image must say its version and its GitHub repository in its labels, and the repository must have a release with that version (see <a href="../../guide/updates/#release-notes">Release notes</a>). With many containers, GitHub's limit of 60 requests per hour runs out: add <code>D2HA_GITHUB_TOKEN</code>.</p>
+
+        <h3 id="no-version">The version shows a tag and a short digest</h3>
+
+        <p>The image does not say its version in a label, so D2HA shows what it has: the tag and the start of the digest. When both sides show the same version with different digests, the label came from the base image.</p>
+
+        <h3 id="restored">“The new container did not start: the previous one has been restored”</h3>
+
+        <p>Docker could not create or start the new container (a port already taken, a missing volume…). The old one runs again. The message shows Docker's reason; the container logs may say more.</p>
+
+        <h3 id="pull-failed">“Download of the image failed”</h3>
+
+        <p>The registry refused or the disk is full. Nothing was changed. <strong>Clean images</strong> frees space taken by images no container uses.</p>
+
+        <h3 id="self">There is no Update button for D2HA or the proxy</h3>
+
+        <p>On purpose: D2HA would lose itself, or its Docker access, halfway. Update both with <code>docker compose pull</code> and <code>docker compose up -d</code> (<a href="../../install/#updating">Updating D2HA</a>).</p>
+
+        <h2 id="home-assistant">Home Assistant</h2>
+
+        <h3 id="cannot-connect">“Cannot reach D2HA at this address”</h3>
+
+        <p>The address is the one Home Assistant sees. <code>127.0.0.1</code> works only when Home Assistant runs on the same host with the host network; see <a href="../../guide/home-assistant/#address">The address</a>. Check that D2HA runs: <code>docker ps</code>.</p>
+
+        <h3 id="invalid-auth">“The token is wrong or was revoked”</h3>
+
+        <p>Create a new token in D2HA, <strong>Settings → Home Assistant</strong>, and paste it in Home Assistant.</p>
+
+        <h3 id="unavailable">Entities are unavailable</h3>
+
+        <p>All of them: D2HA is down or unreachable. Only some: those containers were hidden in D2HA or removed; delete their devices (<a href="../../guide/home-assistant/#choose">Choose the containers</a>).</p>
+
+        <h2 id="telegram">Telegram</h2>
+
+        <h3 id="no-telegram">No message at all</h3>
+
+        <p>Check <strong>Settings → Telegram notifications</strong>: if it says <strong>Not configured</strong>, the token or the chat id is missing. Then press <strong>Send a test message</strong>: the error says what Telegram did not like. Send your bot a message first, or it cannot write to you.</p>
+
+        <h3 id="no-crash">Update messages arrive, crash alerts do not</h3>
+
+        <p>Those come from the Docker events: keep <code>EVENTS: 1</code> on the socket proxy. A container with <code>d2ha.notify=false</code> is left out on purpose, and stops you asked for never send one.</p>
+
+        <h2 id="web-app">The web app</h2>
+
+        <h3 id="pwa">D2HA does not install as an app</h3>
+
+        <p>Browsers install apps only from HTTPS. Behind an access layer, let <code>/sw.js</code> and <code>/static/</code> through without sign-in.</p>
+
+        <h3 id="iframe">The page inside Home Assistant stays blank</h3>
+
+        <p>Add the address of Home Assistant to <code>D2HA_FRAME_ANCESTORS</code>, and use addresses on the same site (<a href="../../guide/home-assistant/#iframe">D2HA inside a dashboard</a>).</p>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/api/"><small>Previous</small><strong>API v1</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>
