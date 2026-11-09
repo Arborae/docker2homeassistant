@@ -36,7 +36,10 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 1. Retire Diun and docker-telegram-notifier after a few days of overlap with the D2HA
    alerts (Claude, around 2026-11-10, after the owner's OK).
-2. A full docs site is not wanted for now.
+2. A docs site, one page per topic, as an extension of the landing in `docs/` (the
+   owner's decision, 2026-11-09). Kimi builds the pages and the navigation and opens the
+   issue first; Claude writes the text for the app pages, takes the screenshots from the
+   demo and reviews.
 
 ## Notes from the owner
 
