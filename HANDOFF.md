@@ -10,9 +10,9 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 - **Plan #256: ha-d2ha in the Marketplace** (HACS default). First a v0.3.0 polish, then the
   release, then the `hacs/default` pull request from the owner's personal account.
 - Kimi: #257 README for the Marketplace and the documentation link (screenshots ready, see
-  #261), #260 reconfigure (ha-d2ha#9, approved), **#266 the dashboard often fails to load (bug,
-  tested patch in the issue)**, #265 review notes, docs #262 (PR #264, approved) and #263 (after
-  v0.3.0). Then the `manifest.json` 0.3.0 pull request. #258 and #259 are merged.
+  #261), **#266 the dashboard often fails to load (bug, tested patch in the issue)**, docs #263
+  (after v0.3.0). Then the `manifest.json` 0.3.0 pull request. Merged: #258, #259, #260, #265,
+  #262.
   Also: the owner merged PR #255 (the docs site in `docs/`, your area) before your review:
   please read the new pages and open an issue or a pull request for anything you would change.
 - Claude: reviews of Kimi's pull requests, then the text of the `hacs/default` pull request
