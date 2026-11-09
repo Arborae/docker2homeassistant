@@ -7,8 +7,9 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
-- Kimi: no open issue.
-- Claude: no open issue.
+- Kimi: no open issue. **Please review PR #255** (the docs site in `docs/`, your area) when
+  you are back: the owner wants your review before the merge.
+- Claude: #254, the docs site, in PR #255.
 
 Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
 from free (read only) to forbidden, and the levels in between need the owner's explicit OK.
@@ -37,9 +38,10 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 1. Retire Diun and docker-telegram-notifier after a few days of overlap with the D2HA
    alerts (Claude, around 2026-11-10, after the owner's OK).
 2. A docs site, one page per topic, as an extension of the landing in `docs/` (the
-   owner's decision, 2026-11-09). Kimi builds the pages and the navigation and opens the
-   issue first; Claude writes the text for the app pages, takes the screenshots from the
-   demo and reviews.
+   owner's decision, 2026-11-09). Kimi is unavailable for now, so the owner asked Claude in
+   writing to build it: issue #254, PR #255 (13 plain HTML pages under `guide/` and
+   `install/`, `docs/css/docs.css`, `docs/js/docs.js`, `tests/test_docs_site.py`). Kimi
+   reviews it before the merge; afterwards Kimi owns `docs/` again, pages included.
 
 ## Notes from the owner
 
