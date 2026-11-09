@@ -210,6 +210,14 @@ actions:
 
         <p>If you press <strong>New token</strong> or <strong>Revoke</strong> in D2HA, Home Assistant shows <strong>Renew the D2HA token</strong> in <strong>Settings</strong>: paste a new token there.</p>
 
+        <h2 id="reconfigure">Change the address</h2>
+
+        <p>New host, a reverse proxy, a different port: <strong>Settings → Devices &amp; services → D2HA → ⋮ → Reconfigure</strong> changes the address (and the token, if you give a new one) without deleting the integration: areas and entity settings survive.</p>
+
+        <h2 id="diagnostics">Diagnostics</h2>
+
+        <p><strong>Settings → Devices &amp; services → D2HA → ⋮ → Download diagnostics</strong> downloads a JSON file for bug reports: the configuration with the address and the token blacked out, the counters and what D2HA last answered, per container. Attach it when you <a href="https://github.com/Arborae/ha-d2ha/issues" target="_blank" rel="noreferrer">open an issue</a>.</p>
+
         <h2 id="iframe">D2HA inside a dashboard</h2>
 
         <p>To open the D2HA web interface inside Home Assistant (a <strong>Webpage</strong> card or panel), allow the address of Home Assistant in D2HA:</p>
