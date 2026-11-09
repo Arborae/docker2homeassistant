@@ -6,6 +6,8 @@ Know when your containers have updates, read what changed, update them safely an
 
 D2HA is a container that watches your Docker host. It finds the real new version of each image, shows its release notes (with breaking changes in red), updates containers keeping their settings, and lets you read and follow their logs. A Home Assistant integration brings all of it to your dashboards as native update entities.
 
+**Documentation:** [arborae.github.io/docker2homeassistant/guide](https://arborae.github.io/docker2homeassistant/guide/), one page per topic: installation, updates, logs, settings, Home Assistant, Telegram, configuration, security, API and troubleshooting.
+
 > Status: 0.4 is a rewrite from scratch, focused on these few things. Older versions also managed networks, volumes and images and talked to Home Assistant over MQTT: see [CHANGELOG.md](CHANGELOG.md).
 
 ## What it does

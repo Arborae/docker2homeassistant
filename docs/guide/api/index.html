@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="The D2HA /api/v1: authentication, reading, actions, jobs and errors, with examples." />
+  <title>API v1 — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/" aria-current="page">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Reference</div>
+        <h1>API v1</h1>
+        <p class="lead">Everything D2HA shows is available as JSON under <code>/api/v1</code>, with a bearer token: the Home Assistant integration uses it, and so can your scripts.</p>
+
+        <div class="callout">
+          <span class="callout-title">The contract</span>
+          <p>The complete reference, with every field, is <a href="https://github.com/Arborae/docker2homeassistant/blob/main/API.md" target="_blank" rel="noreferrer">API.md</a>. Within v1 changes only add things: clients must ignore fields they do not know.</p>
+        </div>
+
+        <h2 id="authentication">Authentication</h2>
+
+        <p>Create a token in <strong>Settings → Home Assistant</strong> and send it in the <code>Authorization</code> header:</p>
+
+        <pre><code>D2HA_URL=http://localhost:12021
+D2HA_TOKEN=paste-the-token-here
+
+curl -s -H "Authorization: Bearer $D2HA_TOKEN" "$D2HA_URL/api/v1/info"</code></pre>
+
+        <p>A wrong or revoked token gets <code>401</code>. Writes (<code>POST</code>, <code>PUT</code>) are limited to 30 per minute per address.</p>
+
+        <h2 id="reading">Reading</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Endpoint</th><th>Returns</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>GET /info</code></td><td>Version, API version, read-only mode, Docker version, the last and next check, and counts</td></tr>
+              <tr><td><code>GET /containers</code></td><td>Every container with its state, health, update status and versions. <code>?ha=1</code>: only those shown in Home Assistant, without D2HA.</td></tr>
+              <tr><td><code>GET /containers/&lt;key&gt;/notes</code></td><td>The release notes of the new version, as Markdown</td></tr>
+              <tr><td><code>GET /jobs</code>, <code>GET /jobs/&lt;id&gt;</code></td><td>Jobs queued or running, or one job</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Containers are identified by their <code>key</code> (stack and name, such as <code>monitoring_grafana</code>): it survives updates, while the Docker id changes.</p>
+
+        <pre><code>curl -s -H "Authorization: Bearer $D2HA_TOKEN" "$D2HA_URL/api/v1/containers" \
+  | jq -r '.containers[] | select(.update == "available") | "\(.name): \(.installed_version) -&gt; \(.latest_version)"'</code></pre>
+
+        <h2 id="actions">Actions</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Endpoint</th><th>Does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>POST /check</code></td><td>Starts a check now</td></tr>
+              <tr><td><code>POST /containers/&lt;key&gt;/update</code></td><td>Updates one container</td></tr>
+              <tr><td><code>POST /update-all</code></td><td>Updates every container with an update, one at a time</td></tr>
+              <tr><td><code>POST /images/prune</code></td><td>Deletes the unused images</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Updates and cleanup answer <code>202</code> with a <strong>job</strong> that runs in the background, one at a time. Follow it with <code>GET /jobs/&lt;id&gt;</code> every second or two, or with <code>GET /jobs/&lt;id&gt;/events</code> (Server-Sent Events).</p>
+
+        <pre><code>curl -s -X POST -H "Authorization: Bearer $D2HA_TOKEN" \
+  "$D2HA_URL/api/v1/containers/monitoring_grafana/update"
+
+# {"id": "a1b2c3d4e5f6", "kind": "update", "state": "queued", ...}
+
+curl -s -H "Authorization: Bearer $D2HA_TOKEN" "$D2HA_URL/api/v1/jobs/a1b2c3d4e5f6"</code></pre>
+
+        <p>A job goes through <code>queued</code>, <code>running</code> and ends <code>done</code> or <code>failed</code>, with the phase (<code>pull</code>, <code>stop</code>, <code>create</code>, <code>start</code>, <code>cleanup</code>) and a percentage while it downloads.</p>
+
+        <h2 id="errors">Errors</h2>
+
+        <p>Errors are <code>{"error": "&lt;code&gt;"}</code>:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Status</th><th><code>error</code></th><th>When</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>400</td><td><code>bad_request</code></td><td>The body is not what the endpoint expects</td></tr>
+              <tr><td>400</td><td><code>self_update</code>, <code>proxy_update</code></td><td>The container is D2HA itself, or its socket proxy</td></tr>
+              <tr><td>401</td><td><code>unauthorized</code></td><td>No valid token</td></tr>
+              <tr><td>403</td><td><code>read_only</code></td><td>D2HA runs with <code>D2HA_READ_ONLY=true</code></td></tr>
+              <tr><td>404</td><td><code>not_found</code>, <code>no_notes</code></td><td>Unknown container or job, or no release notes</td></tr>
+              <tr><td>409</td><td><code>nothing_to_update</code></td><td><strong>Update all</strong> with nothing to update</td></tr>
+              <tr><td>429</td><td><code>rate_limited</code></td><td>Too many writes: try again later</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <span class="callout-title">Good to know</span>
+          <p>Logs are for the web interface only: the token cannot read them.</p>
+        </div>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/security/"><small>Previous</small><strong>Security</strong></a>
+          <a class="next" href="../../guide/troubleshooting/"><small>Next</small><strong>Troubleshooting</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

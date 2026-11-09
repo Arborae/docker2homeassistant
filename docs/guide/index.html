@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="D2HA documentation: how it works, what you need and where to find each topic." />
+  <title>Documentation — D2HA</title>
+
+  <link rel="icon" href="../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/docs.css" />
+  <script src="../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../" aria-label="D2HA Home">
+          <img src="../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../guide/" aria-current="page">Docs</a>
+        <a href="../install/">Install</a>
+        <a href="../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../guide/" aria-current="page">Introduction</a></li>
+              <li><a href="../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../guide/web-interface/">Web interface</a></li>
+              <li><a href="../guide/updates/">Containers and updates</a></li>
+              <li><a href="../guide/logs/">Logs</a></li>
+              <li><a href="../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../guide/home-assistant/">Integration</a></li>
+              <li><a href="../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../guide/configuration/">Configuration</a></li>
+              <li><a href="../guide/security/">Security</a></li>
+              <li><a href="../guide/api/">API v1</a></li>
+              <li><a href="../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../guide/">Docs</a> / Get started</div>
+        <h1>Documentation</h1>
+        <p class="lead">D2HA (Docker to Home Assistant) is a small web app that runs next to your containers. It tells you when an image has a new version, shows what changed, updates the container safely and shows its logs: in the browser, in Home Assistant and on Telegram.</p>
+
+        <div class="link-grid">
+          <a class="link-card" href="../install/"><strong>Install D2HA</strong><span>Docker Compose with a socket proxy, then the first sign-in.</span></a>
+          <a class="link-card" href="../guide/updates/"><strong>Update containers</strong><span>Versions, release notes and what happens during an update.</span></a>
+          <a class="link-card" href="../guide/home-assistant/"><strong>Connect Home Assistant</strong><span>Update entities, sensors, buttons and a ready-made dashboard.</span></a>
+          <a class="link-card" href="../guide/telegram/"><strong>Get notified</strong><span>Telegram messages for new versions, crashes and unhealthy containers.</span></a>
+        </div>
+
+        <h2 id="how-it-works">How it works</h2>
+
+        <ul>
+          <li>Every few hours (6 by default) D2HA asks the registry for the digest of every image tag you run, with a light <code>HEAD</code> request. When the digest is not the one of your image, an update is available.</li>
+          <li>Then it reads the labels of the new image: its version (<code>org.opencontainers.image.version</code>) and its source (<code>org.opencontainers.image.source</code>). So you see <code>13.2.5 → 13.3.0</code>, not just “something changed”, and the GitHub release notes of that exact version.</li>
+          <li>An update downloads the new image while the container keeps running, then recreates the container with the settings you gave it. If the new container does not start, the old one is put back.</li>
+        </ul>
+
+        <div class="callout">
+          <span class="callout-title">Tip</span>
+          <p>D2HA follows the tag you run. With <code>latest</code> or a major tag such as <code>2</code>, it tells you about every new image of that tag. With an exact version such as <code>1.2.3</code>, it only notices a rebuild of that same tag: to move to 1.2.4, change the tag yourself.</p>
+        </div>
+
+        <h2 id="requirements">What you need</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>For</th><th>You need</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>D2HA</td><td>Docker Engine 24 or newer, on an amd64 or arm64 machine</td></tr>
+              <tr><td>The Home Assistant integration</td><td>Home Assistant 2026.8 or later</td></tr>
+              <tr><td>Telegram notifications</td><td>A Telegram bot (optional)</td></tr>
+              <tr><td>More release notes per hour</td><td>A GitHub token without scopes (optional)</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="map">Where to find what</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>I want to…</th><th>Page</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Find my way around the web interface</td><td><a href="../guide/web-interface/">Web interface</a></td></tr>
+              <tr><td>Read the logs of a container</td><td><a href="../guide/logs/">Logs</a></td></tr>
+              <tr><td>Change the check interval, the password or two-factor authentication</td><td><a href="../guide/settings/">Settings</a></td></tr>
+              <tr><td>Build a page for D2HA in Home Assistant</td><td><a href="../guide/dashboard/">Dashboard</a></td></tr>
+              <tr><td>See every option and label</td><td><a href="../guide/configuration/">Configuration</a></td></tr>
+              <tr><td>Keep D2HA private</td><td><a href="../guide/security/">Security</a></td></tr>
+              <tr><td>Script D2HA</td><td><a href="../guide/api/">API v1</a></td></tr>
+              <tr><td>Fix something that does not work</td><td><a href="../guide/troubleshooting/">Troubleshooting</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="scope">What D2HA does not do</h2>
+
+        <p>D2HA is small on purpose. It does not manage networks or volumes, does not edit compose files and draws no resource graphs. It never updates itself or the socket proxy it uses to reach Docker: those you update with <code>docker compose pull</code>.</p>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="next" href="../install/"><small>Next</small><strong>Installation</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

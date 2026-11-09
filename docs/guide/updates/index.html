@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Update status, release notes, safe updates and image cleanup in D2HA." />
+  <title>Containers and updates — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/" aria-current="page">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Using D2HA</div>
+        <h1>Containers and updates</h1>
+        <p class="lead">The <strong>Containers</strong> page lists every container on the Docker host, with its version, its update status and what you can do with it.</p>
+
+        <figure class="docs-shot">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">containers</span>
+            </div>
+            <img src="../../images/containers-light.png" alt="The D2HA container list, grouped by stack, with updates available" loading="lazy" />
+          </div>
+          <figcaption>Containers grouped by stack, light theme</figcaption>
+        </figure>
+
+        <h2 id="list">The container list</h2>
+
+        <ul>
+          <li>At the top, a summary: how many updates are available, how many containers run, and when the last check ran.</li>
+          <li>Containers are grouped by Compose project (stack); the ones started without Compose are under <strong>No stack</strong>, at the end.</li>
+          <li>Search by container or image name, and filter: <strong>All</strong>, <strong>Updates</strong>, <strong>Stopped</strong>.</li>
+          <li>Every row shows the state (running, stopped, unhealthy…), the image, the installed version and, when there is an update, the new one: <code>13.2.5 → 13.3.0</code>.</li>
+        </ul>
+
+        <h2 id="status">Update status</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Status</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Update available</strong></td><td>The registry has a newer image for the tag this container runs.</td></tr>
+              <tr><td><strong>Up to date</strong></td><td>The container runs the image the registry has for its tag.</td></tr>
+              <tr><td><strong>Local build</strong></td><td>The image was built on this machine: there is nothing to compare with.</td></tr>
+              <tr><td><strong>Pinned</strong></td><td>The image is referenced by digest or has no tag: nothing to follow.</td></tr>
+              <tr><td><strong>Check failed</strong></td><td>The registry did not answer or refused. Hover the badge for the reason, and see <a href="../../guide/troubleshooting/#check-failed">Troubleshooting</a>.</td></tr>
+              <tr><td><strong>Not checked yet</strong></td><td>The first check has not reached this image yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>When the image does not say its version, D2HA shows the tag and a short digest, such as <code>latest (3e9cc8d)</code>.</p>
+
+        <h2 id="checking">Checking for updates</h2>
+
+        <p>D2HA checks every 6 hours by default; change it in <a href="../../guide/settings/#updates-and-session">Settings → Updates and session</a> (1, 3, 6, 12 or 24 hours). <strong>Check now</strong> starts a check at once. After an update, D2HA checks that image again.</p>
+
+        <p>A check costs one <code>HEAD</code> request per image, which Docker Hub does not count against its pull limit. Images from private registries are checked through the Docker daemon, with the credentials of <code>docker login</code> on the host.</p>
+
+        <h2 id="release-notes">Release notes</h2>
+
+        <p>When D2HA finds the GitHub release of the new version, the row gets a <strong>Release notes</strong> button. The notes open in D2HA, with a link to the release on GitHub, and a <strong>Breaking changes</strong> badge when they have a section with that name.</p>
+
+        <figure class="docs-shot">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">release notes</span>
+            </div>
+            <img src="../../images/release-notes.png" alt="Release notes of the new version in D2HA, with the breaking changes highlighted" loading="lazy" />
+          </div>
+          <figcaption>Release notes of the exact new version</figcaption>
+        </figure>
+
+        <p>D2HA finds the notes when:</p>
+
+        <ol>
+          <li>the new image says its version, in the <code>org.opencontainers.image.version</code> label (or <code>io.hass.version</code>, <code>org.label-schema.version</code>, <code>version</code>);</li>
+          <li>it says where its code is, in the <code>org.opencontainers.image.source</code> label, or it comes from <code>ghcr.io</code>;</li>
+          <li>the GitHub repository has a release whose tag or name is that version (a leading <code>v</code> does not matter).</li>
+        </ol>
+
+        <p>GitHub answers 60 requests per hour without a token. With many containers, add a token without scopes in <code>D2HA_GITHUB_TOKEN</code> (5,000 per hour): see <a href="../../guide/configuration/">Configuration</a>.</p>
+
+        <h2 id="updating">Updating a container</h2>
+
+        <p><strong>Update</strong> asks for a confirmation (with a warning when the notes have breaking changes), then:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Step</th><th>What happens</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Downloading the new image</td><td>The container keeps running meanwhile. The progress shows the bytes downloaded.</td></tr>
+              <tr><td>Stopping the container</td><td>The old container is renamed <code>&lt;name&gt;-d2ha-old</code> and stopped.</td></tr>
+              <tr><td>Creating the new container</td><td>Same name and the settings you gave it, on the new image.</td></tr>
+              <tr><td>Starting</td><td>The new container starts. The service is offline only for these few seconds.</td></tr>
+              <tr><td>Removing the previous container</td><td>The old container is deleted. Its volumes stay.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure class="docs-shot">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">updating</span>
+            </div>
+            <img src="../../images/update-progress.png" alt="A container being updated in D2HA, with live progress" loading="lazy" />
+          </div>
+          <figcaption>An update in progress</figcaption>
+        </figure>
+
+        <p>The new container keeps what you configured: environment variables, volumes (anonymous ones too), networks and aliases, ports, restart policy, labels, command and health check. Values that only came from the old image are dropped, so the defaults of the new image apply.</p>
+
+        <p>You can close the window: the update goes on, and the progress is there when you come back.</p>
+
+        <h3 id="rollback">When something goes wrong</h3>
+
+        <ul>
+          <li><strong>Download of the image failed</strong>: nothing was touched, the container still runs the old image.</li>
+          <li><strong>The new container did not start: the previous one has been restored</strong>: Docker could not create or start the new container, so D2HA gave the old one its name back and started it.</li>
+        </ul>
+
+        <div class="callout warning">
+          <span class="callout-title">Note</span>
+          <p>A new container that starts and then fails is not rolled back: by then the old one is gone. A <a href="../../guide/telegram/">Telegram alert</a> tells you, and the <a href="../../guide/logs/">logs</a> say why.</p>
+        </div>
+
+        <div class="callout">
+          <span class="callout-title">Compose</span>
+          <p>D2HA updates the Compose label of the image too, so a later <code>docker compose up -d</code> does not recreate the container again for the same image.</p>
+        </div>
+
+        <h2 id="update-all">Update all</h2>
+
+        <p><strong>Update all (n)</strong> updates every container with an update, one at a time, each with its own restart of a few seconds. At the end D2HA says how many were updated and which failed.</p>
+
+        <h2 id="not-updated">What D2HA does not update</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Container</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>D2HA itself</td><td>It would stop halfway. The row shows a <strong>D2HA</strong> badge.</td></tr>
+              <tr><td>The socket proxy</td><td>D2HA reaches Docker through it: the host name in <code>DOCKER_HOST</code>. The row shows a <strong>Proxy</strong> badge.</td></tr>
+              <tr><td>Local builds and pinned images</td><td>There is no newer image to download.</td></tr>
+              <tr><td>Everything, in read-only mode</td><td>With <code>D2HA_READ_ONLY=true</code> D2HA only reports.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Update those by hand, in the folder of their compose file:</p>
+
+        <pre><code>docker compose pull
+docker compose up -d</code></pre>
+
+        <h2 id="clean-images">Cleaning images</h2>
+
+        <p><strong>Clean images (n)</strong> deletes the images that no container uses, running or stopped, and says how much space it freed. They can be downloaded again when needed.</p>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/web-interface/"><small>Previous</small><strong>Web interface</strong></a>
+          <a class="next" href="../../guide/logs/"><small>Next</small><strong>Logs</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

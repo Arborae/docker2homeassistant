@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Every D2HA environment variable, the labels it reads and its data folder." />
+  <title>Configuration — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/" aria-current="page">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Reference</div>
+        <h1>Configuration</h1>
+        <p class="lead">Everything is optional: D2HA works with the example compose file as it is. The full list is also in <a href="https://github.com/Arborae/docker2homeassistant/blob/main/.env.example" target="_blank" rel="noreferrer">.env.example</a>.</p>
+
+        <h2 id="environment">Environment variables</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Variable</th><th>Default</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>DOCKER_HOST</code></td><td>the mounted socket</td><td>How D2HA reaches Docker. With the socket proxy: <code>tcp://docker-proxy:2375</code>.</td></tr>
+              <tr><td><code>D2HA_CHECK_INTERVAL_HOURS</code></td><td><code>6</code></td><td>Hours between update checks on a new install; later, <strong>Settings</strong> decides.</td></tr>
+              <tr><td><code>D2HA_GITHUB_TOKEN</code></td><td>—</td><td>A GitHub token without scopes: release notes for 5,000 lookups per hour instead of 60.</td></tr>
+              <tr><td><code>D2HA_TELEGRAM_TOKEN</code></td><td>—</td><td>The token of your Telegram bot (<a href="../../guide/telegram/">Telegram</a>).</td></tr>
+              <tr><td><code>D2HA_TELEGRAM_CHAT_ID</code></td><td>—</td><td>The chat that receives the messages; several, comma separated.</td></tr>
+              <tr><td><code>D2HA_READ_ONLY</code></td><td><code>false</code></td><td><code>true</code>: notifications and logs only, no updates or image cleanup.</td></tr>
+              <tr><td><code>D2HA_FRAME_ANCESTORS</code></td><td>—</td><td>Addresses allowed to show D2HA in an iframe, such as a Home Assistant dashboard; space separated.</td></tr>
+              <tr><td><code>D2HA_DATA_DIR</code></td><td><code>/app/data</code></td><td>Where D2HA keeps its files inside the container.</td></tr>
+              <tr><td><code>D2HA_SECRET_KEY</code></td><td>generated</td><td>The key that signs sessions. Leave it empty: D2HA creates one and keeps it in the data folder.</td></tr>
+              <tr><td><code>D2HA_LOG_LEVEL</code></td><td><code>INFO</code></td><td><code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code> or <code>ERROR</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>After a change, recreate the container: <code>docker compose up -d</code>.</p>
+
+        <h2 id="labels">Container labels</h2>
+
+        <p>Labels on <em>your</em> containers that D2HA reads:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Label</th><th>Effect</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>d2ha.notify=false</code></td><td>No crash or unhealthy alerts for this container (<a href="../../guide/telegram/#opt-out">Telegram</a>).</td></tr>
+              <tr><td><code>com.docker.compose.project</code></td><td>Set by Compose: the stack the container is grouped under.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Labels of the <em>images</em> that D2HA reads, for those who build them:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Label</th><th>Used for</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>org.opencontainers.image.version</code></td><td>The version shown, and the release to look for. Also <code>io.hass.version</code>, <code>org.label-schema.version</code>, <code>version</code>.</td></tr>
+              <tr><td><code>org.opencontainers.image.source</code></td><td>The GitHub repository of the release notes. Also <code>org.opencontainers.image.url</code>, <code>org.label-schema.vcs-url</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="data">The data folder</h2>
+
+        <p>Mounted on <code>/app/data</code>. Back it up with your other Docker data.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>File</th><th>Contents</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>d2ha.json</code></td><td>The account (password hash, two-factor secret), the hash of the API token, the settings, which containers Home Assistant sees, and the session key</td></tr>
+              <tr><td><code>state.json</code></td><td>The results of the last check, and which updates were already announced on Telegram</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warning">
+          <span class="callout-title">Keep it private</span>
+          <p><code>d2ha.json</code> holds the two-factor secret and the session key: treat the folder like a password.</p>
+        </div>
+
+        <h2 id="port">Port</h2>
+
+        <p>D2HA listens on port <code>12021</code> inside the container. Publish it as you need, ideally on <code>127.0.0.1</code> only, as in the example.</p>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/telegram/"><small>Previous</small><strong>Telegram</strong></a>
+          <a class="next" href="../../guide/security/"><small>Next</small><strong>Security</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

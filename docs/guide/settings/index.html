@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Account and two-factor authentication, Home Assistant token, check interval and session in D2HA." />
+  <title>Settings — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/" aria-current="page">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Using D2HA</div>
+        <h1>Settings</h1>
+        <p class="lead"><strong>Settings</strong> has five sections: account and security, Home Assistant, updates and session, Telegram notifications, and about.</p>
+
+        <h2 id="account">Account and security</h2>
+
+        <h3 id="password">Change password</h3>
+
+        <p>Enter the current password and the new one twice (at least 10 characters; passwords that are too easy to guess are refused). Your other devices are signed out.</p>
+
+        <h3 id="two-factor">Two-factor authentication</h3>
+
+        <ol class="steps">
+          <li>Press <strong>Turn on two-factor authentication</strong>.</li>
+          <li>Scan the QR code with an authenticator app (Aegis, Google Authenticator, 1Password…), or type the key shown under it.</li>
+          <li>Enter the code the app shows and press <strong>Confirm</strong>. Your other devices are signed out.</li>
+        </ol>
+
+        <p>From then on, signing in asks for the code too. To turn it off, D2HA asks for the password and a code.</p>
+
+        <div class="callout">
+          <span class="callout-title">Tip</span>
+          <p>If codes are refused, check the time of your phone: the codes depend on it.</p>
+        </div>
+
+        <h2 id="home-assistant">Home Assistant</h2>
+
+        <figure class="docs-shot">
+          <div class="window">
+            <div class="win-bar">
+              <span class="win-dot r"></span><span class="win-dot y"></span><span class="win-dot g"></span>
+              <span class="win-title">settings</span>
+            </div>
+            <img src="../../images/settings-home-assistant.png" alt="The Home Assistant section of the D2HA settings" loading="lazy" />
+          </div>
+          <figcaption>Settings → Home Assistant</figcaption>
+        </figure>
+
+        <ul>
+          <li>The three steps to connect Home Assistant, explained on <a href="../../guide/home-assistant/">Home Assistant integration</a>.</li>
+          <li><strong>Create token</strong>: the token is shown once. Copy it into Home Assistant.</li>
+          <li><strong>New token</strong> replaces it (the old one stops working) and <strong>Revoke</strong> disconnects Home Assistant until you create a new one.</li>
+          <li><strong>Containers shown in Home Assistant</strong>: one switch per container. Hidden containers get no entity in Home Assistant; changes apply at the next refresh of the integration.</li>
+        </ul>
+
+        <h2 id="updates-and-session">Updates and session</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Setting</th><th>Choices</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Check for updates every</strong></td><td>1, 3, 6 (default), 12 or 24 hours</td></tr>
+              <tr><td><strong>Sign out after inactivity</strong></td><td>15 minutes, 30 minutes (default), 1, 4 or 24 hours</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>The first check interval comes from <code>D2HA_CHECK_INTERVAL_HOURS</code> on a new install; after that, this setting decides.</p>
+
+        <h2 id="telegram">Telegram notifications</h2>
+
+        <p>When the bot is configured, choose what deserves a message, the language of the messages, and send a test. The <a href="../../guide/telegram/">Telegram notifications</a> page has every detail.</p>
+
+        <h2 id="about">About</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Line</th><th>Shows</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>D2HA</strong></td><td>The version running</td></tr>
+              <tr><td><strong>Docker</strong></td><td>The version of Docker Engine</td></tr>
+              <tr><td><strong>Mode</strong></td><td><strong>Updates enabled</strong>, or <strong>Read only</strong> with <code>D2HA_READ_ONLY=true</code></td></tr>
+              <tr><td><strong>Project</strong></td><td>The link to the project on GitHub</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/logs/"><small>Previous</small><strong>Logs</strong></a>
+          <a class="next" href="../../guide/home-assistant/"><small>Next</small><strong>Integration</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>

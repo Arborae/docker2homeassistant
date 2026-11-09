@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Sign in, find your way around and install D2HA as an app." />
+  <title>Web interface — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/" aria-current="page">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Using D2HA</div>
+        <h1>Web interface</h1>
+        <p class="lead">D2HA has two pages, <strong>Containers</strong> and <strong>Settings</strong>, and works the same on a computer and on a phone.</p>
+
+        <h2 id="opening">Opening D2HA</h2>
+
+        <p>Open the address you gave D2HA: <code>http://localhost:12021</code> on the server with the example setup, or the address of your reverse proxy or tunnel. The first time, D2HA asks for the setup code and creates your account: see <a href="../../install/#first-sign-in">First sign-in</a>.</p>
+
+        <h2 id="signing-in">Signing in</h2>
+
+        <p>Enter your username and password, and the code of your authenticator app if two-factor authentication is on.</p>
+
+        <ul>
+          <li>After 5 wrong attempts from the same address in 15 minutes, or 30 from anywhere, D2HA answers <strong>Too many attempts</strong> for a while.</li>
+          <li>You are signed out after a time without activity: 30 minutes by default, from 15 minutes to 24 hours in <a href="../../guide/settings/#updates-and-session">Settings</a>.</li>
+          <li>Changing the password, or turning on two-factor authentication, signs out your other devices.</li>
+        </ul>
+
+        <h2 id="getting-around">Getting around</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>In the header</th><th>What it does</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Containers</strong></td><td>The list of your containers, their updates and logs (<a href="../../guide/updates/">Containers and updates</a>)</td></tr>
+              <tr><td><strong>Settings</strong></td><td>Account, Home Assistant, Telegram, check interval (<a href="../../guide/settings/">Settings</a>)</td></tr>
+              <tr><td>Theme button</td><td>Switches between the system theme, light and dark</td></tr>
+              <tr><td><strong>EN</strong> / <strong>IT</strong></td><td>Switches the language between English and Italian</td></tr>
+              <tr><td>Sign out</td><td>Ends the session on this device</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>Theme and language are remembered in the browser. Without a choice, D2HA follows the theme of the system and the language of the browser (Italian or English).</p>
+
+        <figure class="docs-shot phone">
+          <img src="../../images/phone.png" alt="D2HA on a phone: the container list with updates" loading="lazy" />
+          <figcaption>The same interface on a phone</figcaption>
+        </figure>
+
+        <h2 id="app">Installing it as an app</h2>
+
+        <p>D2HA can be installed like an app, with its own icon and window:</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Where</th><th>How</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Chrome or Edge on a computer</td><td>The install icon in the address bar, or the menu → <strong>Install D2HA</strong></td></tr>
+              <tr><td>Android (Chrome)</td><td>Menu → <strong>Add to home screen</strong> or <strong>Install app</strong></td></tr>
+              <tr><td>iPhone and iPad (Safari)</td><td>Share → <strong>Add to Home Screen</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <span class="callout-title">Tip</span>
+          <p>Browsers install apps only from an HTTPS address (or <code>localhost</code>). If an access layer such as Cloudflare Access sits in front of D2HA, let <code>/sw.js</code> and <code>/static/</code> through without sign-in, or the browser cannot read the app files.</p>
+        </div>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../install/"><small>Previous</small><strong>Installation</strong></a>
+          <a class="next" href="../../guide/updates/"><small>Next</small><strong>Containers and updates</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>
