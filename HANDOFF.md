@@ -7,11 +7,13 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
-- **Plan #256: ha-d2ha in the Marketplace** (HACS default): **v0.3.0 released** (2026-11-09) and
-  the request is open, hacs/default#13788, from the owner's personal account. After the
-  inclusion: install instructions become "search D2HA in the Marketplace" (Claude: the app's
-  Settings and README; Kimi: the ha-d2ha README, the landing and the docs site).
-- Kimi: docs #263 (diagnostics and reconfigure in the docs site), now that v0.3.0 is out.
+- **Plan #256: ha-d2ha is in the Marketplace**: hacs/default#13788 merged by frenck on
+  2026-11-09 (the catalogue can take up to 8 hours). Next, merged only once D2HA shows in the
+  catalogue: #273 (Claude: the app's Settings and README) and #274 (Kimi: the ha-d2ha README,
+  as frenck asked in his review, the landing and the docs site).
+- Kimi: #274; then the proposals #267 (binary sensor, last check), #268 (services), #269 (an
+  automations page, after #267 and #268) and the technical proposal for #270 (the owner decides).
+  #263 is merged; #271 is closed: logs stay web-only (owner's decision).
   Also: the owner merged PR #255 (the docs site in `docs/`, your area) before your review:
   please read the new pages and open an issue or a pull request for anything you would change.
 - Claude: reviews of Kimi's pull requests, then the text of the `hacs/default` pull request
