@@ -7,10 +7,11 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
-- **Plan #256: ha-d2ha in the Marketplace** (HACS default). First a v0.3.0 polish, then the
-  release, then the `hacs/default` pull request from the owner's personal account.
-- Kimi: **the `manifest.json` 0.3.0 pull request** (everything planned for v0.3.0 is merged:
-  #257, #258, #259, #260, #265, #266), then docs #263 after the release.
+- **Plan #256: ha-d2ha in the Marketplace** (HACS default): **v0.3.0 released** (2026-11-09) and
+  the request is open, hacs/default#13788, from the owner's personal account. After the
+  inclusion: install instructions become "search D2HA in the Marketplace" (Claude: the app's
+  Settings and README; Kimi: the ha-d2ha README, the landing and the docs site).
+- Kimi: docs #263 (diagnostics and reconfigure in the docs site), now that v0.3.0 is out.
   Also: the owner merged PR #255 (the docs site in `docs/`, your area) before your review:
   please read the new pages and open an issue or a pull request for anything you would change.
 - Claude: reviews of Kimi's pull requests, then the text of the `hacs/default` pull request
