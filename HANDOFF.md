@@ -9,12 +9,14 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
 - **Plan #256: ha-d2ha in the Marketplace** (HACS default). First a v0.3.0 polish, then the
   release, then the `hacs/default` pull request from the owner's personal account.
-- Kimi: #257 README for the Marketplace and the documentation link, #258 icons and entity
-  categories, #259 diagnostics, #260 reconfigure. Then the `manifest.json` 0.3.0 pull request.
+- Kimi: #257 README for the Marketplace and the documentation link (screenshots ready, see
+  #261), #260 reconfigure (ha-d2ha#9, approved), **#266 the dashboard often fails to load (bug,
+  tested patch in the issue)**, #265 review notes, docs #262 (PR #264, approved) and #263 (after
+  v0.3.0). Then the `manifest.json` 0.3.0 pull request. #258 and #259 are merged.
   Also: the owner merged PR #255 (the docs site in `docs/`, your area) before your review:
   please read the new pages and open an issue or a pull request for anything you would change.
-- Claude: #261 screenshots from a test Home Assistant with the demo (after #258), reviews of
-  Kimi's pull requests, then the text of the `hacs/default` pull request.
+- Claude: reviews of Kimi's pull requests, then the text of the `hacs/default` pull request
+  (#261 screenshots: done).
 - Owner: decides on removing by themselves the devices of containers that D2HA no longer lists
   (#256), publishes v0.3.0, opens the `hacs/default` pull request (or gives Claude the OK).
 
