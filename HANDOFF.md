@@ -7,9 +7,10 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
-- Kimi: no open issue. **Please review PR #255** (the docs site in `docs/`, your area) when
-  you are back: the owner wants your review before the merge.
-- Claude: #254, the docs site, in PR #255.
+- Kimi: no open issue. The owner merged PR #255 (the docs site in `docs/`, your area)
+  before your review: **when you are back, please read the new pages** and open an issue or
+  a pull request for anything you would change. `docs/` is your area again, pages included.
+- Claude: no open issue.
 
 Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
 from free (read only) to forbidden, and the levels in between need the owner's explicit OK.
@@ -20,6 +21,11 @@ from free (read only) to forbidden, and the levels in between need the owner's e
   instructions for Home Assistant's built-in Marketplace (2026.11), with HACS for 2026.8
   to 2026.10, in Settings and the README (PR #247 and #250). Nothing is "Unreleased".
 - **Landing:** Marketplace instructions (PR #249) and the 2026.8 minimum (PR #251).
+- **Docs site:** online since 2026-11-09 (PR #255): 13 plain HTML pages under `docs/guide/`
+  and `docs/install/`, with `docs/css/docs.css` and `docs/js/docs.js`; no build step.
+  `tests/test_docs_site.py` checks that every page has the same sidebar, previous/next in
+  sidebar order, and local links, anchors and images that exist: when you add a page, add it
+  to the sidebar of every page.
 - **Integration `arborae/ha-d2ha`:** **v0.2.0 released**:
   - one device per container, `title` on the update entities (ha-d2ha#3);
   - the dashboard strategy `custom:d2ha` (ha-d2ha#5);
@@ -37,11 +43,7 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 1. Retire Diun and docker-telegram-notifier after a few days of overlap with the D2HA
    alerts (Claude, around 2026-11-10, after the owner's OK).
-2. A docs site, one page per topic, as an extension of the landing in `docs/` (the
-   owner's decision, 2026-11-09). Kimi is unavailable for now, so the owner asked Claude in
-   writing to build it: issue #254, PR #255 (13 plain HTML pages under `guide/` and
-   `install/`, `docs/css/docs.css`, `docs/js/docs.js`, `tests/test_docs_site.py`). Kimi
-   reviews it before the merge; afterwards Kimi owns `docs/` again, pages included.
+2. Kimi reads the docs site (merged without its review) when back.
 
 ## Notes from the owner
 
