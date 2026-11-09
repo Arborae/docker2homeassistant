@@ -7,10 +7,16 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
-- Kimi: no open issue. The owner merged PR #255 (the docs site in `docs/`, your area)
-  before your review: **when you are back, please read the new pages** and open an issue or
-  a pull request for anything you would change. `docs/` is your area again, pages included.
-- Claude: no open issue.
+- **Plan #256: ha-d2ha in the Marketplace** (HACS default). First a v0.3.0 polish, then the
+  release, then the `hacs/default` pull request from the owner's personal account.
+- Kimi: #257 README for the Marketplace and the documentation link, #258 icons and entity
+  categories, #259 diagnostics, #260 reconfigure. Then the `manifest.json` 0.3.0 pull request.
+  Also: the owner merged PR #255 (the docs site in `docs/`, your area) before your review:
+  please read the new pages and open an issue or a pull request for anything you would change.
+- Claude: #261 screenshots from a test Home Assistant with the demo (after #258), reviews of
+  Kimi's pull requests, then the text of the `hacs/default` pull request.
+- Owner: decides on removing by themselves the devices of containers that D2HA no longer lists
+  (#256), publishes v0.3.0, opens the `hacs/default` pull request (or gives Claude the OK).
 
 Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
 from free (read only) to forbidden, and the levels in between need the owner's explicit OK.
@@ -43,7 +49,9 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 1. Retire Diun and docker-telegram-notifier after a few days of overlap with the D2HA
    alerts (Claude, around 2026-11-10, after the owner's OK).
-2. Kimi reads the docs site (merged without its review) when back.
+2. ha-d2ha in the Marketplace: plan #256 (v0.3.0, release, `hacs/default`, then the install
+   instructions everywhere become "search D2HA in the Marketplace").
+3. Kimi reads the docs site (merged without its review).
 
 ## Notes from the owner
 
