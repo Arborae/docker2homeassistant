@@ -58,9 +58,10 @@ Options (all optional) are listed in [`.env.example`](.env.example): the hours b
 
 [![Open this repository in the Marketplace](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=arborae&repository=ha-d2ha&category=integration)
 
-1. Install the integration (it needs Home Assistant 2026.8 or later). The link above opens it in the Marketplace (or in HACS) and offers to add it.
-   - **Home Assistant 2026.11 or later:** open **Settings → Marketplace → Add from link**, enter `https://github.com/arborae/ha-d2ha` with type **Integration** (the first time, the Marketplace asks you to connect GitHub), then **Install** and **Restart Home Assistant**.
-   - **Home Assistant 2026.8 to 2026.10:** in HACS, add `https://github.com/arborae/ha-d2ha` as a custom repository of type **Integration**, download **D2HA** and restart Home Assistant.
+1. Install the integration (it needs Home Assistant 2026.8 or later). The link above opens it in the Marketplace (or in HACS).
+   - **Home Assistant 2026.11 or later:** open **Settings → Marketplace**, search for **D2HA**, then **Install** and **Restart Home Assistant**.
+   - **Home Assistant 2026.8 to 2026.10:** open HACS, search for **D2HA**, download it and restart Home Assistant.
+   - **If the search does not find it,** add `https://github.com/arborae/ha-d2ha` yourself with type **Integration**: **Add from link** in the Marketplace (the first time, it asks you to connect GitHub), or as a custom repository in HACS.
 2. In D2HA, open **Settings → Home Assistant** and create a token.
 3. In Home Assistant, **Settings → Devices & services → Add integration → D2HA**: enter the address of D2HA (`http://127.0.0.1:12021` when Home Assistant runs on the same host with `network_mode: host`) and the token.
 

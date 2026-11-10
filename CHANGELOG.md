@@ -5,6 +5,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- The Home Assistant integration is in the Marketplace catalogue (the HACS default list):
+  the install instructions in Settings and in the README now say to search for **D2HA**
+  in the Marketplace, or in HACS before 2026.11. Adding the repository by hand stays as
+  the fallback.
+
 ### Fixed
 - While a container is updated, its backup copy `<name>-d2ha-old` is no longer listed as
   a container of its own. Home Assistant could pick it up as a new device, also for a
