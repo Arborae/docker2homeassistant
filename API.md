@@ -101,11 +101,13 @@ without D2HA itself. The integration uses this form.
 | `key` | **Stable id** (stack + name): it survives updates and recreation, while `id` changes. Use it for entity unique ids and in URLs. |
 | `state` | Docker state: `running`, `exited`, `paused`, `restarting`, `created`, `dead` |
 | `health` | `healthy`, `unhealthy`, `starting`, or `""` without a health check |
+| `created` | When Docker created the container: a Unix time in whole seconds, `0` when Docker gives none. A recreated container (an update, for example) gets a new one. |
 | `update` | `available`, `current`, `local` (built on this host: nothing to compare), `pinned` (digest or no tag), `unknown` (not checked yet), `error` (the check failed: see `error`) |
 | `installed_version`, `latest_version` | Text for people: a version when the image says it, otherwise tag and short digest. Equal unless `update` is `available`. Do not parse them. |
 | `release_url` | Release page of the new version, or the project page; may be `""` |
 | `has_notes` | `GET /containers/<key>/notes` will answer |
 | `breaking` | The release notes have a breaking-changes section |
+| `error` | Why the check failed, when `update` is `error`: text for people such as `rate limited` or `HTTP 500`, otherwise `""`. Do not parse it. |
 | `is_self`, `is_proxy` | D2HA itself, or the socket proxy it uses: never updated by D2HA |
 | `can_update` | An update can be started now (false in read-only mode, for `is_self`, `is_proxy`, `local` and `pinned`) |
 | `ha` | Shown in Home Assistant |
