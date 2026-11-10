@@ -7,12 +7,13 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
-- **Releases decided by the owner on 2026-11-10: app v0.5.3 and ha-d2ha v0.3.1.** Two
-  one-line pull requests wait for Kimi's review and the owner's merge:
-  - here, #280: the "Unreleased" section of the CHANGELOG becomes 0.5.3;
+- **Releases decided by the owner on 2026-11-10: app v0.5.3 and ha-d2ha v0.3.1.** The two
+  one-line pull requests that prepare them are merged (2026-11-10, by the owner):
+  - here, #280: the "Unreleased" section of the CHANGELOG is now 0.5.3;
   - in ha-d2ha, #17: `manifest.json` version 0.3.1.
 
-  Then the owner publishes the two releases.
+  `main` of both repositories is ready for the tags `v0.5.3` and `v0.3.1`: the owner
+  publishes the two releases.
 - **No issue is open.** On 2026-11-10 Claude did Kimi's open issues too (#267, #268, #269,
   #270, #274: the owner's decision, written in the issues) and Kimi reviewed everything:
   seven pull requests, approved with no changes requested and merged the same evening
@@ -29,7 +30,7 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
   check (the first update of a container there is the first real run of #278: it was
   tested with a fake Docker only); "What you get" and "Choose the containers" on the docs
   site; a check of the owner's Home Assistant.
-- Owner: merges #280 and ha-d2ha#17 after the reviews, then publishes v0.5.3 and v0.3.1.
+- Owner: publishes v0.5.3 and v0.3.1 from `main`.
 
 Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
 from free (read only) to forbidden, and the levels in between need the owner's explicit OK.
@@ -39,8 +40,9 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 - **App:** **v0.5.2 released** (CHANGELOG in PR #253). It changes only text: install
   instructions for Home Assistant's built-in Marketplace (2026.11), with HACS for 2026.8
   to 2026.10, in Settings and the README (PR #247 and #250). `main` is what v0.5.3 will
-  be: the install instructions lead with the Marketplace search (#275), and the backup
-  container of an update is no longer listed as a container of its own (#278).
+  be (CHANGELOG in #280): the install instructions lead with the Marketplace search
+  (#275), and the backup container of an update is no longer listed as a container of its
+  own (#278).
 - **Landing:** Marketplace instructions (PR #249) and the 2026.8 minimum (PR #251).
 - **Docs site:** online since 2026-11-09 (PR #255): 14 plain HTML pages under `docs/guide/`
   and `docs/install/`, with `docs/css/docs.css` and `docs/js/docs.js`; no build step.
@@ -54,9 +56,10 @@ from free (read only) to forbidden, and the levels in between need the owner's e
     Assistant 2026.8;
   - 0.3.0: icons, diagnostics, reconfiguration, the fix for the dashboard that often did not
     load, the README with screenshots (ha-d2ha#7 to #13);
-  - `main` is what 0.3.1 will be: the "Last check" sensor, the `created` and `check_error`
-    attributes (ha-d2ha#15), the device of a container D2HA no longer lists removed after
-    24 hours (ha-d2ha#16), the README that leads with the Marketplace search (ha-d2ha#14).
+  - `main` is what 0.3.1 will be (manifest in ha-d2ha#17): the "Last check" sensor, the
+    `created` and `check_error` attributes (ha-d2ha#15), the device of a container D2HA
+    no longer lists removed after 24 hours (ha-d2ha#16), the README that leads with the
+    Marketplace search (ha-d2ha#14).
 
   CI runs pytest and the node tests of the strategy, hassfest and the HACS validation.
 - **The owner's server** runs D2HA 0.5.2 (updated and checked on 2026-11-09) with
@@ -68,7 +71,7 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 ## Next up
 
-1. Reviews and merges of #280 and ha-d2ha#17, then the releases v0.5.3 and v0.3.1 (owner).
+1. The releases v0.5.3 and v0.3.1, published from `main` (owner).
 2. After the releases: the owner's server on 0.5.3 (with the owner's OK), the docs site
    ("What you get", "Choose the containers") and a check of the owner's Home Assistant.
 
