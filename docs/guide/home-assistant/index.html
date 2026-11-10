@@ -71,6 +71,7 @@
             <ul>
               <li><a href="../../guide/home-assistant/" aria-current="page">Integration</a></li>
               <li><a href="../../guide/dashboard/">Dashboard</a></li>
+              <li><a href="../../guide/automations/">Automations</a></li>
             </ul>
           </div>
           <div class="group">
@@ -205,6 +206,8 @@ actions:
         {{ state_attr('sensor.d2ha_updates_available', 'containers') | join(', ') }}</code></pre>
 
         <p>The entity id depends on the language of your Home Assistant: find yours in <strong>Settings → Devices &amp; services → D2HA</strong>.</p>
+
+        <p><a href="../../guide/automations/">Automations</a> has more examples, ready to paste: updates at night, a message when a container stops, a weekly cleaning of the images.</p>
 
         <h2 id="reauth">A new token</h2>
 
