@@ -106,7 +106,7 @@
 
         <h2 id="install">Install the integration</h2>
 
-        <p><a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=arborae&amp;repository=ha-d2ha&amp;category=integration" target="_blank" rel="noreferrer">This link</a> opens the integration in your Home Assistant, in the Marketplace or in HACS, and offers to add it. By hand:</p>
+        <p>D2HA is in the catalogue of Home Assistant's Marketplace (the HACS default list), so a search finds it. <a href="https://my.home-assistant.io/redirect/marketplace_repository/?owner=arborae&amp;repository=ha-d2ha&amp;category=integration" target="_blank" rel="noreferrer">This link</a> opens it in your Home Assistant, in the Marketplace or in HACS. By hand:</p>
 
         <div class="table-wrap">
           <table>
@@ -114,10 +114,15 @@
               <tr><th>Home Assistant</th><th>How</th></tr>
             </thead>
             <tbody>
-              <tr><td>2026.11 or later</td><td><strong>Settings → Marketplace → Add from link</strong>, enter <code>https://github.com/arborae/ha-d2ha</code> with type <strong>Integration</strong> (the first time, the Marketplace asks you to connect GitHub), then <strong>Install</strong> and <strong>Restart Home Assistant</strong>.</td></tr>
-              <tr><td>2026.8 to 2026.10</td><td>In HACS, add <code>https://github.com/arborae/ha-d2ha</code> as a custom repository of type <strong>Integration</strong>, download <strong>D2HA</strong> and restart Home Assistant.</td></tr>
+              <tr><td>2026.11 or later</td><td><strong>Settings → Marketplace</strong>, search for <strong>D2HA</strong>, then <strong>Install</strong> and <strong>Restart Home Assistant</strong>.</td></tr>
+              <tr><td>2026.8 to 2026.10</td><td>Open HACS, search for <strong>D2HA</strong>, download it and restart Home Assistant.</td></tr>
             </tbody>
           </table>
+        </div>
+
+        <div class="callout">
+          <span class="callout-title">If the search does not find it</span>
+          <p>Add <code>https://github.com/arborae/ha-d2ha</code> yourself with type <strong>Integration</strong>: <strong>Add from link</strong> in the Marketplace (the first time, it asks you to connect GitHub), or as a custom repository in HACS.</p>
         </div>
 
         <h2 id="connect">Connect it to D2HA</h2>
