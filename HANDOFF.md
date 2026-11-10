@@ -7,24 +7,28 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
-- **Plan #256: ha-d2ha is in the Marketplace**: hacs/default#13788 merged by frenck on
-  2026-11-09 (the catalogue can take up to 8 hours). Next, merged only once D2HA shows in the
-  catalogue: #273 (Claude: the app's Settings and README) and #274 (Kimi: the ha-d2ha README,
-  as frenck asked in his review, the landing and the docs site).
-- Kimi: #274; then the proposals #267 (binary sensor, last check), #268 (services), #269 (an
-  automations page, after #267 and #268) and the technical proposal for #270 (the owner decides).
-  #263 is merged; #271 is closed: logs stay web-only (owner's decision).
-  Also: the owner merged PR #255 (the docs site in `docs/`, your area) before your review:
-  please read the new pages and open an issue or a pull request for anything you would change.
-- Claude: reviews of Kimi's pull requests, then the text of the `hacs/default` pull request
-  (#261 screenshots: done).
-- Owner: decides on removing by themselves the devices of containers that D2HA no longer lists
-  (#256), publishes v0.3.0, opens the `hacs/default` pull request (or gives Claude the OK).
+- **Plan #256: ha-d2ha is in the Marketplace catalogue** (hacs/default#13788 merged on
+  2026-11-09; listed as "D2HA" v0.3.0 since 2026-11-10). The install instructions now lead
+  with the search: #275 (app Settings, README, docs page, screenshot: #273 and the docs part
+  of #274) and ha-d2ha#14 (the README, as frenck asked: #274). Both are open and can be
+  merged after review.
+- **Change of hands (owner, 2026-11-10):** Kimi is only partly available, so this time
+  Claude does the work and **Kimi reviews**. Claude took over #274 and #267 (labels moved to
+  `claude`, written in the issues).
+- Kimi, to review: #275 and #276 here, ha-d2ha#14 and ha-d2ha#15. Still Kimi's, no hurry:
+  #268 (services), #269 (an automations page, after #267 and #268) and the technical proposal
+  for #270 (the owner decides). Also still open: reading the docs site merged in PR #255.
+- Claude: #267 is in ha-d2ha#15 (the "Last check" sensor, `created` and `check_error`
+  attributes) and #276 (the two rows in `API.md`). The binary sensor of #267 is left out, the
+  `update` entity is already on/off: the owner says yes or no in the issue. After the next
+  ha-d2ha release: "What you get" on the docs site.
+- Owner: merges after the reviews; decides on the binary sensor (#267), on #270, and on the
+  next releases (app: the Settings text of #275; ha-d2ha: #15).
 
 Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
 from free (read only) to forbidden, and the levels in between need the owner's explicit OK.
 
-## State (2026-11-09)
+## State (2026-11-10)
 
 - **App:** **v0.5.2 released** (CHANGELOG in PR #253). It changes only text: install
   instructions for Home Assistant's built-in Marketplace (2026.11), with HACS for 2026.8
@@ -35,25 +39,26 @@ from free (read only) to forbidden, and the levels in between need the owner's e
   `tests/test_docs_site.py` checks that every page has the same sidebar, previous/next in
   sidebar order, and local links, anchors and images that exist: when you add a page, add it
   to the sidebar of every page.
-- **Integration `arborae/ha-d2ha`:** **v0.2.0 released**:
-  - one device per container, `title` on the update entities (ha-d2ha#3);
-  - the dashboard strategy `custom:d2ha` (ha-d2ha#5);
-  - Marketplace README (ha-d2ha#4);
-  - minimum Home Assistant 2026.8;
-  - `manifest.json` at 0.2.0 (ha-d2ha#6).
+- **Integration `arborae/ha-d2ha`:** **v0.3.0 released** (2026-11-09) and listed in the
+  Marketplace catalogue (the HACS default list) since 2026-11-10:
+  - 0.2.0: one device per container, the dashboard strategy `custom:d2ha`, minimum Home
+    Assistant 2026.8;
+  - 0.3.0: icons, diagnostics, reconfiguration, the fix for the dashboard that often did not
+    load, the README with screenshots (ha-d2ha#7 to #13).
 
-  CI runs pytest and the node tests of the strategy.
+  CI runs pytest and the node tests of the strategy, hassfest and the HACS validation.
 - **The owner's server** runs D2HA 0.5.2 (updated and checked on 2026-11-09) with
   Telegram notifications on. Its Home Assistant
-  runs the integration v0.2.0: the entity ids were kept, 15 devices, no errors.
+  runs the integration v0.3.0 (checked on 2026-11-09): the entity ids were kept, 15
+  devices, no errors.
 - `/api/v1` is unchanged since 0.5.0 (`API.md`).
 
 ## Next up
 
 1. Retire Diun and docker-telegram-notifier after a few days of overlap with the D2HA
    alerts (Claude, around 2026-11-10, after the owner's OK).
-2. ha-d2ha in the Marketplace: plan #256 (v0.3.0, release, `hacs/default`, then the install
-   instructions everywhere become "search D2HA in the Marketplace").
+2. Reviews and merges of #275, #276, ha-d2ha#14 and ha-d2ha#15 (see "Tasks"); then the
+   releases, when the owner decides.
 3. Kimi reads the docs site (merged without its review).
 
 ## Notes from the owner
