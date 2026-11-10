@@ -64,7 +64,7 @@
   "settings.totp_confirm": "Conferma",
   "settings.totp_disable": "Disattiva",
   "settings.ha": "Home Assistant",
-  "settings.ha_step1": "Installa l'integrazione D2HA (serve Home Assistant 2026.8 o successivo). Da Home Assistant 2026.11: Impostazioni → Marketplace → Aggiungi dal collegamento, inserisci https://github.com/arborae/ha-d2ha (tipo Integrazione), poi Installa e riavvia. Dalla 2026.8 alla 2026.10 aggiungi lo stesso indirizzo in HACS come repository personalizzato (tipo Integrazione), scarica D2HA e riavvia.",
+  "settings.ha_step1": "Installa l'integrazione D2HA (serve Home Assistant 2026.8 o successivo). Da Home Assistant 2026.11: Impostazioni → Marketplace, cerca D2HA, poi Installa e riavvia. Dalla 2026.8 alla 2026.10: apri HACS, cerca D2HA, scaricala e riavvia. Se la ricerca non la trova, aggiungi tu https://github.com/arborae/ha-d2ha, tipo Integrazione: Aggiungi dal collegamento nel Marketplace, repository personalizzato in HACS.",
   "settings.ha_step2": "Crea qui sotto un token di accesso e copialo.",
   "settings.ha_step3": "In Home Assistant aggiungi l'integrazione D2HA con l'indirizzo di D2HA (http://127.0.0.1:12021 se gira sullo stesso server) e il token.",
   "settings.token_once": "Copia il token adesso: viene mostrato una volta sola.",
