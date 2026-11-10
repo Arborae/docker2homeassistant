@@ -9,9 +9,9 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
 - **Released on 2026-11-10: app v0.5.3 and ha-d2ha 0.3.1** (prepared by #280 here and by
   ha-d2ha#17).
-- **To fix: the tag of the ha-d2ha release.** It was created as `` `v0.3.1 ``, with a
-  backtick in front. The release has to be published again as `v0.3.1` on the same commit,
-  and the wrong release and tag removed. The owner decides; Claude can do it with the OK.
+- **The ha-d2ha tag is fixed.** The release was created as `` `v0.3.1 ``, with a backtick
+  in front: with the owner's OK Claude published it again as `v0.3.1` on the same commit
+  and removed the wrong release and tag (2026-11-10).
 - **No issue is open.** On 2026-11-10 Claude did Kimi's open issues too (#267, #268, #269,
   #270, #274: the owner's decision, written in the issues) and Kimi reviewed everything:
   seven pull requests, approved with no changes requested and merged the same evening
@@ -27,7 +27,9 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 - Claude: "What you get" and "Choose the containers" on the docs site (what 0.3.1 adds);
   a look at the first update of a container on the owner's server, the first real run of
   #278 (it was tested with a fake Docker only).
-- Owner: the decision about the ha-d2ha tag.
+- Lesson from the owner's server: a new config entry gives the containers new entity ids,
+  so a card that picks them by an id pattern ends up empty. Pick them by the integration
+  `d2ha` and the `key` attribute instead.
 
 Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
 from free (read only) to forbidden, and the levels in between need the owner's explicit OK.
@@ -46,8 +48,8 @@ from free (read only) to forbidden, and the levels in between need the owner's e
   sidebar order, and local links, anchors and images that exist: when you add a page, add it
   to the sidebar of every page. The **Automations** page (#279, 2026-11-10) has examples
   ready to paste, each one tried on a test Home Assistant.
-- **Integration `arborae/ha-d2ha`:** **0.3.1 released** (2026-11-10, with the tag to fix:
-  see Tasks) and listed in the Marketplace catalogue (the HACS default list) since
+- **Integration `arborae/ha-d2ha`:** **0.3.1 released** (2026-11-10, tag `v0.3.1`) and
+  listed in the Marketplace catalogue (the HACS default list) since
   2026-11-10:
   - 0.2.0: one device per container, the dashboard strategy `custom:d2ha`, minimum Home
     Assistant 2026.8;
@@ -67,9 +69,8 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 ## Next up
 
-1. The ha-d2ha release with the right tag, `v0.3.1` (the owner's decision).
-2. The docs site: "What you get" and "Choose the containers" (Claude).
-3. The first update of a container on the owner's server: the first real run of #278.
+1. The docs site: "What you get" and "Choose the containers" (Claude).
+2. The first update of a container on the owner's server: the first real run of #278.
 
 ## Notes from the owner
 
