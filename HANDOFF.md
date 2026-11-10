@@ -9,27 +9,23 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 
 - **Plan #256: ha-d2ha is in the Marketplace catalogue** (hacs/default#13788 merged on
   2026-11-09; listed as "D2HA" v0.3.0 since 2026-11-10). The install instructions now lead
-  with the search: #275 and ha-d2ha#14, both approved.
+  with the search: #275 and ha-d2ha#14, both merged on 2026-11-10 (#273 and #274 closed).
 - **Change of hands (owner, 2026-11-10):** Claude took over all of Kimi's open issues
   (#267, #268, #269, #270, #274; labels moved to `claude`, written in the issues) and
   **Kimi reviews everything**. Kimi has no open issue. `docs/` and `ha-d2ha` stay Kimi's
   area for new work.
-- **Seven pull requests, all approved by Kimi on 2026-11-10**, with no changes requested:
-  the tests were run on every branch and CI is green. They wait for the owner's merge.
+- **Kimi approved all seven pull requests on 2026-11-10**, with no changes requested: the
+  tests were run on every branch and CI is green. #275 and ha-d2ha#14 are merged. **Five
+  wait for the owner's merge:**
   - Here:
-    - #275: the install instructions lead with the Marketplace search (Settings en/it,
-      README, the Integration page of the docs, a screenshot): #273 and part of #274;
     - #276: two rows in `API.md` (#267);
     - #278: bug #277, during an update the backup container `<name>-d2ha-old` was listed
       as a new container, also for Home Assistant;
     - #279: the new **Automations** page of the docs site. It closes #269 and #268.
   - In ha-d2ha:
-    - #14: the README, as frenck asked (#274);
     - #15: the "Last check" sensor, the `created` and `check_error` attributes (#267);
     - #16: the device of a container D2HA no longer lists is removed after 24 hours (#270).
-  - A good merge order: #275 and ha-d2ha#14 first, then #278, #276 and ha-d2ha#15, then
-    ha-d2ha#16 and #279. The three ha-d2ha branches merge together without conflicts (61
-    tests pass).
+  - A good merge order: #278, #276 and ha-d2ha#15 first, then ha-d2ha#16 and #279.
 - **Decided by the owner on 2026-11-10** (written in the issues):
   - #267: no binary sensor per container. The issue is closed by hand after ha-d2ha#15.
   - #268: no `d2ha.*` services. `update.install` and `button.press` do the same today, and
@@ -37,10 +33,10 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
   - #270: automatic removal, always on, after 24 hours, with three protections: only the
     answers of D2HA count, an empty list removes nothing, the absence must be continuous.
   - #277: fixed in the app (#278).
-- Claude: #275 and #278 both add an "Unreleased" section to the CHANGELOG at the same
-  place: after the first of the two is merged, Claude merges `main` into the other. After
-  the next ha-d2ha release: "What you get" and "Choose the containers" on the docs site.
-- Owner: merges the seven pull requests; closes #267 and #256 by hand; decides the next
+- Claude: `main` is merged into the branch of #278 (the "Unreleased" section of the
+  CHANGELOG has both entries, from #275 and from #278). After the next ha-d2ha release:
+  "What you get" and "Choose the containers" on the docs site.
+- Owner: merges the five pull requests; closes #267 and #256 by hand; decides the next
   releases and their numbers (app: #275 and #278; ha-d2ha: #15 and #16).
 
 Both agents follow the "Code of conduct" in AGENTS.md (PR #242): every action has a level,
@@ -50,7 +46,8 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 - **App:** **v0.5.2 released** (CHANGELOG in PR #253). It changes only text: install
   instructions for Home Assistant's built-in Marketplace (2026.11), with HACS for 2026.8
-  to 2026.10, in Settings and the README (PR #247 and #250). Nothing is "Unreleased".
+  to 2026.10, in Settings and the README (PR #247 and #250). "Unreleased" on `main`: the
+  install instructions lead with the Marketplace search (#275).
 - **Landing:** Marketplace instructions (PR #249) and the 2026.8 minimum (PR #251).
 - **Docs site:** online since 2026-11-09 (PR #255): 13 plain HTML pages under `docs/guide/`
   and `docs/install/`, with `docs/css/docs.css` and `docs/js/docs.js`; no build step.
@@ -74,7 +71,7 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 ## Next up
 
-1. The owner's merges of the seven pull requests (see "Tasks"); then the releases, when the
+1. The owner's merges of the five pull requests (see "Tasks"); then the releases, when the
    owner decides.
 2. After the next ha-d2ha release: the docs site ("What you get", "Choose the containers")
    and a check of the owner's Home Assistant.
