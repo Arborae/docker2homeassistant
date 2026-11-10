@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- While a container is updated, its backup copy `<name>-d2ha-old` is no longer listed as
+  a container of its own. Home Assistant could pick it up as a new device, also for a
+  container hidden from Home Assistant, and the real container was missing from the list
+  for a moment.
+
 ## [0.5.2] - 2026-11-08
 
 ### Changed
