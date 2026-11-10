@@ -116,6 +116,8 @@ class DockerOps:
         self.proxy_host = docker_proxy_host()
         self._image_cache: Dict[str, Dict[str, Any]] = {}
         self._lock = threading.Lock()
+        # Ids of the containers an update is recreating: for a moment they have the backup name.
+        self._recreating: set = set()
 
     # -- engine -------------------------------------------------------------------
 
@@ -162,9 +164,17 @@ class DockerOps:
 
     def list_containers(self) -> List[Dict[str, Any]]:
         items = []
-        for raw in self.api.containers(all=True):
+        raws = self.api.containers(all=True)
+        names = {(raw.get("Names") or ["/?"])[0].lstrip("/") for raw in raws}
+        for raw in raws:
             labels = raw.get("Labels") or {}
             name = (raw.get("Names") or ["/?"])[0].lstrip("/")
+            if raw["Id"] in self._recreating and name.endswith(OLD_SUFFIX):
+                # The same container in the middle of an update, not a new one: it keeps
+                # its name and key until the new container is there.
+                name = name[:-len(OLD_SUFFIX)]
+                if name in names:
+                    continue
             stack = labels.get("com.docker.compose.project", "")
             status = raw.get("Status") or ""
             image = raw.get("Image", "")
@@ -335,32 +345,37 @@ class DockerOps:
         backup_name = f"{name}{OLD_SUFFIX}"
 
         progress({"phase": "stop", "percent": 100})
-        self.api.rename(old["Id"], backup_name)
+        self._recreating.add(old["Id"])
         try:
-            if was_running:
-                stop_timeout = (old.get("Config") or {}).get("StopTimeout") or 10
-                self.api.stop(old["Id"], timeout=stop_timeout)
-            progress({"phase": "create", "percent": 100})
-            new_id = self.api.create_container_from_config(config, name=name)["Id"]
+            self.api.rename(old["Id"], backup_name)
             try:
                 if was_running:
-                    progress({"phase": "start", "percent": 100})
-                    self.api.start(new_id)
-            except docker.errors.APIError:
-                self.api.remove_container(new_id, force=True)
-                raise
-        except docker.errors.APIError as exc:
-            log.warning("Recreating %s failed, restoring the old container: %s", name, exc)
-            self._restore(old["Id"], name, was_running)
-            raise UpdateError("error.recreate_failed", str(exc)) from exc
+                    stop_timeout = (old.get("Config") or {}).get("StopTimeout") or 10
+                    self.api.stop(old["Id"], timeout=stop_timeout)
+                progress({"phase": "create", "percent": 100})
+                new_id = self.api.create_container_from_config(config, name=name)["Id"]
+                try:
+                    if was_running:
+                        progress({"phase": "start", "percent": 100})
+                        self.api.start(new_id)
+                except docker.errors.APIError:
+                    self.api.remove_container(new_id, force=True)
+                    raise
+            except docker.errors.APIError as exc:
+                log.warning("Recreating %s failed, restoring the old container: %s", name, exc)
+                self._restore(old["Id"], name, was_running)
+                raise UpdateError("error.recreate_failed", str(exc)) from exc
 
-        progress({"phase": "cleanup", "percent": 100})
-        try:
-            self.api.remove_container(old["Id"], v=False)
-        except docker.errors.NotFound:
-            pass  # removed on stop (AutoRemove)
-        except docker.errors.APIError as exc:
-            log.warning("Could not remove the previous container of %s: %s", name, exc)
+            progress({"phase": "cleanup", "percent": 100})
+            try:
+                self.api.remove_container(old["Id"], v=False)
+            except docker.errors.NotFound:
+                pass  # removed on stop (AutoRemove)
+            except docker.errors.APIError as exc:
+                log.warning("Could not remove the previous container of %s: %s", name, exc)
+        finally:
+            # From here a backup container still there is listed: its cleanup failed.
+            self._recreating.discard(old["Id"])
         progress({"phase": "done", "percent": 100})
         return {"changed": True, "id": new_id, "name": name}
 
