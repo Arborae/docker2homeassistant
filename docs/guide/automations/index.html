@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#070b0a" />
+  <meta name="description" content="Home Assistant automations for D2HA, ready to paste: update alerts, night updates, a stopped container, weekly image cleaning." />
+  <title>Automations — D2HA</title>
+
+  <link rel="icon" href="../../assets/logo.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/style.css" />
+  <link rel="stylesheet" href="../../css/docs.css" />
+  <script src="../../js/docs.js" defer></script>
+</head>
+
+<body>
+  <div class="bg">
+    <div class="bg-grid"></div>
+  </div>
+
+  <header class="nav">
+    <div class="container nav-inner">
+      <div class="brand">
+        <a class="brand-main" href="../../" aria-label="D2HA Home">
+          <img src="../../assets/logo.svg" alt="D2HA logo" width="28" height="28" />
+          <span>D2HA</span>
+        </a>
+        <a class="by" href="https://arborae.github.io/" target="_blank" rel="noreferrer"
+          aria-label="Arborae — main site">by Arborae ↗</a>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary">
+        <a href="../../guide/" aria-current="page">Docs</a>
+        <a href="../../install/">Install</a>
+        <a href="../../#features">Features</a>
+      </nav>
+
+      <div class="nav-cta">
+        <a class="btn ghost small menu-toggle" href="#docs-nav" aria-controls="docs-nav" aria-expanded="false">Menu</a>
+        <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="docs-shell">
+      <aside class="docs-sidebar" id="docs-nav" aria-label="Documentation">
+        <nav>
+          <div class="group">
+            <p class="group-title">Get started</p>
+            <ul>
+              <li><a href="../../guide/">Introduction</a></li>
+              <li><a href="../../install/">Installation</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Using D2HA</p>
+            <ul>
+              <li><a href="../../guide/web-interface/">Web interface</a></li>
+              <li><a href="../../guide/updates/">Containers and updates</a></li>
+              <li><a href="../../guide/logs/">Logs</a></li>
+              <li><a href="../../guide/settings/">Settings</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Home Assistant</p>
+            <ul>
+              <li><a href="../../guide/home-assistant/">Integration</a></li>
+              <li><a href="../../guide/dashboard/">Dashboard</a></li>
+              <li><a href="../../guide/automations/" aria-current="page">Automations</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Notifications</p>
+            <ul>
+              <li><a href="../../guide/telegram/">Telegram</a></li>
+            </ul>
+          </div>
+          <div class="group">
+            <p class="group-title">Reference</p>
+            <ul>
+              <li><a href="../../guide/configuration/">Configuration</a></li>
+              <li><a href="../../guide/security/">Security</a></li>
+              <li><a href="../../guide/api/">API v1</a></li>
+              <li><a href="../../guide/troubleshooting/">Troubleshooting</a></li>
+            </ul>
+          </div>
+        </nav>
+      </aside>
+
+      <article class="docs-content">
+        <div class="breadcrumb"><a href="../../guide/">Docs</a> / Home Assistant</div>
+        <h1>Automations</h1>
+        <p class="lead">With the <a href="../../guide/home-assistant/">integration</a> connected, Home Assistant can look after your containers by itself: tell you when a new version is out, update the containers you choose at night, warn you when one stops. The examples on this page are ready to paste.</p>
+
+        <h2 id="actions">What an automation can do</h2>
+
+        <p>The integration has no actions of its own: its entities work with the actions Home Assistant already has.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>To</th><th>Action</th><th>Entity</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Update one container</td><td><code>update.install</code></td><td>The <strong>Update</strong> entity of the container, such as <code>update.jellyfin_update</code></td></tr>
+              <tr><td>Update every container</td><td><code>button.press</code></td><td><strong>Update all</strong>, <code>button.d2ha_update_all</code></td></tr>
+              <tr><td>Look for new versions now</td><td><code>button.press</code></td><td><strong>Check for updates</strong>, <code>button.d2ha_check_for_updates</code></td></tr>
+              <tr><td>Delete the unused images</td><td><code>button.press</code></td><td><strong>Clean images</strong>, <code>button.d2ha_clean_images</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>An automation can start from the <strong>State</strong> sensor of a container, such as <code>sensor.jellyfin_state</code>, or from the <strong>Updates available</strong> counter, <code>sensor.d2ha_updates_available</code>. <a href="../../guide/home-assistant/#entities">What you get</a> lists every entity with its attributes.</p>
+
+        <h2 id="add">Add an example</h2>
+
+        <ol class="steps">
+          <li>In Home Assistant, open <strong>Settings → Automations &amp; scenes</strong> and press <strong>Create automation</strong>, then <strong>Create new automation</strong>.</li>
+          <li>Open the menu <strong>⋮</strong> and choose <strong>Edit in YAML</strong>.</li>
+          <li>Paste the example in place of what is there, put in your entity ids and <strong>Save</strong>.</li>
+        </ol>
+
+        <div class="callout">
+          <span class="callout-title">Your entity ids</span>
+          <p>The examples use the ids of a Home Assistant in English and of two containers called <code>jellyfin</code> and <code>vaultwarden</code>. Yours depend on the language and on the names of your containers: find them in <strong>Settings → Devices &amp; services → D2HA</strong>. Replace <code>notify.notify</code> too, with your own notification action: for the phone app it is <code>notify.mobile_app_</code> followed by the name of the phone.</p>
+        </div>
+
+        <h2 id="new-updates">A message when new updates appear</h2>
+
+        <pre><code>alias: "D2HA: new container updates"
+triggers:
+  - trigger: state
+    entity_id: sensor.d2ha_updates_available
+    not_from:
+      - unknown
+      - unavailable
+conditions:
+  - condition: template
+    value_template: &gt;-
+      {{ trigger.from_state is not none and
+         trigger.to_state.state | int(0) &gt; trigger.from_state.state | int(0) }}
+actions:
+  - action: notify.notify
+    data:
+      title: Container updates
+      message: &gt;-
+        {{ state_attr('sensor.d2ha_updates_available', 'containers') | join(', ') }}</code></pre>
+
+        <p>The message leaves every time the number of updates grows, and names the containers that are waiting. It does not leave when the number goes down after an update, or when Home Assistant or D2HA restarts.</p>
+
+        <p>The number counts every container of D2HA, while the names are only those of the containers you show to Home Assistant.</p>
+
+        <h2 id="night-update">Update the containers you choose at night</h2>
+
+        <pre><code>alias: "D2HA: update chosen containers at night"
+triggers:
+  - trigger: time
+    at: "04:00:00"
+actions:
+  - action: update.install
+    target:
+      entity_id: &gt;-
+        {{ ['update.jellyfin_update', 'update.vaultwarden_update']
+           | select('is_state', 'on') | list }}</code></pre>
+
+        <p>Every night at 4:00, the containers of the list that have an update are updated, one after the other. With nothing to update, nothing happens.</p>
+
+        <div class="callout warning">
+          <span class="callout-title">Keep the filter</span>
+          <p><code>select('is_state', 'on')</code> keeps the containers that have an update. Without it, a container of the list that is already up to date ends the run with the error <code>No update available</code>, even though the other containers are updated.</p>
+        </div>
+
+        <p>Put in the list only containers that have <strong>Install</strong> in Home Assistant. D2HA cannot update a container whose image was built on your machine, and updates nothing in <a href="../../guide/security/#read-only">read-only mode</a>.</p>
+
+        <h3 id="breaking-changes">Leave out the breaking changes</h3>
+
+        <p>D2HA marks an update when its release notes have a <strong>Breaking changes</strong> section. To keep those for yourself, use this action in place of the one above:</p>
+
+        <pre><code>actions:
+  - action: update.install
+    target:
+      entity_id: &gt;-
+        {{ ['update.jellyfin_update', 'update.vaultwarden_update']
+           | select('is_state', 'on')
+           | reject('is_state_attr', 'breaking_changes', true) | list }}</code></pre>
+
+        <h2 id="update-all">Update everything at night</h2>
+
+        <pre><code>alias: "D2HA: update everything at night"
+triggers:
+  - trigger: time
+    at: "04:00:00"
+actions:
+  - action: button.press
+    target:
+      entity_id: button.d2ha_update_all</code></pre>
+
+        <p><strong>Update all</strong> updates every container that has an update, one at a time: also the containers you hide from Home Assistant, and also the updates with breaking changes. It never updates D2HA itself or its socket proxy. With nothing to update, nothing happens.</p>
+
+        <h2 id="stopped">A message when a container stops</h2>
+
+        <pre><code>alias: "D2HA: a container stopped"
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.jellyfin_state
+      - sensor.vaultwarden_state
+    to:
+      - exited
+      - dead
+    for: "00:02:00"
+actions:
+  - action: notify.notify
+    data:
+      title: Container stopped
+      message: &gt;-
+        {{ device_attr(trigger.entity_id, 'name') }}:
+        {{ state_attr(trigger.entity_id, 'status') }}</code></pre>
+
+        <p>The message leaves when one of the containers has been stopped for two minutes, and says what Docker reports about it, such as <code>Exited (137) 2 minutes ago</code>. The two minutes leave out a restart and an update, where the container is stopped only for a moment. When Home Assistant loses D2HA and finds it again, as after a restart of D2HA, a container that is still stopped is announced again.</p>
+
+        <h3 id="unhealthy">An unhealthy container</h3>
+
+        <p>A container with a health check can be unhealthy while it still runs: its <strong>State</strong> sensor stays on <code>running</code>, and the health is in the <code>health</code> attribute. This second automation tells you when a container has been unhealthy for two minutes:</p>
+
+        <pre><code>alias: "D2HA: a container is unhealthy"
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.jellyfin_state
+      - sensor.vaultwarden_state
+    attribute: health
+    to: unhealthy
+    for: "00:02:00"
+actions:
+  - action: notify.notify
+    data:
+      title: Container unhealthy
+      message: "{{ device_attr(trigger.entity_id, 'name') }}"</code></pre>
+
+        <div class="callout">
+          <span class="callout-title">Without Home Assistant</span>
+          <p>D2HA can also send these messages by itself: new versions, containers that stop with an error and unhealthy ones. See <a href="../../guide/telegram/">Telegram</a>.</p>
+        </div>
+
+        <h2 id="clean-images">Clean the images every week</h2>
+
+        <pre><code>alias: "D2HA: clean images every week"
+triggers:
+  - trigger: time
+    at: "05:00:00"
+conditions:
+  - condition: time
+    weekday:
+      - sun
+actions:
+  - action: button.press
+    target:
+      entity_id: button.d2ha_clean_images</code></pre>
+
+        <p>Every Sunday at 5:00, D2HA deletes the images that no container uses, running or stopped, as <a href="../../guide/updates/#clean-images">Clean images</a> does in the web interface.</p>
+
+        <h2 id="traces">When an automation does not run</h2>
+
+        <p>Open the automation and press <strong>Traces</strong>: every run is there step by step, with the error when one stopped it. <code>update.install</code> waits for the update to end: if it fails, D2HA puts the old container back and the run ends with the error.</p>
+
+        <nav class="pager" aria-label="Previous and next page">
+          <a class="prev" href="../../guide/dashboard/"><small>Previous</small><strong>Dashboard</strong></a>
+          <a class="next" href="../../guide/telegram/"><small>Next</small><strong>Telegram</strong></a>
+        </nav>
+        <p class="page-help">Something wrong or missing on this page?
+          <a href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank" rel="noreferrer">Open an issue</a>.</p>
+      </article>
+
+      <aside class="docs-toc" aria-label="On this page"></aside>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-left">
+        <img src="../../assets/logo.svg" alt="" width="20" height="20" />
+        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+            rel="noreferrer">Arborae</a></span>
+      </div>
+      <div class="footer-right">
+        <a href="https://github.com/Arborae/docker2homeassistant" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="../../">Home</a>
+      </div>
+    </footer>
+  </main>
+</body>
+
+</html>
