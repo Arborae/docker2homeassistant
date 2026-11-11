@@ -3,7 +3,10 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [0.5.4] - 2026-11-11
+## [0.5.5] - 2026-11-11
+
+The 0.5.4 release was withdrawn the same day and its tag cannot be used again; 0.5.5 has
+the same code (the `0.5.4` image on GHCR is that code too).
 
 ### Added
 - **Protected containers** (#285): in Settings → General, a switch for each container,
