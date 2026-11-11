@@ -112,7 +112,7 @@ without D2HA itself. The integration uses this form.
 | `is_self`, `is_proxy` | D2HA itself, or the socket proxy it uses: never updated by D2HA |
 | `can_update` | An update can be started now (false in read-only mode, for `is_self`, `is_proxy`, `local` and `pinned`) |
 | `ha` | Shown in Home Assistant |
-| `protected` | Marked as protected on the D2HA page (the network of the house depends on it, for example): **Update all** leaves it out. It can still be updated on its own (since 0.5.4). |
+| `protected` | Marked as protected on the D2HA page (the network of the house depends on it, for example): **Update all** leaves it out. It can still be updated on its own (since 0.5.5). |
 
 `checking` is true while a check runs; `checked_at` is the end of the last full check.
 
@@ -141,8 +141,8 @@ Every action answers `202` with a **job** and runs in the background, one job at
 | Endpoint | Job `kind` | `result` when done |
 | --- | --- | --- |
 | `POST /check` | — (answers `{"started": true}`) | read `/info` or `/containers` afterwards |
-| `POST /containers/<key>/update` | `update` | `{"changed": true, "id": "…", "name": "grafana", "dependents": []}` (`changed: false` if the image was already the latest). `dependents` (since 0.5.4): the containers on its network (`network_mode: service:…`) that were recreated on the new container |
-| `POST /update-all` | `update_all` | `{"updated": ["grafana"], "failed": [{"name": "x", "error": "error.pull_failed"}], "not_tried": ["y"], "protected": ["dns"]}`: it stops at the first failure; `not_tried` lists the containers it left, `protected` the containers with an update it left out because they are protected (both since 0.5.4). With only protected containers to update it answers `409 nothing_to_update`. |
+| `POST /containers/<key>/update` | `update` | `{"changed": true, "id": "…", "name": "grafana", "dependents": []}` (`changed: false` if the image was already the latest). `dependents` (since 0.5.5): the containers on its network (`network_mode: service:…`) that were recreated on the new container |
+| `POST /update-all` | `update_all` | `{"updated": ["grafana"], "failed": [{"name": "x", "error": "error.pull_failed"}], "not_tried": ["y"], "protected": ["dns"]}`: it stops at the first failure; `not_tried` lists the containers it left, `protected` the containers with an update it left out because they are protected (both since 0.5.5). With only protected containers to update it answers `409 nothing_to_update`. |
 | `POST /images/prune` | `prune` | `{"removed": 3, "reclaimed": 1236000000}` (bytes) |
 | `PUT /containers/<key>/ha` `{"ha": false}` | — (answers `{"key", "ha"}`) | session only |
 | `PUT /containers/<key>/protected` `{"protected": true}` | — (answers `{"key", "protected"}`) | session only |
@@ -161,11 +161,11 @@ Every action answers `202` with a **job** and runs in the background, one job at
 | Field | Meaning |
 | --- | --- |
 | `state` | `queued`, `running`, `done`, `failed` |
-| `phase` | `pull`, `stop`, `create`, `start`, `check`, `cleanup`, `reconnect`, `done` (`check` and `reconnect` since 0.5.4). During `check` the new container is watched: it must run for 60 s without restarting and, with a health check, turn healthy (3 minutes at most); `percent` counts the 60 s and `detail` the seconds. During `reconnect` the containers on its network are recreated on the new one; `detail` is the name. |
+| `phase` | `pull`, `stop`, `create`, `start`, `check`, `cleanup`, `reconnect`, `done` (`check` and `reconnect` since 0.5.5). During `check` the new container is watched: it must run for 60 s without restarting and, with a health check, turn healthy (3 minutes at most); `percent` counts the 60 s and `detail` the seconds. During `reconnect` the containers on its network are recreated on the new one; `detail` is the name. |
 | `percent` | 0–100, or `null` while unknown |
 | `current`, `total` | bytes downloaded, during `pull` |
 | `step`, `steps` | for `update_all`: which container of how many (`label` is its name) |
-| `error` | when `failed`: a message key such as `error.recreate_failed` (the new container could not start or did not pass the check: the old container was restored), `error.pull_failed`, `error.no_tag`, `error.not_found`, `error.dependents_failed` (the container was updated, but the containers on its network named in `detail` could not be recreated on it: `docker compose up -d` fixes them; since 0.5.4); `detail` may add Docker's text |
+| `error` | when `failed`: a message key such as `error.recreate_failed` (the new container could not start or did not pass the check: the old container was restored), `error.pull_failed`, `error.no_tag`, `error.not_found`, `error.dependents_failed` (the container was updated, but the containers on its network named in `detail` could not be recreated on it: `docker compose up -d` fixes them; since 0.5.5); `detail` may add Docker's text |
 
 Follow a job with `GET /jobs/<id>` (polling, 1–2 s is plenty) or `GET /jobs/<id>/events`
 (Server-Sent Events, one JSON snapshot per change, closes when the job ends).
