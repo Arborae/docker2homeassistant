@@ -3,7 +3,7 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [0.5.4] - 2026-11-11
 
 ### Added
 - **Protected containers** (#285): in Settings → General, a switch for each container,
