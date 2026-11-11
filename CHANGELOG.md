@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- Updating a container that uses the network of another container (`network_mode:
+  service:…`, such as an app behind a VPN container) no longer fails with "conflicting
+  options: hostname and the network mode". D2HA sent the hostname of the other container,
+  which Docker refuses with that network mode (#281).
+
 ## [0.5.3] - 2026-11-10
 
 ### Changed

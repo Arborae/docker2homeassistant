@@ -252,13 +252,16 @@ class DockerOps:
             value = differs(key)
             if value is not None:
                 config[key] = value
+        # On the network of another container, the hostname and the ports are that
+        # container's: Docker refuses them in the create request.
+        shared_network = ((old.get("HostConfig") or {}).get("NetworkMode") or "").startswith("container:")
         for key in ("Tty", "OpenStdin", "StdinOnce", "AttachStdin", "AttachStdout", "AttachStderr", "Domainname", "StopTimeout"):
-            if cfg.get(key) not in (None, ""):
+            if cfg.get(key) not in (None, "") and not (shared_network and key == "Domainname"):
                 config[key] = cfg[key]
         hostname = cfg.get("Hostname")
-        if hostname and not old.get("Id", "").startswith(hostname):
+        if hostname and not shared_network and not old.get("Id", "").startswith(hostname):
             config["Hostname"] = hostname  # only a hostname set by the user, not the default id
-        if exposed:
+        if exposed and not shared_network:
             config["ExposedPorts"] = exposed
         if volumes:
             config["Volumes"] = volumes
