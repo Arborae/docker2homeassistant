@@ -41,6 +41,7 @@ services:
       DISTRIBUTION: 1
       VERSION: 1
       EVENTS: 1        # crashed and unhealthy containers for Telegram notifications
+      ALLOW_LOGS: 1    # container logs on the D2HA page (never sent to Home Assistant)
       POST: 1          # updates and image cleanup; 0 with D2HA_READ_ONLY
       ALLOW_START: 1
       ALLOW_STOP: 1

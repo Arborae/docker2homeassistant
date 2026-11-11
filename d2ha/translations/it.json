@@ -149,6 +149,7 @@
   "phase.cleanup": "Rimozione del container precedente…",
   "phase.done": "Completato",
 
+  "api.logs_forbidden": "Il proxy di Docker non permette di leggere i log: aggiungi ALLOW_LOGS=1 al suo ambiente e ricrealo.",
   "api.read_only": "D2HA è in modalità sola lettura.",
   "api.rate_limited": "Troppe richieste: aspetta un momento.",
   "api.self_update": "D2HA non può aggiornare se stesso.",
