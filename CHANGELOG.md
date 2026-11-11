@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **Clean images** says how many images it removed. It counted every tag and layer that
+  Docker reported, so it could say 38 images for 2 (#292).
+
 ## [0.5.5] - 2026-11-11
 
 The 0.5.4 release was withdrawn the same day and its tag cannot be used again; 0.5.5 has

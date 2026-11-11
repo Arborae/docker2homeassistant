@@ -162,9 +162,12 @@ class DockerOps:
         return [img["Id"] for img in self.api.images() if img["Id"] not in used]
 
     def prune_images(self) -> Dict[str, Any]:
+        unused = set(self.unused_images())
         result = self.api.prune_images(filters={"dangling": False})
+        # ImagesDeleted has one entry per tag and per layer: count the images that are gone.
+        left = {img["Id"] for img in self.api.images()}
         return {
-            "removed": len(result.get("ImagesDeleted") or []),
+            "removed": len(unused - left),
             "reclaimed": int(result.get("SpaceReclaimed") or 0),
         }
 

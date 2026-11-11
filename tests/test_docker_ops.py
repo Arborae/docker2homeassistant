@@ -406,3 +406,29 @@ def test_when_the_new_container_fails_the_check_the_apps_on_its_network_start_ag
     assert fake.inspected[OLD_ID]["State"]["Running"]
     assert fake.inspected[APP_ID]["State"]["Running"]  # the same container, on the old network
     assert "app" not in fake.created
+
+
+class PruneDocker:
+    """Two unused images (one with two tags), one in use: what Docker answers to a prune."""
+
+    def __init__(self):
+        self.api = self
+        self.present = ["sha256:used", "sha256:old-a", "sha256:old-b"]
+
+    def containers(self, all=False):
+        return [{"ImageID": "sha256:used"}]
+
+    def images(self):
+        return [{"Id": i} for i in self.present]
+
+    def prune_images(self, filters=None):
+        self.present = ["sha256:used"]
+        return {"ImagesDeleted": [
+            {"Untagged": "app:1"}, {"Untagged": "app:latest"}, {"Deleted": "sha256:old-a"},
+            {"Deleted": "sha256:layer1"}, {"Deleted": "sha256:layer2"},
+            {"Untagged": "tool:2"}, {"Deleted": "sha256:old-b"}, {"Deleted": "sha256:layer3"},
+        ], "SpaceReclaimed": 123456}
+
+
+def test_clean_images_counts_images_not_tags_and_layers():
+    assert DockerOps(client=PruneDocker()).prune_images() == {"removed": 2, "reclaimed": 123456}
