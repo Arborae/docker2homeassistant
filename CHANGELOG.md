@@ -5,14 +5,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-### Fixed
-- Updating a container that uses the network of another container (`network_mode:
-  service:…`, such as an app behind a VPN container) no longer fails with "conflicting
-  options: hostname and the network mode". D2HA sent the hostname of the other container,
-  which Docker refuses with that network mode (#281).
-
-## [Unreleased]
-
 ### Changed
 - After an update D2HA watches the new container before removing the old one: it must
   run for 60 seconds without restarting and, if its image has a health check, turn
@@ -20,6 +12,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   (#284). The progress shows the check; the API has the new `check` phase.
 - **Update all** stops at the first container that fails, instead of going on with the
   others; the result lists the containers it did not try (`not_tried` in the API) (#284).
+
+### Fixed
+- Updating a container that uses the network of another container (`network_mode:
+  service:…`, such as an app behind a VPN container) no longer fails with "conflicting
+  options: hostname and the network mode". D2HA sent the hostname of the other container,
+  which Docker refuses with that network mode (#281).
 
 ## [0.5.3] - 2026-11-10
 
