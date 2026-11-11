@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Fixed
+- The logs of a container open again behind the socket proxy of the example: the proxy
+  needs `ALLOW_LOGS: 1`, which was missing from `compose.example.yaml` and from the
+  Security page. Without it the page now says what to add instead of "Operation failed"
+  (#291).
 - **Clean images** says how many images it removed. It counted every tag and layer that
   Docker reported, so it could say 38 images for 2 (#292).
 

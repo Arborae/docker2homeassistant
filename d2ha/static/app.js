@@ -512,8 +512,9 @@
         const data = await api("GET", `/api/v1/containers/${encodeURIComponent(logKey)}/logs?tail=${$("#logs-tail").value}`);
         logLines = data.lines;
         renderLogs();
-      } catch {
-        logsView.innerHTML = `<span class="lv-error">${esc(T("js.toast.failed"))}</span>`;
+      } catch (error) {
+        const text = error.code === "logs_forbidden" ? T("api.logs_forbidden") : T("js.toast.failed");
+        logsView.innerHTML = `<span class="lv-error">${esc(text)}</span>`;
       }
     }
 

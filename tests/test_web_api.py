@@ -189,3 +189,19 @@ def test_the_protected_switch_is_for_the_web_page_only(app, client):
     response = ha.put(f"/api/v1/containers/{key}/protected", json={"protected": True},
                       headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 401
+
+
+def test_logs_refused_by_the_socket_proxy_say_what_to_do(app, client):
+    import docker
+
+    ops = app.extensions["d2ha"].ops
+
+    def refused(*args, **kwargs):
+        raise docker.errors.APIError("403 Client Error: Forbidden", response=type("R", (), {"status_code": 403})())
+
+    ops.logs = refused
+    ops.log_stream = refused
+    key = ops.list_containers()[0]["key"]
+    for path in (f"/api/v1/containers/{key}/logs", f"/api/v1/containers/{key}/logs/stream"):
+        response = client.get(path)
+        assert response.status_code == 403 and response.json == {"error": "logs_forbidden"}

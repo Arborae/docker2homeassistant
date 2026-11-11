@@ -120,11 +120,12 @@
               <tr><th>Setting</th><th>Value</th><th>Why</th></tr>
             </thead>
             <tbody>
-              <tr><td><code>CONTAINERS</code></td><td>1</td><td>List and inspect containers, read logs</td></tr>
+              <tr><td><code>CONTAINERS</code></td><td>1</td><td>List and inspect containers</td></tr>
               <tr><td><code>IMAGES</code></td><td>1</td><td>Read image labels and digests, clean images</td></tr>
               <tr><td><code>DISTRIBUTION</code></td><td>1</td><td>Ask the registry through Docker, for private registries</td></tr>
               <tr><td><code>VERSION</code></td><td>1</td><td>The Docker version and architecture</td></tr>
               <tr><td><code>EVENTS</code></td><td>1</td><td>Crash and unhealthy alerts</td></tr>
+              <tr><td><code>ALLOW_LOGS</code></td><td>1</td><td>Container logs on the D2HA page. Without it the logs do not open. Home Assistant never gets them</td></tr>
               <tr><td><code>POST</code></td><td>1</td><td>Every write: download images, create and remove containers. <code>0</code> in read-only mode</td></tr>
               <tr><td><code>ALLOW_START</code>, <code>ALLOW_STOP</code></td><td>1</td><td>Start and stop containers during an update</td></tr>
               <tr><td><code>ALLOW_RESTARTS</code></td><td>0</td><td>Not needed</td></tr>
