@@ -17,7 +17,9 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
   it), #286 (#284: 60 s check after an update, automatic restore, Update all stops at the
   first failure), #287 (#285: protected containers, left out of Update all). Kimi was not
   available: Claude reviewed them, at the owner's request, and tried the three together
-  on a real Docker. **#289 prepares v0.5.4** (the owner's number).
+  on a real Docker. **Released as v0.5.5** (2026-11-11). v0.5.4 was published before
+  its CHANGELOG PR and then deleted by Claude to redo it: releases here are immutable, so
+  the `v0.5.4` tag can never be used again. Check `immutable` before touching a release.
 - On 2026-11-10 Claude did Kimi's open issues too (#267, #268, #269,
   #270, #274: the owner's decision, written in the issues) and Kimi reviewed everything:
   seven pull requests, approved with no changes requested and merged the same evening
@@ -31,7 +33,7 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
     answers of D2HA count, an empty list removes nothing, the absence must be continuous.
   - #277: fixed in the app (#278).
 - Claude: "What you get" and "Choose the containers" on the docs site (what 0.3.1 adds).
-- Owner: merge #289, publish v0.5.4, then the server.
+- Owner: the OK for the server on 0.5.5, then the protected containers.
 - Lesson from the owner's server: a new config entry gives the containers new entity ids,
   so a card that picks them by an id pattern ends up empty. Pick them by the integration
   `d2ha` and the `key` attribute instead.
@@ -74,8 +76,8 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 ## Next up
 
-1. v0.5.4 (#289), then the server on 0.5.4 with the owner's OK; the owner marks the
-   network containers as protected.
+1. The server on 0.5.5 with the owner's OK; the owner marks the network containers as
+   protected.
 2. The docs site: "What you get" and "Choose the containers" (Claude).
 
 ## Notes from the owner
