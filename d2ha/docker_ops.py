@@ -17,6 +17,11 @@ log = logging.getLogger(__name__)
 ProgressFn = Callable[[Dict[str, Any]], None]
 # During an update the old container is kept under this name until the new one runs.
 OLD_SUFFIX = "-d2ha-old"
+# After an update the new container must stay up this long without restarting, and turn
+# healthy if its image has a health check, or the previous container is put back.
+CHECK_SECONDS = 60
+CHECK_MAX_SECONDS = 180
+CHECK_INTERVAL = 2
 
 VERSION_LABELS = (
     "org.opencontainers.image.version",
@@ -119,6 +124,8 @@ class DockerOps:
         self._lock = threading.Lock()
         # Ids of the containers an update is recreating: for a moment they have the backup name.
         self._recreating: set = set()
+        self._clock = time.monotonic
+        self._sleep = time.sleep
 
     # -- engine -------------------------------------------------------------------
 
@@ -376,6 +383,17 @@ class DockerOps:
                 self._restore(old["Id"], name, was_running, dependents)
                 raise UpdateError("error.recreate_failed", str(exc)) from exc
 
+            problem = self._check(new_id, progress) if was_running else None
+            if problem:
+                log.warning("%s did not pass the check (%s), restoring the old container", name, problem)
+                try:
+                    self.api.remove_container(new_id, force=True)
+                except docker.errors.APIError as exc:
+                    log.error("Could not remove the new container of %s: %s", name, exc)
+                self._restore(old["Id"], name, was_running, dependents)
+                raise UpdateError("error.recreate_failed",
+                                  f"The new container did not pass the check: {problem}.")
+
             progress({"phase": "cleanup", "percent": 100})
             try:
                 self.api.remove_container(old["Id"], v=False)
@@ -448,6 +466,33 @@ class DockerOps:
                 log.warning("Could not remove the previous container of %s: %s", dep_name, exc)
             self._recreating.discard(dep["Id"])
         return reconnected, failed
+
+    def _check(self, container_id: str, progress: ProgressFn) -> str:
+        """Watch a container that has just started; return what went wrong, or "" if it works."""
+        start = self._clock()
+        first = self.api.inspect_container(container_id)
+        started_at = (first.get("State") or {}).get("StartedAt")
+        restarts = first.get("RestartCount") or 0
+        while True:
+            elapsed = self._clock() - start
+            info = self.api.inspect_container(container_id)
+            state = info.get("State") or {}
+            if state.get("Restarting") or (info.get("RestartCount") or 0) != restarts \
+                    or state.get("StartedAt") != started_at:
+                return "it restarted"
+            if not state.get("Running"):
+                return f"it stopped (exit code {state.get('ExitCode', '?')})"
+            health = (state.get("Health") or {}).get("Status")
+            if health == "unhealthy":
+                return "its health check says unhealthy"
+            if elapsed >= CHECK_SECONDS and health in (None, "", "healthy"):
+                return ""
+            if elapsed >= CHECK_MAX_SECONDS:
+                return f"it was not healthy after {CHECK_MAX_SECONDS} seconds"
+            progress({"phase": "check", "percent": min(99, round(elapsed * 100 / CHECK_SECONDS)),
+                      "detail": f"{round(elapsed)} s"})
+            self._sleep(CHECK_INTERVAL)
+
     def _restore(self, old_id: str, name: str, was_running: bool,
                  dependents: Optional[List[Dict[str, Any]]] = None) -> None:
         try:

@@ -115,3 +115,35 @@ def test_password_change_signs_out_other_sessions(app, client):
     client.post("/settings/password", data={"csrf_token": csrf_of(client), "current": PASSWORD, "password": new, "confirm": new})
     assert client.get("/api/v1/info").status_code == 200  # this session stays signed in
     assert other.get("/api/v1/info").status_code == 401
+
+
+def test_update_all_stops_at_the_first_failure(app, client):
+    from docker_ops import UpdateError
+
+    ctx = app.extensions["d2ha"]
+    ops = ctx.ops
+    for name in ("alpha", "bravo", "charlie"):
+        ops.containers.append(ops._container(name, f"{name}:1", f"img-{name}"))
+        ops.images[f"img-{name}"] = {"labels": {}, "repo_digests": [f"{name}@sha256:" + "3" * 64], "created": ""}
+        ctx.checker.registry.digests[f"{name}:1"] = "sha256:" + "4" * 64
+    plain = ops.recreate
+
+    def recreate(container_id, progress):
+        if container_id == "id-bravo":
+            raise UpdateError("error.recreate_failed", "The new container did not pass the check: it restarted.")
+        return plain(container_id, progress)
+
+    ops.recreate = recreate
+    ctx.jobs.start()
+    ctx.checker.check()
+    order = [c["name"] for c in ops.list_containers() if c["name"] in ("web", "alpha", "bravo", "charlie")]
+    response = client.post("/api/v1/update-all", headers={"X-CSRF-Token": csrf_of(client)})
+    assert response.status_code == 202
+    job_id = response.json["id"]
+    assert wait_for(lambda: client.get(f"/api/v1/jobs/{job_id}").json["state"] == "done")
+    result = client.get(f"/api/v1/jobs/{job_id}").json["result"]
+    stop = order.index("bravo")
+    assert result["updated"] == order[:stop]
+    assert result["failed"] == [{"name": "bravo", "error": "error.recreate_failed"}]
+    assert result["not_tried"] == order[stop + 1:]
+    assert "id-charlie" not in ops.recreated

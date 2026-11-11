@@ -269,11 +269,14 @@ def update_all():
             try:
                 _update_one(app_ctx, container["key"], job)
                 updated.append(container["name"])
-            except Exception as exc:  # noqa: BLE001 - keep going with the others
+            except Exception as exc:  # noqa: BLE001 - reported in the result
                 failed.append({"name": container["name"], "error": getattr(exc, "code", "error.generic")})
+                break  # something is wrong: the others wait for a look
+        not_tried = [c["name"] for c in targets[len(updated) + len(failed):]]
         if failed and not updated:
-            raise UpdateError("error.update_all_failed", ", ".join(f["name"] for f in failed))
-        return {"updated": updated, "failed": failed}
+            raise UpdateError("error.update_all_failed",
+                              f"{failed[0]['name']}; not tried: {', '.join(not_tried) or '-'}")
+        return {"updated": updated, "failed": failed, "not_tried": not_tried}
 
     job = app_ctx.jobs.submit("update_all", "", "", work)
     return jsonify(job.as_dict()), 202

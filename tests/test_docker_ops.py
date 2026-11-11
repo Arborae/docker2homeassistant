@@ -189,13 +189,35 @@ def running(**overrides):
     return inspect(Image="sha256:old", State={"Running": True}, **overrides)
 
 
+class Clock:
+    """Time for the check after an update: each sleep moves it on, and can change the new container."""
+
+    def __init__(self, fake, events=None):
+        self.now, self.fake, self.events = 0.0, fake, dict(events or {})
+
+    def __call__(self):
+        return self.now
+
+    def sleep(self, seconds):
+        self.now += seconds
+        for at in sorted(k for k in self.events if k <= self.now):
+            self.events.pop(at)(self.fake.inspected[NEW_ID])
+
+
+def make_ops(fake, events=None):
+    ops = DockerOps(client=fake)
+    ops._clock = Clock(fake, events)
+    ops._sleep = ops._clock.sleep
+    return ops
+
+
 def listed(ops):
     return [(c["key"], c["name"], c["id"]) for c in ops.list_containers()]
 
 
 def test_a_container_is_listed_once_under_its_key_while_it_is_updated():
     fake = FakeDocker(running())
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     seen = []
     fake.after = lambda call: seen.append((call, listed(ops)))
     assert ops.recreate(OLD_ID, lambda progress: None) == {"changed": True, "id": NEW_ID, "name": "web", "dependents": []}
@@ -212,7 +234,7 @@ def test_a_container_is_listed_once_under_its_key_while_it_is_updated():
 def test_a_backup_container_left_behind_is_listed():
     fake = FakeDocker(running())
     fake.fail = "remove"
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     ops.recreate(OLD_ID, lambda progress: None)
     assert listed(ops) == [
         ("site_web", "web", NEW_ID),
@@ -223,7 +245,7 @@ def test_a_backup_container_left_behind_is_listed():
 def test_a_failed_update_puts_the_container_back_in_the_list():
     fake = FakeDocker(running())
     fake.fail = "create"
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     with pytest.raises(UpdateError):
         ops.recreate(OLD_ID, lambda progress: None)
     assert listed(ops) == [("site_web", "web", OLD_ID)]
@@ -246,7 +268,7 @@ def on_network_of_web(mode="container:" + OLD_ID, running_now=True):
 
 def test_the_containers_on_its_network_are_recreated_on_the_new_one():
     fake = FakeDocker(running(), on_network_of_web())
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     result = ops.recreate(OLD_ID, lambda progress: None)
     assert result["dependents"] == ["app"]
     # The app stops before the container it depends on, and comes back after it.
@@ -261,14 +283,14 @@ def test_the_containers_on_its_network_are_recreated_on_the_new_one():
 
 def test_a_network_named_after_the_container_keeps_its_name():
     fake = FakeDocker(running(), on_network_of_web(mode="container:web"))
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     ops.recreate(OLD_ID, lambda progress: None)
     assert fake.created["app"]["HostConfig"]["NetworkMode"] == "container:web"
 
 
 def test_a_stopped_app_on_its_network_stays_stopped():
     fake = FakeDocker(running(), on_network_of_web(running_now=False))
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     ops.recreate(OLD_ID, lambda progress: None)
     assert ("stop", "app") not in fake.calls
     assert not [c for c in fake.inspected.values() if c["Name"] == "/app"][0]["State"]["Running"]
@@ -277,7 +299,7 @@ def test_a_stopped_app_on_its_network_stays_stopped():
 def test_when_the_update_fails_the_apps_on_its_network_start_again():
     fake = FakeDocker(running(), on_network_of_web())
     fake.fail = "create web"
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     with pytest.raises(UpdateError):
         ops.recreate(OLD_ID, lambda progress: None)
     assert fake.inspected[OLD_ID]["State"]["Running"]
@@ -288,10 +310,99 @@ def test_when_the_update_fails_the_apps_on_its_network_start_again():
 def test_an_app_that_cannot_be_reconnected_is_reported():
     fake = FakeDocker(running(), on_network_of_web())
     fake.fail = "create app"
-    ops = DockerOps(client=fake)
+    ops = make_ops(fake)
     with pytest.raises(UpdateError) as error:
         ops.recreate(OLD_ID, lambda progress: None)
     assert error.value.code == "error.dependents_failed" and error.value.detail == "app"
     # The update itself went through; the old app is left under its name for docker compose up.
     assert sorted(name for _, name, _ in listed(ops)) == ["app", "web"]
     assert [c["Id"] for c in fake.inspected.values() if c["Name"] == "/web"] == [NEW_ID]
+
+
+def test_the_new_container_is_watched_for_a_minute_before_the_old_one_goes():
+    fake = FakeDocker(running())
+    ops = make_ops(fake)
+    phases = []
+    removed_at = []
+    fake.after = lambda call: removed_at.append(ops._clock.now) if call == "remove" else None
+    ops.recreate(OLD_ID, phases.append)
+    assert removed_at == [60]  # the old container is removed only after the check
+    checks = [p for p in phases if p["phase"] == "check"]
+    assert checks[0]["percent"] == 0 and checks[-1]["percent"] == 97
+    assert phases[-2]["phase"] == "cleanup"
+
+
+def when_new_starts(fake, change):
+    """A change to the new container as soon as it starts (not when the old one starts again)."""
+    def after(call):
+        if call == "start" and NEW_ID in fake.inspected and fake.inspected[NEW_ID]["State"]["Running"]:
+            change(fake.inspected[NEW_ID])
+    return after
+
+
+def stopped(c):
+    c["State"] = {"Running": False, "ExitCode": 1}
+
+
+def restarted(c):
+    c["RestartCount"] = 1
+
+
+def unhealthy(c):
+    c["State"]["Health"] = {"Status": "unhealthy"}
+
+
+@pytest.mark.parametrize("change, why", [
+    (stopped, "it stopped (exit code 1)"),
+    (restarted, "it restarted"),
+    (unhealthy, "its health check says unhealthy"),
+])
+def test_a_new_container_that_fails_the_check_gives_way_to_the_old_one(change, why):
+    fake = FakeDocker(running())
+    ops = make_ops(fake, {30: change})
+    with pytest.raises(UpdateError) as error:
+        ops.recreate(OLD_ID, lambda progress: None)
+    assert error.value.code == "error.recreate_failed"
+    assert why in str(error.value.detail)
+    assert listed(ops) == [("site_web", "web", OLD_ID)]
+    assert fake.inspected[OLD_ID]["State"]["Running"]  # started again
+    assert NEW_ID not in fake.inspected
+
+
+def test_a_health_check_is_waited_for():
+    fake = FakeDocker(running())
+    starting = lambda c: c["State"].update(Health={"Status": "starting"})  # noqa: E731
+    healthy = lambda c: c["State"].update(Health={"Status": "healthy"})  # noqa: E731
+    ops = make_ops(fake, {0: starting, 90: healthy})
+    fake.after = when_new_starts(fake, starting)
+    assert ops.recreate(OLD_ID, lambda progress: None)["changed"]
+    assert ops._clock.now == 90
+    assert listed(ops) == [("site_web", "web", NEW_ID)]
+
+
+def test_a_health_check_that_never_ends_gives_way_to_the_old_one():
+    fake = FakeDocker(running())
+    ops = make_ops(fake)
+    fake.after = when_new_starts(fake, lambda c: c["State"].update(Health={"Status": "starting"}))
+    with pytest.raises(UpdateError) as error:
+        ops.recreate(OLD_ID, lambda progress: None)
+    assert "not healthy after 180 seconds" in str(error.value.detail)
+    assert listed(ops) == [("site_web", "web", OLD_ID)]
+
+
+def test_a_stopped_container_is_not_started_nor_watched():
+    fake = FakeDocker(inspect(Image="sha256:old", State={"Running": False}))
+    ops = make_ops(fake)
+    assert ops.recreate(OLD_ID, lambda progress: None)["changed"]
+    assert ops._clock.now == 0
+    assert not fake.inspected[NEW_ID]["State"]["Running"]
+
+
+def test_when_the_new_container_fails_the_check_the_apps_on_its_network_start_again():
+    fake = FakeDocker(running(), on_network_of_web())
+    ops = make_ops(fake, {30: stopped})
+    with pytest.raises(UpdateError):
+        ops.recreate(OLD_ID, lambda progress: None)
+    assert fake.inspected[OLD_ID]["State"]["Running"]
+    assert fake.inspected[APP_ID]["State"]["Running"]  # the same container, on the old network
+    assert "app" not in fake.created

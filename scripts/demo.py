@@ -145,9 +145,13 @@ class DemoOps:
             current = total * step // 40
             progress({"phase": "pull", "percent": round(current * 100 / total), "current": current,
                       "total": total, "detail": f"Downloading {sha('layer', str(step % 6))[7:19]}"})
-        for phase in ("stop", "create", "start", "cleanup"):
+        for phase in ("stop", "create", "start"):
             time.sleep(0.6)
             progress({"phase": phase, "percent": 100})
+        for second in range(0, 60, 6):  # the minute of the check, ten times faster
+            progress({"phase": "check", "percent": round(second * 100 / 60), "detail": f"{second} s"})
+            time.sleep(0.6)
+        progress({"phase": "cleanup", "percent": 100})
         if sample[4]:
             container["image_id"] = self._add_image(container["image"], sample[4], sample[5])
             container["status"] = "Up 1 second"
