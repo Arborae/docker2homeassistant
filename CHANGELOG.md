@@ -5,20 +5,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
-### Fixed
-- Updating a container that uses the network of another container (`network_mode:
-  service:…`, such as an app behind a VPN container) no longer fails with "conflicting
-  options: hostname and the network mode". D2HA sent the hostname of the other container,
-  which Docker refuses with that network mode (#281).
-
-## [Unreleased]
-
 ### Added
 - **Protected containers** (#285): in Settings → General, a switch for each container,
   for the ones the network depends on (DNS and DHCP, tunnels, a VPN). **Update all**
   leaves them out, also from Home Assistant, and says which ones it left. Updating one on
   its own asks for an extra confirmation. The page marks them with a "Protected" badge.
   The API has the `protected` field and `PUT /containers/<key>/protected`.
+
+### Fixed
+- Updating a container that uses the network of another container (`network_mode:
+  service:…`, such as an app behind a VPN container) no longer fails with "conflicting
+  options: hostname and the network mode". D2HA sent the hostname of the other container,
+  which Docker refuses with that network mode (#281).
 
 ## [0.5.3] - 2026-11-10
 
