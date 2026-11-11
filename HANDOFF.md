@@ -12,7 +12,12 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
 - **The ha-d2ha tag is fixed.** The release was created as `` `v0.3.1 ``, with a backtick
   in front: with the owner's OK Claude published it again as `v0.3.1` on the same commit
   and removed the wrong release and tag (2026-11-10).
-- **No issue is open.** On 2026-11-10 Claude did Kimi's open issues too (#267, #268, #269,
+- **Open: #281, fixed by #282 (Claude; Kimi reviews).** The first real updates from Home
+  Assistant (2026-11-11) went well, with no `-d2ha-old` container listed (#278 works on a
+  real Docker), except a container on the network of another container: Docker refuses
+  the hostname D2HA sent, and D2HA put the old container back. #282 sends no `Hostname`,
+  `Domainname` or `ExposedPorts` with the `container:` network mode.
+- On 2026-11-10 Claude did Kimi's open issues too (#267, #268, #269,
   #270, #274: the owner's decision, written in the issues) and Kimi reviewed everything:
   seven pull requests, approved with no changes requested and merged the same evening
   (here #275, #276, #278, #279; in ha-d2ha #14, #15, #16). The Marketplace plan #256 is
@@ -24,9 +29,8 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
   - #270: automatic removal, always on, after 24 hours, with three protections: only the
     answers of D2HA count, an empty list removes nothing, the absence must be continuous.
   - #277: fixed in the app (#278).
-- Claude: "What you get" and "Choose the containers" on the docs site (what 0.3.1 adds);
-  a look at the first update of a container on the owner's server, the first real run of
-  #278 (it was tested with a fake Docker only).
+- Claude: "What you get" and "Choose the containers" on the docs site (what 0.3.1 adds).
+- Kimi: the review of #282.
 - Lesson from the owner's server: a new config entry gives the containers new entity ids,
   so a card that picks them by an id pattern ends up empty. Pick them by the integration
   `d2ha` and the `key` attribute instead.
@@ -69,8 +73,8 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 ## Next up
 
-1. The docs site: "What you get" and "Choose the containers" (Claude).
-2. The first update of a container on the owner's server: the first real run of #278.
+1. The review of #282 (Kimi), then the owner's merge.
+2. The docs site: "What you get" and "Choose the containers" (Claude).
 
 ## Notes from the owner
 
