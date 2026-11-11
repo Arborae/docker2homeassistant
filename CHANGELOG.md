@@ -10,6 +10,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   service:…`, such as an app behind a VPN container) no longer fails with "conflicting
   options: hostname and the network mode". D2HA sent the hostname of the other container,
   which Docker refuses with that network mode (#281).
+- Updating a container whose network other containers use (the VPN container of an app
+  with `network_mode: service:vpn`) no longer leaves them without network. Docker ties
+  them to the id of that container, which an update changes. Now D2HA stops them first,
+  then recreates them on the new container, as `docker compose up` does. If the update
+  fails, D2HA starts them again on the old one (#283).
 
 ## [0.5.3] - 2026-11-10
 
