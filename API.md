@@ -140,7 +140,7 @@ Every action answers `202` with a **job** and runs in the background, one job at
 | --- | --- | --- |
 | `POST /check` | — (answers `{"started": true}`) | read `/info` or `/containers` afterwards |
 | `POST /containers/<key>/update` | `update` | `{"changed": true, "id": "…", "name": "grafana"}` (`changed: false` if the image was already the latest) |
-| `POST /update-all` | `update_all` | `{"updated": ["grafana"], "failed": [{"name": "x", "error": "error.pull_failed"}]}` |
+| `POST /update-all` | `update_all` | `{"updated": ["grafana"], "failed": [{"name": "x", "error": "error.pull_failed"}], "not_tried": ["y"]}`: it stops at the first failure, `not_tried` lists the containers it left (after 0.5.3) |
 | `POST /images/prune` | `prune` | `{"removed": 3, "reclaimed": 1236000000}` (bytes) |
 | `PUT /containers/<key>/ha` `{"ha": false}` | — (answers `{"key", "ha"}`) | session only |
 
@@ -158,11 +158,11 @@ Every action answers `202` with a **job** and runs in the background, one job at
 | Field | Meaning |
 | --- | --- |
 | `state` | `queued`, `running`, `done`, `failed` |
-| `phase` | `pull`, `stop`, `create`, `start`, `cleanup`, `done` |
+| `phase` | `pull`, `stop`, `create`, `start`, `check`, `cleanup`, `done`. During `check` (after 0.5.3) the new container is watched: it must run for 60 s without restarting and, with a health check, turn healthy (3 minutes at most); `percent` counts the 60 s and `detail` the seconds |
 | `percent` | 0–100, or `null` while unknown |
 | `current`, `total` | bytes downloaded, during `pull` |
 | `step`, `steps` | for `update_all`: which container of how many (`label` is its name) |
-| `error` | when `failed`: a message key such as `error.recreate_failed` (the old container was restored), `error.pull_failed`, `error.no_tag`, `error.not_found`; `detail` may add Docker's text |
+| `error` | when `failed`: a message key such as `error.recreate_failed` (the new container could not start or did not pass the check: the old container was restored), `error.pull_failed`, `error.no_tag`, `error.not_found`; `detail` may add Docker's text |
 
 Follow a job with `GET /jobs/<id>` (polling, 1–2 s is plenty) or `GET /jobs/<id>/events`
 (Server-Sent Events, one JSON snapshot per change, closes when the job ends).

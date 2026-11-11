@@ -413,7 +413,14 @@
       }
       let text = "";
       if (job.kind === "update") text = job.result?.changed ? T("js.toast.updated", { name: job.label }) : T("js.toast.already", { name: job.label });
-      if (job.kind === "update_all") text = T("js.progress.done_all", { ok: job.result?.updated?.length || 0, ko: job.result?.failed?.length || 0 });
+      if (job.kind === "update_all") {
+        text = T("js.progress.done_all", { ok: job.result?.updated?.length || 0, ko: job.result?.failed?.length || 0 });
+        const failed = job.result?.failed || [];
+        if (failed.length) {
+          const stopped = T("js.progress.stopped_all", { name: failed[0].name, error: T(failed[0].error), rest: (job.result?.not_tried || []).join(", ") || "—" });
+          return `<div class="alert alert-error">${icon("alert")}<span>${esc(text)}<br><small>${esc(stopped)}</small></span></div>`;
+        }
+      }
       if (job.kind === "prune") text = T("js.toast.pruned", { n: job.result?.removed || 0, size: formatBytes(job.result?.reclaimed || 0) });
       return `<div class="alert alert-success">${icon("check")}<span>${esc(text)}</span></div>`;
     }
