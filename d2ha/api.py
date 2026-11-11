@@ -6,6 +6,7 @@ import threading
 import time
 from typing import Any, Dict, Iterator, List
 
+import docker
 from flask import Blueprint, Response, current_app, jsonify, request, stream_with_context
 
 from docker_ops import UpdateError
@@ -29,6 +30,13 @@ def _views() -> List[Dict[str, Any]]:
                               and view["update"] not in ("pinned", "local"))
         views.append(view)
     return views
+
+
+def _logs_refused(exc: Exception):
+    """Docker, or the socket proxy without ALLOW_LOGS, refuses to give the logs."""
+    if isinstance(exc, docker.errors.APIError) and exc.status_code == 403:
+        return jsonify(error="logs_forbidden"), 403
+    raise exc
 
 
 def _find(key: str):
@@ -115,7 +123,10 @@ def logs(key: str):
         tail = max(10, min(int(request.args.get("tail", 300)), 5000))
     except ValueError:
         tail = 300
-    text = ctx().ops.logs(container["id"], tail=tail)
+    try:
+        text = ctx().ops.logs(container["id"], tail=tail)
+    except docker.errors.APIError as exc:
+        return _logs_refused(exc)
     return jsonify(lines=text.splitlines(), tail=tail)
 
 
@@ -125,7 +136,10 @@ def logs_stream(key: str):
     container, error = _find(key)
     if error:
         return error
-    stream = ctx().ops.log_stream(container["id"])
+    try:
+        stream = ctx().ops.log_stream(container["id"])
+    except docker.errors.APIError as exc:
+        return _logs_refused(exc)
     lines: "queue.Queue[str]" = queue.Queue(maxsize=2000)
 
     def reader():

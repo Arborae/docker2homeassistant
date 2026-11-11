@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- The logs of a container open again behind the socket proxy of the example: the proxy
+  needs `ALLOW_LOGS: 1`, which was missing from `compose.example.yaml` and from the
+  Security page. Without it the page now says what to add instead of "Operation failed"
+  (#291).
+
 ## [0.5.5] - 2026-11-11
 
 The 0.5.4 release was withdrawn the same day and its tag cannot be used again; 0.5.5 has
