@@ -1,5 +1,6 @@
 """Docker access: container listing, logs, image pruning and safe container recreation."""
 
+import copy
 import ipaddress
 import logging
 import os
@@ -16,6 +17,11 @@ log = logging.getLogger(__name__)
 ProgressFn = Callable[[Dict[str, Any]], None]
 # During an update the old container is kept under this name until the new one runs.
 OLD_SUFFIX = "-d2ha-old"
+# After an update the new container must stay up this long without restarting, and turn
+# healthy if its image has a health check, or the previous container is put back.
+CHECK_SECONDS = 60
+CHECK_MAX_SECONDS = 180
+CHECK_INTERVAL = 2
 
 VERSION_LABELS = (
     "org.opencontainers.image.version",
@@ -118,6 +124,8 @@ class DockerOps:
         self._lock = threading.Lock()
         # Ids of the containers an update is recreating: for a moment they have the backup name.
         self._recreating: set = set()
+        self._clock = time.monotonic
+        self._sleep = time.sleep
 
     # -- engine -------------------------------------------------------------------
 
@@ -346,12 +354,18 @@ class DockerOps:
         config = self.build_create_config(old, old_image_config, image_ref, new_image_id)
         was_running = bool((old.get("State") or {}).get("Running"))
         backup_name = f"{name}{OLD_SUFFIX}"
+        # Containers on the network of this one: Docker ties them to its id, so they are
+        # stopped first and recreated on the new container, as docker compose does.
+        dependents = self._dependents(old)
 
         progress({"phase": "stop", "percent": 100})
         self._recreating.add(old["Id"])
         try:
             self.api.rename(old["Id"], backup_name)
             try:
+                for dep in dependents:
+                    if (dep.get("State") or {}).get("Running"):
+                        self.api.stop(dep["Id"], timeout=(dep.get("Config") or {}).get("StopTimeout") or 10)
                 if was_running:
                     stop_timeout = (old.get("Config") or {}).get("StopTimeout") or 10
                     self.api.stop(old["Id"], timeout=stop_timeout)
@@ -366,8 +380,19 @@ class DockerOps:
                     raise
             except docker.errors.APIError as exc:
                 log.warning("Recreating %s failed, restoring the old container: %s", name, exc)
-                self._restore(old["Id"], name, was_running)
+                self._restore(old["Id"], name, was_running, dependents)
                 raise UpdateError("error.recreate_failed", str(exc)) from exc
+
+            problem = self._check(new_id, progress) if was_running else None
+            if problem:
+                log.warning("%s did not pass the check (%s), restoring the old container", name, problem)
+                try:
+                    self.api.remove_container(new_id, force=True)
+                except docker.errors.APIError as exc:
+                    log.error("Could not remove the new container of %s: %s", name, exc)
+                self._restore(old["Id"], name, was_running, dependents)
+                raise UpdateError("error.recreate_failed",
+                                  f"The new container did not pass the check: {problem}.")
 
             progress({"phase": "cleanup", "percent": 100})
             try:
@@ -379,13 +404,107 @@ class DockerOps:
         finally:
             # From here a backup container still there is listed: its cleanup failed.
             self._recreating.discard(old["Id"])
+        reconnected, failed = self._reconnect(dependents, name, new_id, progress)
+        if failed:
+            raise UpdateError("error.dependents_failed", ", ".join(failed))
         progress({"phase": "done", "percent": 100})
-        return {"changed": True, "id": new_id, "name": name}
+        return {"changed": True, "id": new_id, "name": name, "dependents": reconnected}
 
-    def _restore(self, old_id: str, name: str, was_running: bool) -> None:
+    def _dependents(self, provider: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """``docker inspect`` of the containers that use the network of ``provider``."""
+        names = {provider["Id"], provider["Id"][:12], provider["Name"].lstrip("/")}
+        found = []
+        for raw in self.api.containers(all=True):
+            mode = (raw.get("HostConfig") or {}).get("NetworkMode") or ""
+            if mode.startswith("container:") and mode.split(":", 1)[1] in names and raw["Id"] != provider["Id"]:
+                # A copy: the state before the update decides what is started again.
+                found.append(copy.deepcopy(self.api.inspect_container(raw["Id"])))
+        return found
+
+    def _reconnect(self, dependents: List[Dict[str, Any]], provider_name: str, new_id: str,
+                   progress: ProgressFn):
+        """Recreate the containers that used the network of the old container on the new one."""
+        reconnected, failed = [], []
+        for dep in dependents:
+            dep_name = dep["Name"].lstrip("/")
+            progress({"phase": "reconnect", "percent": 100, "detail": dep_name})
+            image_ref = (dep.get("Config") or {}).get("Image", "")
+            try:
+                # The same tag, not pulled: what docker compose up would use.
+                image_id = self.api.inspect_image(image_ref)["Id"]
+                image_config = self.api.inspect_image(dep["Image"]).get("Config") or {}
+                config = self.build_create_config(dep, image_config, image_ref, image_id)
+                target = (dep.get("HostConfig") or {}).get("NetworkMode", "").split(":", 1)[1]
+                if target != provider_name:  # a name still works; an id is the old one
+                    config["HostConfig"]["NetworkMode"] = f"container:{new_id}"
+            except docker.errors.APIError as exc:
+                log.error("Could not prepare %s for the network of %s: %s", dep_name, provider_name, exc)
+                failed.append(dep_name)
+                continue
+            dep_new = None
+            self._recreating.add(dep["Id"])
+            try:
+                self.api.rename(dep["Id"], f"{dep_name}{OLD_SUFFIX}")
+                dep_new = self.api.create_container_from_config(config, name=dep_name)["Id"]
+                if (dep.get("State") or {}).get("Running"):
+                    self.api.start(dep_new)
+            except docker.errors.APIError as exc:
+                log.error("Could not reconnect %s to the network of %s: %s", dep_name, provider_name, exc)
+                failed.append(dep_name)
+                try:  # leave the old one under its name, for docker compose up
+                    if dep_new:
+                        self.api.remove_container(dep_new, force=True)
+                    self.api.rename(dep["Id"], dep_name)
+                except docker.errors.APIError:
+                    pass
+                self._recreating.discard(dep["Id"])
+                continue
+            reconnected.append(dep_name)
+            try:
+                self.api.remove_container(dep["Id"], v=False)
+            except docker.errors.APIError as exc:
+                log.warning("Could not remove the previous container of %s: %s", dep_name, exc)
+            self._recreating.discard(dep["Id"])
+        return reconnected, failed
+
+    def _check(self, container_id: str, progress: ProgressFn) -> str:
+        """Watch a container that has just started; return what went wrong, or "" if it works."""
+        start = self._clock()
+        first = self.api.inspect_container(container_id)
+        started_at = (first.get("State") or {}).get("StartedAt")
+        restarts = first.get("RestartCount") or 0
+        while True:
+            elapsed = self._clock() - start
+            info = self.api.inspect_container(container_id)
+            state = info.get("State") or {}
+            if state.get("Restarting") or (info.get("RestartCount") or 0) != restarts \
+                    or state.get("StartedAt") != started_at:
+                return "it restarted"
+            if not state.get("Running"):
+                return f"it stopped (exit code {state.get('ExitCode', '?')})"
+            health = (state.get("Health") or {}).get("Status")
+            if health == "unhealthy":
+                return "its health check says unhealthy"
+            if elapsed >= CHECK_SECONDS and health in (None, "", "healthy"):
+                return ""
+            if elapsed >= CHECK_MAX_SECONDS:
+                return f"it was not healthy after {CHECK_MAX_SECONDS} seconds"
+            progress({"phase": "check", "percent": min(99, round(elapsed * 100 / CHECK_SECONDS)),
+                      "detail": f"{round(elapsed)} s"})
+            self._sleep(CHECK_INTERVAL)
+
+    def _restore(self, old_id: str, name: str, was_running: bool,
+                 dependents: Optional[List[Dict[str, Any]]] = None) -> None:
         try:
             self.api.rename(old_id, name)
             if was_running:
                 self.api.start(old_id)
         except docker.errors.APIError as exc:
             log.error("Could not restore %s: %s", name, exc)
+        # They were stopped before the update: back on the network of the old container.
+        for dep in dependents or []:
+            if (dep.get("State") or {}).get("Running"):
+                try:
+                    self.api.start(dep["Id"])
+                except docker.errors.APIError as exc:
+                    log.error("Could not start %s again: %s", dep["Name"].lstrip("/"), exc)

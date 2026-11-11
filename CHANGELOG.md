@@ -12,11 +12,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   its own asks for an extra confirmation. The page marks them with a "Protected" badge.
   The API has the `protected` field and `PUT /containers/<key>/protected`.
 
+### Changed
+- After an update D2HA watches the new container before removing the old one: it must
+  run for 60 seconds without restarting and, if its image has a health check, turn
+  healthy (3 minutes at most). Otherwise D2HA puts the previous container back by itself
+  (#284). The progress shows the check; the API has the new `check` phase.
+- **Update all** stops at the first container that fails, instead of going on with the
+  others; the result lists the containers it did not try (`not_tried` in the API) (#284).
+
 ### Fixed
 - Updating a container that uses the network of another container (`network_mode:
   service:…`, such as an app behind a VPN container) no longer fails with "conflicting
   options: hostname and the network mode". D2HA sent the hostname of the other container,
   which Docker refuses with that network mode (#281).
+- Updating a container whose network other containers use (the VPN container of an app
+  with `network_mode: service:vpn`) no longer leaves them without network. Docker ties
+  them to the id of that container, which an update changes. Now D2HA stops them first,
+  then recreates them on the new container, as `docker compose up` does. If the update
+  fails, D2HA starts them again on the old one (#283).
 
 ## [0.5.3] - 2026-11-10
 
