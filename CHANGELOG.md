@@ -5,6 +5,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Protected containers** (#285): in Settings → General, a switch for each container,
+  for the ones the network depends on (DNS and DHCP, tunnels, a VPN). **Update all**
+  leaves them out, also from Home Assistant, and says which ones it left. Updating one on
+  its own asks for an extra confirmation. The page marks them with a "Protected" badge.
+  The API has the `protected` field and `PUT /containers/<key>/protected`.
+
 ### Changed
 - After an update D2HA watches the new container before removing the old one: it must
   run for 60 seconds without restarting and, if its image has a health check, turn

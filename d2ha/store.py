@@ -36,7 +36,7 @@ DEFAULTS: Dict[str, Any] = {
         "unhealthy": True,
         "language": "",
     },
-    # key -> {"ha": bool}; missing keys default to visible in Home Assistant.
+    # key -> {"ha": bool, "protected": bool}; missing keys: visible in Home Assistant, not protected.
     "containers": {},
 }
 
@@ -149,5 +149,15 @@ class Store:
     def set_container_in_ha(self, key: str, visible: bool) -> None:
         def mutate(data: Dict[str, Any]) -> None:
             data["containers"].setdefault(key, {})["ha"] = bool(visible)
+
+        self.update(mutate)
+
+    def container_protected(self, key: str) -> bool:
+        """A protected container (the network of the house, for example) is left out of Update all."""
+        return bool(self.get("containers", key, "protected", default=False))
+
+    def set_container_protected(self, key: str, protected: bool) -> None:
+        def mutate(data: Dict[str, Any]) -> None:
+            data["containers"].setdefault(key, {})["protected"] = bool(protected)
 
         self.update(mutate)

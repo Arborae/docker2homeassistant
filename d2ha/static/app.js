@@ -204,6 +204,15 @@
         toast(T("js.toast.failed"), "error");
       }
     }));
+    $$("[data-protected-key]").forEach((input) => input.addEventListener("change", async () => {
+      try {
+        await api("PUT", `/api/v1/containers/${encodeURIComponent(input.dataset.protectedKey)}/protected`, { protected: input.checked });
+        toast(T("js.toast.saved"), "success");
+      } catch {
+        input.checked = !input.checked;
+        toast(T("js.toast.failed"), "error");
+      }
+    }));
   }
 
   /* ---------------------------------------------------------------- containers page */
@@ -230,6 +239,7 @@
     function badges(c) {
       const out = [`<span class="badge badge-${esc(c.update)}" ${c.error ? `title="${esc(c.error)}"` : ""}>${esc(T(`status.${c.update}`))}</span>`];
       if (c.breaking) out.push(`<span class="badge badge-breaking">${icon("alert")}${esc(T("js.breaking"))}</span>`);
+      if (c.protected) out.push(`<span class="badge badge-protected" title="${esc(T("js.protected_title"))}">${icon("shield")}${esc(T("js.protected"))}</span>`);
       return out.join("");
     }
 
@@ -298,7 +308,7 @@
       const checkButton = $("#btn-check");
       checkButton.disabled = checking;
       checkButton.classList.toggle("is-busy", checking);
-      const updatable = updates.filter((c) => c.can_update).length;
+      const updatable = updates.filter((c) => c.can_update && !c.protected).length;
       const updateAll = $("#btn-update-all");
       if (updateAll) {
         updateAll.hidden = updatable < 2;
@@ -353,6 +363,12 @@
         ok: T("js.action.update"),
       });
       if (!ok) return;
+      if (c.protected && !(await confirmAction({
+        title: T("js.confirm.protected.title", { name: c.name }),
+        text: T("js.confirm.protected.text"),
+        ok: T("js.confirm.protected.ok"),
+        danger: true,
+      }))) return;
       try {
         const job = await api("POST", `/api/v1/containers/${encodeURIComponent(key)}/update`);
         follow(job);
@@ -362,8 +378,11 @@
     }
 
     async function updateAll() {
-      const n = containers.filter((c) => c.update === "available" && c.can_update).length;
-      const ok = await confirmAction({ title: T("js.confirm.update_all.title", { n }), text: T("js.confirm.update_all.text"), ok: T("js.action.update") });
+      const available = containers.filter((c) => c.update === "available" && c.can_update);
+      const n = available.filter((c) => !c.protected).length;
+      const skipped = available.filter((c) => c.protected).map((c) => c.name);
+      const text = T("js.confirm.update_all.text") + (skipped.length ? `\n\n${T("js.confirm.update_all.protected", { names: skipped.join(", ") })}` : "");
+      const ok = await confirmAction({ title: T("js.confirm.update_all.title", { n }), text, ok: T("js.action.update") });
       if (!ok) return;
       try {
         follow(await api("POST", "/api/v1/update-all"));
@@ -415,6 +434,7 @@
       if (job.kind === "update") text = job.result?.changed ? T("js.toast.updated", { name: job.label }) : T("js.toast.already", { name: job.label });
       if (job.kind === "update_all") {
         text = T("js.progress.done_all", { ok: job.result?.updated?.length || 0, ko: job.result?.failed?.length || 0 });
+        if (job.result?.protected?.length) text += ` ${T("js.progress.protected_left", { names: job.result.protected.join(", ") })}`;
         const failed = job.result?.failed || [];
         if (failed.length) {
           const stopped = T("js.progress.stopped_all", { name: failed[0].name, error: T(failed[0].error), rest: (job.result?.not_tried || []).join(", ") || "—" });

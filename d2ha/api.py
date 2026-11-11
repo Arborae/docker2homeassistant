@@ -256,7 +256,10 @@ def update_all():
     guard = _write_guard()
     if guard:
         return guard
-    targets = [v for v in _views() if v["update"] == "available" and v["can_update"]]
+    available = [v for v in _views() if v["update"] == "available" and v["can_update"]]
+    # Protected containers are updated one at a time, by hand.
+    targets = [v for v in available if not v["protected"]]
+    protected = [v["name"] for v in available if v["protected"]]
     if not targets:
         return jsonify(error="nothing_to_update"), 409
     app_ctx = ctx()
@@ -276,7 +279,8 @@ def update_all():
         if failed and not updated:
             raise UpdateError("error.update_all_failed",
                               f"{failed[0]['name']}; not tried: {', '.join(not_tried) or '-'}")
-        return {"updated": updated, "failed": failed, "not_tried": not_tried}
+        return {"updated": updated, "failed": failed, "not_tried": not_tried,
+                "protected": protected}
 
     job = app_ctx.jobs.submit("update_all", "", "", work)
     return jsonify(job.as_dict()), 202
@@ -301,3 +305,13 @@ def set_ha_visibility(key: str):
         return jsonify(error="bad_request"), 400
     ctx().store.set_container_in_ha(key, payload["ha"])
     return jsonify(key=key, ha=payload["ha"])
+
+
+@api_bp.route("/containers/<key>/protected", methods=["PUT"])
+@api_auth(allow_token=False)
+def set_protected(key: str):
+    payload = request.get_json(silent=True) or {}
+    if not isinstance(payload.get("protected"), bool):
+        return jsonify(error="bad_request"), 400
+    ctx().store.set_container_protected(key, payload["protected"])
+    return jsonify(key=key, protected=payload["protected"])

@@ -131,6 +131,22 @@
         </div>
         <div class="field"><button class="btn" type="submit">{{ t('ui.save') }}</button></div>
       </form>
+
+      <details class="collapsible" id="protected">
+        <summary><h3>{{ t('settings.protected') }}</h3><span class="muted">{{ protected.values()|select|list|length }}/{{ containers|length }}</span>{{ icon('chevron', 'chev') }}</summary>
+        <p class="muted">{{ t('settings.protected_help') }}</p>
+        <div class="toggle-list">
+          {% for stack, items in containers|groupby('stack') %}
+            <div class="toggle-group">{{ stack or t('containers.no_stack') }}</div>
+            {% for c in items %}
+            <label class="toggle-item">
+              <span class="name">{{ c.name }}</span>
+              <span class="switch"><input type="checkbox" data-protected-key="{{ c.key }}" {% if protected[c.key] %}checked{% endif %} aria-label="{{ t('settings.protected_switch', name=c.name) }}"><span></span></span>
+            </label>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </details>
     </div>
   </section>
 
