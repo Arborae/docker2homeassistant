@@ -122,6 +122,7 @@
   "error.self_update": "D2HA non può aggiornare se stesso: usa docker compose pull e docker compose up -d.",
   "error.pull_failed": "Il download dell'immagine non è riuscito.",
   "error.recreate_failed": "Il nuovo container non ha funzionato: è stato ripristinato quello precedente.",
+  "error.dependents_failed": "Aggiornato, ma alcuni container sulla sua rete non sono stati ricollegati: esegui docker compose up -d nella loro cartella.",
   "error.update_all_failed": "Il primo aggiornamento non è riuscito: niente è stato aggiornato e gli altri non sono stati provati.",
   "error.proxy_update": "D2HA raggiunge Docker attraverso questo container, quindi non può aggiornarlo: usa docker compose pull e docker compose up -d.",
   "error.rate_limited": "Troppe richieste: aspetta un momento.",
@@ -141,6 +142,7 @@
   "phase.create": "Creazione del nuovo container…",
   "phase.start": "Avvio…",
   "phase.check": "Controllo che il nuovo container funzioni…",
+  "phase.reconnect": "Ricollegamento dei container sulla sua rete…",
   "phase.cleanup": "Rimozione del container precedente…",
   "phase.done": "Completato",
 
