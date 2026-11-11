@@ -236,6 +236,7 @@ class UpdateChecker:
             "breaking": bool(notes and notes.get("breaking")),
             "error": remote.get("error", "") if status == "error" else "",
             "ha": self.store.container_in_ha(container["key"]),
+            "protected": self.store.container_protected(container["key"]),
         }
 
     def notes_for(self, image_ref: str) -> Optional[Dict[str, Any]]:

@@ -129,6 +129,7 @@ code, pre, .mono { font-family: var(--mono); font-size: .85em; }
 .badge-current { background: var(--success-soft); color: var(--success); }
 .badge-error { background: var(--warning-soft); color: var(--warning); }
 .badge-breaking { background: var(--danger-soft); color: var(--danger); }
+.badge-protected { color: var(--text); }
 
 /* -- summary ------------------------------------------------------------------ */
 .summary { display: flex; align-items: center; gap: 16px; padding: 18px; flex-wrap: wrap; }

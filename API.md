@@ -88,6 +88,7 @@ without D2HA itself. The integration uses this form.
       "breaking": true,
       "error": "",
       "ha": true,
+      "protected": false,
       "can_update": true
     }
   ],
@@ -111,6 +112,7 @@ without D2HA itself. The integration uses this form.
 | `is_self`, `is_proxy` | D2HA itself, or the socket proxy it uses: never updated by D2HA |
 | `can_update` | An update can be started now (false in read-only mode, for `is_self`, `is_proxy`, `local` and `pinned`) |
 | `ha` | Shown in Home Assistant |
+| `protected` | Marked as protected on the D2HA page (the network of the house depends on it, for example): **Update all** leaves it out. It can still be updated on its own (added after 0.5.3). |
 
 `checking` is true while a check runs; `checked_at` is the end of the last full check.
 
@@ -140,9 +142,10 @@ Every action answers `202` with a **job** and runs in the background, one job at
 | --- | --- | --- |
 | `POST /check` | — (answers `{"started": true}`) | read `/info` or `/containers` afterwards |
 | `POST /containers/<key>/update` | `update` | `{"changed": true, "id": "…", "name": "grafana"}` (`changed: false` if the image was already the latest) |
-| `POST /update-all` | `update_all` | `{"updated": ["grafana"], "failed": [{"name": "x", "error": "error.pull_failed"}]}` |
+| `POST /update-all` | `update_all` | `{"updated": ["grafana"], "failed": [{"name": "x", "error": "error.pull_failed"}], "protected": ["dns"]}`: `protected` lists the containers with an update it left out (added after 0.5.3). With only protected containers to update it answers `409 nothing_to_update`. |
 | `POST /images/prune` | `prune` | `{"removed": 3, "reclaimed": 1236000000}` (bytes) |
 | `PUT /containers/<key>/ha` `{"ha": false}` | — (answers `{"key", "ha"}`) | session only |
+| `PUT /containers/<key>/protected` `{"protected": true}` | — (answers `{"key", "protected"}`) | session only |
 
 ### Jobs
 

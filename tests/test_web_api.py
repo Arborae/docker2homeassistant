@@ -115,3 +115,45 @@ def test_password_change_signs_out_other_sessions(app, client):
     client.post("/settings/password", data={"csrf_token": csrf_of(client), "current": PASSWORD, "password": new, "confirm": new})
     assert client.get("/api/v1/info").status_code == 200  # this session stays signed in
     assert other.get("/api/v1/info").status_code == 401
+
+
+def test_protected_containers_are_left_out_of_update_all(app, client):
+    ctx = app.extensions["d2ha"]
+    ops = ctx.ops
+    ops.containers.append(ops._container("dns", "dns:1", "img-dns"))
+    ops.images["img-dns"] = {"labels": {}, "repo_digests": ["dns@sha256:" + "3" * 64], "created": ""}
+    ctx.checker.registry.digests["dns:1"] = "sha256:" + "4" * 64
+    ctx.jobs.start()
+    ctx.checker.check()
+    key = next(c["key"] for c in ops.list_containers() if c["name"] == "dns")
+    headers = {"X-CSRF-Token": csrf_of(client)}
+
+    assert client.put(f"/api/v1/containers/{key}/protected", json={"protected": "yes"}, headers=headers).status_code == 400
+    response = client.put(f"/api/v1/containers/{key}/protected", json={"protected": True}, headers=headers)
+    assert response.json == {"key": key, "protected": True}
+    listed = {c["name"]: c for c in client.get("/api/v1/containers").json["containers"]}
+    assert listed["dns"]["protected"] and not listed["web"]["protected"]
+    assert listed["dns"]["can_update"]  # still updatable on its own
+
+    job_id = client.post("/api/v1/update-all", headers=headers).json["id"]
+    assert wait_for(lambda: client.get(f"/api/v1/jobs/{job_id}").json["state"] == "done")
+    result = client.get(f"/api/v1/jobs/{job_id}").json["result"]
+    assert result["protected"] == ["dns"] and "dns" not in result["updated"]
+    assert "id-dns" not in ops.recreated and "id-web" in ops.recreated
+
+    # Only the protected container is left: Update all has nothing to do.
+    ops.images["img-web"]["repo_digests"] = ["nginx@sha256:" + "9" * 64]
+    ctx.checker.check()
+    assert client.post("/api/v1/update-all", headers=headers).status_code == 409
+
+
+def test_the_protected_switch_is_for_the_web_page_only(app, client):
+    from security import new_api_token
+
+    token, stored = new_api_token()
+    app.extensions["d2ha"].store.update(lambda d: d.update(api_token_hash=stored))
+    key = app.extensions["d2ha"].ops.list_containers()[0]["key"]
+    ha = app.test_client()
+    response = ha.put(f"/api/v1/containers/{key}/protected", json={"protected": True},
+                      headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 401

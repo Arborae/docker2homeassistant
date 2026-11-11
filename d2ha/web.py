@@ -138,6 +138,7 @@ def settings(new_token: str = ""):
         session_timeouts=SESSION_TIMEOUTS,
         containers=containers,
         in_ha={c["key"]: store.container_in_ha(c["key"]) for c in containers},
+        protected={c["key"]: store.container_protected(c["key"]) for c in containers},
         docker_version=ctx().ops.engine_info().get("version", ""),
         telegram_ready=ctx().notifier.configured,
         notify=store.get("notifications"),
