@@ -33,7 +33,7 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
     answers of D2HA count, an empty list removes nothing, the absence must be continuous.
   - #277: fixed in the app (#278).
 - Claude: "What you get" and "Choose the containers" on the docs site (what 0.3.1 adds).
-- Owner: the OK for the server on 0.5.5, then the protected containers.
+- Owner: mark the network containers as protected (Settings → General).
 - Lesson from the owner's server: a new config entry gives the containers new entity ids,
   so a card that picks them by an id pattern ends up empty. Pick them by the integration
   `d2ha` and the `key` attribute instead.
@@ -67,7 +67,7 @@ from free (read only) to forbidden, and the levels in between need the owner's e
     (ha-d2ha#16), the README that leads with the Marketplace search (ha-d2ha#14).
 
   CI runs pytest and the node tests of the strategy, hassfest and the HACS validation.
-- **The owner's server** runs D2HA 0.5.3 (updated and checked on 2026-11-10) with
+- **The owner's server** runs D2HA 0.5.5 (updated and checked on 2026-11-11) with
   Telegram notifications on. Diun and docker-telegram-notifier were stopped on 2026-11-10:
   the alerts now come from D2HA only. Its Home Assistant runs the integration 0.3.1
   (checked on 2026-11-10) on a new config entry, added by the owner the same day: 15
@@ -76,8 +76,8 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 ## Next up
 
-1. The server on 0.5.5 with the owner's OK; the owner marks the network containers as
-   protected.
+1. The owner marks the network containers as protected; the first update of the VPN
+   container from D2HA is the first real run of #283 and #284.
 2. The docs site: "What you get" and "Choose the containers" (Claude).
 
 ## Notes from the owner
