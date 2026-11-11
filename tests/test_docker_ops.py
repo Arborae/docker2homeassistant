@@ -78,6 +78,20 @@ def test_host_network_has_no_endpoints():
     assert "NetworkingConfig" not in config
 
 
+def test_network_of_another_container_sends_no_hostname_or_ports():
+    # The hostname is the start of the other container's id (#281).
+    old = inspect()
+    old["HostConfig"]["NetworkMode"] = "container:" + "d" * 64
+    old["Config"]["Hostname"] = "d" * 12
+    old["Config"]["Domainname"] = "lan"
+    config = DockerOps.build_create_config(old, IMAGE_CONFIG, "nginx:latest", "sha256:new")
+    assert "Hostname" not in config
+    assert "Domainname" not in config
+    assert "ExposedPorts" not in config
+    assert "NetworkingConfig" not in config
+    assert config["HostConfig"]["NetworkMode"] == "container:" + "d" * 64
+
+
 def test_custom_hostname_and_command_are_kept():
     old = inspect()
     old["Config"]["Hostname"] = "myhost"
