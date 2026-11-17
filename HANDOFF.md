@@ -20,6 +20,9 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
   on a real Docker. **Released as v0.5.5** (2026-11-11). v0.5.4 was published before
   its CHANGELOG PR and then deleted by Claude to redo it: releases here are immutable, so
   the `v0.5.4` tag can never be used again. Check `immutable` before touching a release.
+- **Released v0.5.6 on 2026-11-17**, on the owner's server the same day: Telegram messages
+  no longer fail one time out of two (#295), logs behind the socket proxy need
+  `ALLOW_LOGS` (#291), the count of Clean images (#292).
 - On 2026-11-10 Claude did Kimi's open issues too (#267, #268, #269,
   #270, #274: the owner's decision, written in the issues) and Kimi reviewed everything:
   seven pull requests, approved with no changes requested and merged the same evening
@@ -67,7 +70,7 @@ from free (read only) to forbidden, and the levels in between need the owner's e
     (ha-d2ha#16), the README that leads with the Marketplace search (ha-d2ha#14).
 
   CI runs pytest and the node tests of the strategy, hassfest and the HACS validation.
-- **The owner's server** runs D2HA 0.5.5 (updated and checked on 2026-11-11) with
+- **The owner's server** runs D2HA 0.5.6 (updated and checked on 2026-11-17) with
   Telegram notifications on. Diun and docker-telegram-notifier were stopped on 2026-11-10:
   the alerts now come from D2HA only. Its Home Assistant runs the integration 0.3.1
   (checked on 2026-11-10) on a new config entry, added by the owner the same day: 15
