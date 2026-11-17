@@ -36,11 +36,14 @@ def test_split_message_keeps_lines_whole():
 
 
 class FailingSession:
-    def __init__(self, exc=None, status=200, body=None):
+    def __init__(self, exc=None, status=200, body=None, failures=None):
         self.exc, self.status, self.body = exc, status, body or {}
+        self.failures = failures  # how many tries fail before one works (None: all)
+        self.tries = 0
 
     def post(self, url, **kwargs):
-        if self.exc:
+        self.tries += 1
+        if self.exc and (self.failures is None or self.tries <= self.failures):
             raise self.exc
         response = requests.Response()
         response.status_code = self.status
@@ -53,6 +56,7 @@ def test_telegram_errors_never_contain_the_token():
     for session in (FailingSession(exc=leak),
                     FailingSession(status=401, body={"description": "Unauthorized"})):
         telegram = Telegram(SECRET, ["42"], session=session)
+        telegram._sleep = lambda seconds: None
         try:
             telegram.send("hello")
         except NotifyError as exc:
@@ -60,6 +64,42 @@ def test_telegram_errors_never_contain_the_token():
         else:
             raise AssertionError("no error")
     assert not Telegram("", ["42"]).configured and not Telegram(SECRET, []).configured
+
+
+def test_a_message_that_times_out_is_tried_once_more():
+    session = FailingSession(exc=requests.ReadTimeout("read timed out"), failures=1)
+    telegram = Telegram(SECRET, ["42"], session=session)
+    waits = []
+    telegram._sleep = waits.append
+    telegram.send("hello")
+    assert session.tries == 2 and waits == [3]
+
+
+def test_a_message_that_keeps_failing_is_tried_twice_only():
+    session = FailingSession(exc=requests.ConnectionError("refused"))
+    telegram = Telegram(SECRET, ["42"], session=session)
+    telegram._sleep = lambda seconds: None
+    try:
+        telegram.send("hello")
+    except NotifyError as exc:
+        assert "ConnectionError" in str(exc)
+    else:
+        raise AssertionError("no error")
+    assert session.tries == 2
+
+
+def test_a_refused_message_is_not_tried_again():
+    session = FailingSession(status=400, body={"description": "Bad Request: chat not found"})
+    telegram = Telegram(SECRET, ["42"], session=session)
+    try:
+        telegram.send("hello")
+    except NotifyError as exc:
+        assert "chat not found" in str(exc)
+    assert session.tries == 1
+
+
+def test_without_a_session_each_message_opens_its_own_connection():
+    assert Telegram(SECRET, ["42"]).post is requests.post
 
 
 def test_crash_and_unhealthy_messages(tmp_path):
