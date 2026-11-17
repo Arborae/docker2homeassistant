@@ -51,11 +51,19 @@ def split_message(text: str, limit: int = MAX_MESSAGE) -> List[str]:
     return chunks
 
 
+# A message that fails on the connection is tried once more after this wait.
+RETRY_SECONDS = 3
+
+
 class Telegram:
     def __init__(self, token: str, chat_ids: Iterable[str], session: Optional[requests.Session] = None):
         self.token = token
         self.chat_ids = tuple(chat_ids)
-        self.session = session or requests.Session()
+        # Messages are hours apart: a connection kept open between them is long dead on the
+        # way (NAT, router) and the next message waits for the timeout. Without a session,
+        # each message opens a new connection.
+        self.post = session.post if session else requests.post
+        self._sleep = time.sleep
 
     @property
     def configured(self) -> bool:
@@ -67,16 +75,22 @@ class Telegram:
                 self._send_one(chat_id, chunk)
 
     def _send_one(self, chat_id: str, text: str) -> None:
-        try:
-            resp = self.session.post(
-                f"{TELEGRAM_API}/bot{self.token}/sendMessage",
-                json={"chat_id": chat_id, "text": text, "parse_mode": "HTML",
-                      "disable_web_page_preview": True},
-                timeout=15,
-            )
-        except requests.RequestException as exc:
-            # The exception text holds the URL, hence the token: report only its type.
-            raise NotifyError(f"Telegram unreachable ({type(exc).__name__})") from None
+        for attempt in (1, 2):
+            try:
+                resp = self.post(
+                    f"{TELEGRAM_API}/bot{self.token}/sendMessage",
+                    json={"chat_id": chat_id, "text": text, "parse_mode": "HTML",
+                          "disable_web_page_preview": True},
+                    timeout=15,
+                )
+                break
+            except (requests.ConnectionError, requests.Timeout) as exc:
+                if attempt == 2:
+                    # The exception text holds the URL, hence the token: report only its type.
+                    raise NotifyError(f"Telegram unreachable ({type(exc).__name__})") from None
+                self._sleep(RETRY_SECONDS)
+            except requests.RequestException as exc:
+                raise NotifyError(f"Telegram unreachable ({type(exc).__name__})") from None
         if resp.status_code != 200:
             try:
                 description = str(resp.json().get("description", ""))

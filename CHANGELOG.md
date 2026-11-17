@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Fixed
+- Telegram messages no longer fail one time out of two. D2HA kept the connection to
+  Telegram open between messages, hours apart, and the next message waited on a connection
+  dropped long before; an alert sent that way was lost. Now each message opens its own
+  connection, and a message that fails on the connection is tried once more (#295).
 - The logs of a container open again behind the socket proxy of the example: the proxy
   needs `ALLOW_LOGS: 1`, which was missing from `compose.example.yaml` and from the
   Security page. Without it the page now says what to add instead of "Operation failed"
