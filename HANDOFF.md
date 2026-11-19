@@ -5,7 +5,13 @@ Shared state between the AI assistants working on this repository (see AGENTS.md
 
 ## Tasks
 
-Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
+Tasks are **GitHub issues** labelled `claude` (rules in AGENTS.md):
+
+- **2026-11-19, decided by the owner: Kimi is no longer used.** Its area (`docs/` and
+  `ha-d2ha`) passed to Claude, and older issues labelled `kimi` are Claude's too.
+  Antigravity (Google) is the supporting assistant, for reviews and second opinions.
+  The same day: badges and a social preview in the ha-d2ha README, an EN/IT switch on the
+  landing page `docs/`.
 
 - **Released on 2026-11-10: app v0.5.3 and ha-d2ha 0.3.1** (prepared by #280 here and by
   ha-d2ha#17).
@@ -27,7 +33,7 @@ Tasks are **GitHub issues** labelled `claude` or `kimi` (rules in AGENTS.md):
   #270, #274: the owner's decision, written in the issues) and Kimi reviewed everything:
   seven pull requests, approved with no changes requested and merged the same evening
   (here #275, #276, #278, #279; in ha-d2ha #14, #15, #16). The Marketplace plan #256 is
-  closed. `docs/` and `ha-d2ha` stay Kimi's area for new work.
+  closed. `docs/` and `ha-d2ha` stayed Kimi's area until 2026-11-19 (see above).
 - **Decided by the owner on 2026-11-10** (written in the issues):
   - #267: no binary sensor per container.
   - #268: no `d2ha.*` services. `update.install` and `button.press` do the same today, and
@@ -87,7 +93,7 @@ from free (read only) to forbidden, and the levels in between need the owner's e
 
 - Do not change the MQTT password for now. Portainer stays.
 - Version numbers and release timing are the owner's decision.
-- Claude and Kimi each work in their own clones; neither works in the other's.
+- Each assistant works in its own clones; none works in another's.
 - Commits use the GitHub noreply address: check `git config user.email` in every fresh
   clone before the first commit.
 - Both repositories delete a pull request's branch automatically after the merge.
