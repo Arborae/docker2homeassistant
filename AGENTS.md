@@ -46,8 +46,8 @@ docker build -t d2ha:local -f d2ha/Dockerfile d2ha
 
 ## Multi-agent coordination
 **Claude** works on D2HA; the owner merges and releases. Kimi is no longer used: its area
-passed to Claude on 2026-11-19. **Antigravity** (Google) is the supporting assistant, for
-reviews and second opinions. The assistants cannot talk to each other: GitHub issues, pull requests and `HANDOFF.md` are the only
+passed to Claude on 2026-11-19. Claude works alone; another AI is used only when the owner
+decides so. Assistants cannot talk to each other: GitHub issues, pull requests and `HANDOFF.md` are the only
 channel, so everything must be written there.
 
 ### Areas
@@ -97,11 +97,11 @@ adding (see its rules), the integration relies only on what it says.
 
 ### Pull requests and review
 - Fill in the template: what changes, why, **how it was tested** (commands and results).
-- Every pull request gets a second review before the owner merges it: by the supporting
-  assistant (Antigravity) when available, otherwise by the owner. The reviewer checks it
+- Every pull request gets a second review before the owner merges it: by Claude
+  with its own checks, and by the owner when needed. The reviewer checks it
   against the list above and runs the tests. The assistants use the owner's GitHub account,
   which cannot approve its own pull requests, so the verdict is a comment that starts with
-  **"Review by Antigravity: approved"** or **"Review by Antigravity: changes requested"**,
+  **"Review: approved"** or **"Review: changes requested"**,
   followed by the findings with file and line. The author answers
   every finding in the pull request.
 - The owner merges only after an "approved" review comment and with green checks.

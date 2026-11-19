@@ -9,7 +9,7 @@ Tasks are **GitHub issues** labelled `claude` (rules in AGENTS.md):
 
 - **2026-11-19, decided by the owner: Kimi is no longer used.** Its area (`docs/` and
   `ha-d2ha`) passed to Claude, and older issues labelled `kimi` are Claude's too.
-  Antigravity (Google) is the supporting assistant, for reviews and second opinions.
+  Claude works alone; another AI is used only when the owner decides so.
   The same day: badges and a social preview in the ha-d2ha README, an EN/IT switch on the
   landing page `docs/`.
 
