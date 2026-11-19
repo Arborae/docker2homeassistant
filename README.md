@@ -2,6 +2,14 @@
 
 # D2HA – Docker to Home Assistant
 
+<p align="center">
+  <a href="https://github.com/Arborae/docker2homeassistant/actions/workflows/tests.yml"><img src="https://github.com/Arborae/docker2homeassistant/actions/workflows/tests.yml/badge.svg" alt="Tests" /></a>
+  <a href="https://github.com/Arborae/docker2homeassistant/actions/workflows/publish-docker.yml"><img src="https://github.com/Arborae/docker2homeassistant/actions/workflows/publish-docker.yml/badge.svg" alt="Docker image" /></a>
+  <a href="https://github.com/Arborae/docker2homeassistant/releases/latest"><img src="https://img.shields.io/github/v/release/Arborae/docker2homeassistant?color=00b585" alt="Release" /></a>
+  <a href="https://github.com/Arborae/ha-d2ha"><img src="https://img.shields.io/badge/Home%20Assistant-integration-18BCF2?logo=homeassistant&amp;logoColor=white" alt="Home Assistant integration" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Arborae/docker2homeassistant" alt="License" /></a>
+</p>
+
 Know when your containers have updates, read what changed, update them safely and read their logs: in a small web app and in Home Assistant.
 
 D2HA is a container that watches your Docker host. It finds the real new version of each image, shows its release notes (with breaking changes in red), updates containers keeping their settings, and lets you read and follow their logs. A Home Assistant integration brings all of it to your dashboards as native update entities.
