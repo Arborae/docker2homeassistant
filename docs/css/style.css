@@ -207,6 +207,9 @@ a { color: inherit; text-decoration: none; }
 
 .btn.small { padding: 7px 14px; font-size: 0.85rem; border-radius: 8px; }
 
+/* Language switch (EN/IT), same as the other Arborae pages */
+.lang-btn { font-family: var(--font-mono); letter-spacing: 0.04em; min-width: 64px; }
+
 /* --- Hero --- */
 .hero {
   padding: 150px 0 80px;
@@ -558,6 +561,10 @@ pre code { background: none; border: none; padding: 0; font-size: inherit; }
 
 @media (max-width: 640px) {
   .nav-links { display: none; }
+
+  .nav .by { display: none; }
+
+  .lang-btn { min-width: 0; }
 
   .cards-grid { grid-template-columns: 1fr; }
 

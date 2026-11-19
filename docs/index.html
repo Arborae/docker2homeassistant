@@ -1,12 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"
+  data-en-title="D2HA — Docker to Home Assistant"
+  data-it-title="D2HA — Da Docker a Home Assistant">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#070b0a" />
   <meta name="description"
-    content="D2HA — Docker to Home Assistant. Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant." />
+    content="D2HA — Docker to Home Assistant. Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant."
+    data-en="D2HA — Docker to Home Assistant. Know when your containers have updates, read what changed, update safely and read the logs — on the web and in Home Assistant."
+    data-it="D2HA — Da Docker a Home Assistant. Sai quando i tuoi container hanno aggiornamenti, leggi che cosa cambia, aggiorni in sicurezza e leggi i log — sul web e in Home Assistant." />
   <title>D2HA — Docker to Home Assistant</title>
 
   <!-- Open Graph -->
@@ -43,12 +47,13 @@
       </div>
 
       <nav class="nav-links" aria-label="Primary">
-        <a href="#features">Features</a>
-        <a href="#screenshots">Screenshots</a>
-        <a href="#quickstart">Quick start</a>
+        <a href="#features" data-en="Features" data-it="Funzioni">Features</a>
+        <a href="#screenshots" data-en="Screenshots" data-it="Schermate">Screenshots</a>
+        <a href="#quickstart" data-en="Quick start" data-it="Avvio rapido">Quick start</a>
       </nav>
 
       <div class="nav-cta">
+        <button id="lang-toggle" class="btn ghost small lang-btn" type="button" aria-label="Passa all'italiano">IT</button>
         <a class="btn ghost small" href="./guide/">Docs</a>
         <a class="btn primary small" href="https://github.com/Arborae/docker2homeassistant" target="_blank"
           rel="noreferrer">GitHub</a>
@@ -61,22 +66,22 @@
       <div class="hero-left">
         <div class="kicker">
           <span class="dot"></span>
-          <span>a project by <a href="https://arborae.github.io/" target="_blank" rel="noreferrer">Arborae</a></span>
+          <span data-en="a project by &lt;a href=&quot;https://arborae.github.io/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer&quot;&gt;Arborae&lt;/a&gt;" data-it="un progetto di &lt;a href=&quot;https://arborae.github.io/&quot; target=&quot;_blank&quot; rel=&quot;noreferrer&quot;&gt;Arborae&lt;/a&gt;">a project by <a href="https://arborae.github.io/" target="_blank" rel="noreferrer">Arborae</a></span>
         </div>
 
-        <h1>
+        <h1 data-en="Docker to &lt;span class=&quot;accent-text&quot;&gt;Home&amp;nbsp;Assistant&lt;/span&gt;." data-it="Da Docker a &lt;span class=&quot;accent-text&quot;&gt;Home&amp;nbsp;Assistant&lt;/span&gt;.">
           Docker to <span class="accent-text">Home&nbsp;Assistant</span>.
         </h1>
 
-        <p class="lead">
+        <p class="lead" data-en="Know when your containers have updates, read what changed, update them safely and read their logs — in a small web app and in Home Assistant." data-it="Sai quando i tuoi container hanno aggiornamenti, leggi che cosa cambia, li aggiorni in sicurezza e ne leggi i log — in una piccola web app e in Home Assistant.">
           Know when your containers have updates, read what changed, update them
           safely and read their logs — in a small web app and in Home Assistant.
         </p>
 
         <div class="hero-actions">
-          <a class="btn primary" href="./install/">Get started</a>
+          <a class="btn primary" href="./install/" data-en="Get started" data-it="Inizia">Get started</a>
           <a class="btn ghost" href="https://github.com/Arborae/docker2homeassistant" target="_blank"
-            rel="noreferrer">View on GitHub</a>
+            rel="noreferrer" data-en="View on GitHub" data-it="Vedi su GitHub">View on GitHub</a>
         </div>
 
         <div class="topics" role="list" aria-label="Topics">
@@ -105,50 +110,50 @@
     <section id="features" class="section">
       <div class="section-head reveal">
         <span class="section-label">// features</span>
-        <h2>Updates, without surprises</h2>
-        <p>A small, focused tool that does a few things very well — on the web and in Home Assistant.</p>
+        <h2 data-en="Updates, without surprises" data-it="Aggiornamenti, senza sorprese">Updates, without surprises</h2>
+        <p data-en="A small, focused tool that does a few things very well — on the web and in Home Assistant." data-it="Uno strumento piccolo e mirato che fa poche cose molto bene — sul web e in Home Assistant.">A small, focused tool that does a few things very well — on the web and in Home Assistant.</p>
       </div>
 
       <div class="cards-grid">
         <article class="card reveal">
           <span class="card-icon">🏷️</span>
-          <h3>Real versions</h3>
-          <p>Registry digests are checked with lightweight HEAD requests, so you see
+          <h3 data-en="Real versions" data-it="Versioni vere">Real versions</h3>
+          <p data-en="Registry digests are checked with lightweight HEAD requests, so you see &lt;code&gt;13.2.5 → 13.3.0&lt;/code&gt; — not just “something changed”." data-it="I digest del registry si controllano con richieste HEAD leggere, così vedi &lt;code&gt;13.2.5 → 13.3.0&lt;/code&gt; — non solo «è cambiato qualcosa».">Registry digests are checked with lightweight HEAD requests, so you see
             <code>13.2.5 → 13.3.0</code> — not just “something changed”.</p>
         </article>
 
         <article class="card reveal">
           <span class="card-icon">📋</span>
-          <h3>Release notes that match</h3>
-          <p>The GitHub release of that exact version, with breaking changes
+          <h3 data-en="Release notes that match" data-it="Le note di rilascio giuste">Release notes that match</h3>
+          <p data-en="The GitHub release of that exact version, with breaking changes highlighted before you update." data-it="La release GitHub di quella versione esatta, con le modifiche incompatibili evidenziate prima di aggiornare.">The GitHub release of that exact version, with breaking changes
             highlighted before you update.</p>
         </article>
 
         <article class="card reveal">
           <span class="card-icon">🛡️</span>
-          <h3>Safe updates</h3>
-          <p>The new image is pulled while the container keeps running; it is then
+          <h3 data-en="Safe updates" data-it="Aggiornamenti sicuri">Safe updates</h3>
+          <p data-en="The new image is pulled while the container keeps running; it is then recreated with your settings — and rolled back if it does not start." data-it="La nuova immagine si scarica mentre il container continua a girare; poi il container si ricrea con le tue impostazioni — e torna indietro se non parte.">The new image is pulled while the container keeps running; it is then
             recreated with your settings — and rolled back if it does not start.</p>
         </article>
 
         <article class="card reveal">
           <span class="card-icon">📜</span>
-          <h3>Live logs</h3>
-          <p>Tail or follow the logs of any container, with search, coloured levels
+          <h3 data-en="Live logs" data-it="Log in diretta">Live logs</h3>
+          <p data-en="Tail or follow the logs of any container, with search, coloured levels and download." data-it="Le ultime righe o il flusso in diretta dei log di qualunque container, con ricerca, livelli colorati e download.">Tail or follow the logs of any container, with search, coloured levels
             and download.</p>
         </article>
 
         <article class="card reveal">
           <span class="card-icon">🏠</span>
           <h3>Home Assistant</h3>
-          <p>An integration from Home Assistant's Marketplace (or HACS) brings update
+          <p data-en="An integration from Home Assistant's Marketplace (or HACS) brings update entities, container states and action buttons to your dashboards." data-it="Un'integrazione dal Marketplace di Home Assistant (o da HACS) porta nelle tue dashboard le entità di aggiornamento, lo stato dei container e i pulsanti per agire.">An integration from Home Assistant's Marketplace (or HACS) brings update
             entities, container states and action buttons to your dashboards.</p>
         </article>
 
         <article class="card reveal">
           <span class="card-icon">🔔</span>
-          <h3>Telegram notifications</h3>
-          <p>A message when an update appears — once per version, with the release-notes
+          <h3 data-en="Telegram notifications" data-it="Notifiche Telegram">Telegram notifications</h3>
+          <p data-en="A message when an update appears — once per version, with the release-notes link and breaking-change warnings — when a container stops with an error or turns unhealthy, and never for a stop you asked for. Each kind can be turned off, and a label excludes a container." data-it="Un messaggio quando arriva un aggiornamento — una volta per versione, con il link alle note di rilascio e gli avvisi sulle modifiche incompatibili — quando un container si ferma con un errore o diventa unhealthy, e mai per uno stop che hai chiesto tu. Ogni tipo si può spegnere, e un'etichetta esclude un container.">A message when an update appears — once per version, with the release-notes
             link and breaking-change warnings — when a container stops with an error or
             turns unhealthy, and never for a stop you asked for. Each kind can be turned
             off, and a label excludes a container.</p>
@@ -156,8 +161,8 @@
 
         <article class="card reveal">
           <span class="card-icon">🔐</span>
-          <h3>Private by design</h3>
-          <p>Sign-in with optional 2FA, no third-party requests from the browser,
+          <h3 data-en="Private by design" data-it="Privato per progetto">Private by design</h3>
+          <p data-en="Sign-in with optional 2FA, no third-party requests from the browser, and a Docker socket proxy in the example setup." data-it="Accesso con 2FA facoltativa, nessuna richiesta a terzi dal browser e un proxy del socket Docker nella configurazione d'esempio.">Sign-in with optional 2FA, no third-party requests from the browser,
             and a Docker socket proxy in the example setup.</p>
         </article>
       </div>
@@ -166,8 +171,8 @@
     <section id="screenshots" class="section">
       <div class="section-head reveal">
         <span class="section-label">// screenshots</span>
-        <h2>Take a look around</h2>
-        <p>A clean, focused UI — in light and dark themes, on desktop and phone.</p>
+        <h2 data-en="Take a look around" data-it="Dai un'occhiata">Take a look around</h2>
+        <p data-en="A clean, focused UI — in light and dark themes, on desktop and phone." data-it="Un'interfaccia pulita e mirata — con tema chiaro e scuro, sul computer e sul telefono.">A clean, focused UI — in light and dark themes, on desktop and phone.</p>
       </div>
 
       <div class="shots-grid">
@@ -179,7 +184,7 @@
             </div>
             <img src="./images/containers-light.png" alt="D2HA container list with updates available" loading="lazy" />
           </div>
-          <figcaption>Containers — updates at a glance, light theme</figcaption>
+          <figcaption data-en="Containers — updates at a glance, light theme" data-it="Container — gli aggiornamenti a colpo d'occhio, tema chiaro">Containers — updates at a glance, light theme</figcaption>
         </figure>
 
         <figure class="shot reveal">
@@ -190,7 +195,7 @@
             </div>
             <img src="./images/release-notes.png" alt="D2HA release notes of the exact new version" loading="lazy" />
           </div>
-          <figcaption>Release notes — breaking changes in red</figcaption>
+          <figcaption data-en="Release notes — breaking changes in red" data-it="Note di rilascio — le modifiche incompatibili in rosso">Release notes — breaking changes in red</figcaption>
         </figure>
 
         <figure class="shot reveal">
@@ -202,7 +207,7 @@
             <img src="./images/update-progress.png" alt="D2HA updating a container with live progress"
               loading="lazy" />
           </div>
-          <figcaption>Updates — live progress, safe rollback</figcaption>
+          <figcaption data-en="Updates — live progress, safe rollback" data-it="Aggiornamenti — avanzamento in diretta, ritorno indietro sicuro">Updates — live progress, safe rollback</figcaption>
         </figure>
 
         <figure class="shot reveal">
@@ -213,12 +218,12 @@
             </div>
             <img src="./images/logs.png" alt="D2HA live container logs" loading="lazy" />
           </div>
-          <figcaption>Logs — tail, follow, search, download</figcaption>
+          <figcaption data-en="Logs — tail, follow, search, download" data-it="Log — ultime righe, in diretta, ricerca, download">Logs — tail, follow, search, download</figcaption>
         </figure>
 
         <figure class="shot phone reveal">
           <img src="./images/phone.png" alt="D2HA on a phone: container list with updates" loading="lazy" />
-          <figcaption>Phone — the same UI, in your pocket</figcaption>
+          <figcaption data-en="Phone — the same UI, in your pocket" data-it="Telefono — la stessa interfaccia, in tasca">Phone — the same UI, in your pocket</figcaption>
         </figure>
 
         <figure class="shot reveal">
@@ -230,7 +235,7 @@
             <img src="./images/settings-home-assistant.png" alt="D2HA settings for Home Assistant"
               loading="lazy" />
           </div>
-          <figcaption>Settings — the Home Assistant link</figcaption>
+          <figcaption data-en="Settings — the Home Assistant link" data-it="Impostazioni — il collegamento con Home Assistant">Settings — the Home Assistant link</figcaption>
         </figure>
       </div>
     </section>
@@ -238,17 +243,17 @@
     <section id="quickstart" class="section">
       <div class="section-head reveal">
         <span class="section-label">// quick-start</span>
-        <h2>Up and running in one minute</h2>
-        <p>Copy the example compose file, start it, and sign in with the code from the logs. That’s it.</p>
+        <h2 data-en="Up and running in one minute" data-it="Pronto in un minuto">Up and running in one minute</h2>
+        <p data-en="Copy the example compose file, start it, and sign in with the code from the logs. That’s it." data-it="Copia il file compose d'esempio, avvialo ed entra con il codice che trovi nei log. Tutto qui.">Copy the example compose file, start it, and sign in with the code from the logs. That’s it.</p>
       </div>
 
       <div class="quickstart reveal">
-        <pre><code><span class="code-comment"># get the example compose file and start d2ha</span>
+        <pre><code><span class="code-comment" data-en="# get the example compose file and start d2ha" data-it="# scarica il file compose d'esempio e avvia d2ha"># get the example compose file and start d2ha</span>
 curl -O https://raw.githubusercontent.com/Arborae/docker2homeassistant/main/compose.example.yaml
 mv compose.example.yaml compose.yaml
 docker compose up -d
-docker logs d2ha   <span class="code-comment"># ← your one-time setup code</span></code></pre>
-        <p class="hint">
+docker logs d2ha   <span class="code-comment" data-en="# ← your one-time setup code" data-it="# ← il tuo codice di configurazione, valido una volta"># ← your one-time setup code</span></code></pre>
+        <p class="hint" data-en="Then open &lt;a href=&quot;http://localhost:12021&quot;&gt;&lt;code&gt;http://localhost:12021&lt;/code&gt;&lt;/a&gt;, enter the setup code and create your account — the example includes a Docker socket proxy, so D2HA never touches the socket directly. On a server without a browser, open an SSH tunnel first (&lt;code&gt;ssh -L 12021:localhost:12021 &amp;lt;user&amp;gt;@&amp;lt;server&amp;gt;&lt;/code&gt;), then that address works on your computer. Details in the &lt;a href=&quot;./install/&quot; style=&quot;color: var(--brand-soft);&quot;&gt;installation guide&lt;/a&gt;, everything else in the &lt;a href=&quot;./guide/&quot; style=&quot;color: var(--brand-soft);&quot;&gt;documentation&lt;/a&gt;." data-it="Poi apri &lt;a href=&quot;http://localhost:12021&quot;&gt;&lt;code&gt;http://localhost:12021&lt;/code&gt;&lt;/a&gt;, inserisci il codice e crea il tuo account — l'esempio include un proxy del socket Docker, così D2HA non tocca mai il socket direttamente. Su un server senza browser apri prima un tunnel SSH (&lt;code&gt;ssh -L 12021:localhost:12021 &amp;lt;utente&amp;gt;@&amp;lt;server&amp;gt;&lt;/code&gt;), poi quell'indirizzo funziona sul tuo computer. I dettagli nella &lt;a href=&quot;./install/&quot; style=&quot;color: var(--brand-soft);&quot;&gt;guida all'installazione&lt;/a&gt;, tutto il resto nella &lt;a href=&quot;./guide/&quot; style=&quot;color: var(--brand-soft);&quot;&gt;documentazione&lt;/a&gt;.">
           Then open <a href="http://localhost:12021"><code>http://localhost:12021</code></a>, enter the setup code
           and create your account — the example includes a Docker socket proxy, so D2HA never touches the
           socket directly. On a server without a browser, open an SSH tunnel first
@@ -261,18 +266,18 @@ docker logs d2ha   <span class="code-comment"># ← your one-time setup code</sp
 
       <div class="cta-box reveal">
         <div>
-          <h3>Found a bug? Have an idea?</h3>
-          <p>Issues and small, focused PRs are always welcome.</p>
+          <h3 data-en="Found a bug? Have an idea?" data-it="Hai trovato un bug? Hai un'idea?">Found a bug? Have an idea?</h3>
+          <p data-en="Issues and small, focused PRs are always welcome." data-it="Issue e PR piccole e mirate sono sempre benvenute.">Issues and small, focused PRs are always welcome.</p>
         </div>
         <a class="btn primary" href="https://github.com/Arborae/docker2homeassistant/issues" target="_blank"
-          rel="noreferrer">Open an issue</a>
+          rel="noreferrer" data-en="Open an issue" data-it="Apri una issue">Open an issue</a>
       </div>
     </section>
 
     <footer class="footer">
       <div class="footer-left">
         <img src="./assets/logo.svg" alt="" width="20" height="20" />
-        <span>© <span id="year">2026</span> D2HA · a project by <a href="https://arborae.github.io/" target="_blank"
+        <span>© <span id="year">2026</span> D2HA · <span data-en="a project by" data-it="un progetto di">a project by</span> <a href="https://arborae.github.io/" target="_blank"
             rel="noreferrer">Arborae</a></span>
       </div>
       <div class="footer-right">
@@ -286,6 +291,47 @@ docker logs d2ha   <span class="code-comment"># ← your one-time setup code</sp
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    // One language at a time (English / Italian), same as the other Arborae pages:
+    // every translated element carries data-en and data-it; ?lang= wins, then the
+    // choice saved in this browser, then the browser language.
+    (function () {
+      const root = document.documentElement;
+      const langBtn = document.getElementById('lang-toggle');
+      const texts = document.querySelectorAll('[data-en]');
+      const metaDesc = document.querySelector('meta[name="description"]');
+      const KEY = 'd2ha-lang';
+      const saved = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
+      const remember = (l) => { try { localStorage.setItem(KEY, l); } catch (e) { /* private mode */ } };
+
+      function apply(l) {
+        texts.forEach((el) => {
+          if (el === metaDesc) return;
+          const value = el.dataset[l];
+          if (value !== undefined) el.innerHTML = value;
+        });
+        root.lang = l;
+        if (root.dataset[l + 'Title']) document.title = root.dataset[l + 'Title'];
+        if (metaDesc && metaDesc.dataset[l]) metaDesc.content = metaDesc.dataset[l];
+        if (langBtn) {
+          langBtn.textContent = l === 'it' ? 'EN' : 'IT';
+          langBtn.setAttribute('aria-label', l === 'it' ? 'Switch to English' : "Passa all'italiano");
+          langBtn.title = langBtn.getAttribute('aria-label');
+        }
+      }
+
+      const fromUrl = new URLSearchParams(location.search).get('lang');
+      let lang = ['en', 'it'].includes(fromUrl) ? fromUrl
+        : saved() || ((navigator.language || 'en').toLowerCase().startsWith('it') ? 'it' : 'en');
+      apply(lang);
+      if (langBtn) {
+        langBtn.addEventListener('click', () => {
+          lang = lang === 'it' ? 'en' : 'it';
+          apply(lang);
+          remember(lang);
+        });
+      }
+    })();
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const reveals = document.querySelectorAll('.reveal');
